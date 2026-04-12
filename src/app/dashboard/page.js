@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ClientOnly from "@/components/ClientOnly";
+import { AnimatedGroup } from "@/components/ui/AnimatedGroup";
 
 const CHART_DATA = [
   { day: "Mon", inbound: 8, outbound: 3 },
@@ -58,8 +59,7 @@ export default function OverviewPage() {
       </div>
 
       {/* KPI Grid */}
-      <div
-        style={{
+      <AnimatedGroup preset="blur-slide" style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: 18,
@@ -99,7 +99,7 @@ export default function OverviewPage() {
             </button>
           }
         />
-      </div>
+      </AnimatedGroup>
 
       {/* Agent Quality KPIs */}
       <div

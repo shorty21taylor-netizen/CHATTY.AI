@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAdminSession, clearAdminSession } from "@/lib/admin";
+import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
@@ -266,21 +267,14 @@ export default function DashboardLayout({ children }) {
             Upgrade →
           </Link>
           {admin ? (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleSignOut}
-              className="cta-ghost"
-              style={{
-                display: "block",
-                marginTop: 12,
-                width: "100%",
-                padding: "8px 12px",
-                fontSize: 12,
-                justifyContent: "center",
-              }}
+              className="w-full mt-3 justify-center"
             >
               Sign Out (Admin)
-            </button>
+            </Button>
           ) : null}
         </div>
       </aside>

@@ -8,6 +8,8 @@ import {
   ADMIN_BYPASS_PASSWORD,
   devBypass,
 } from '@/lib/admin';
+import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
+import { Button } from '@/components/ui/Button';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -46,9 +48,10 @@ export default function AdminLogin() {
         padding: 24,
       }}
     >
+      <AnimatedGroup preset="blur-slide" style={{ width: 440 }}>
       <div
         className="dark-card glow-border"
-        style={{ width: 440, padding: 0, overflow: 'hidden' }}
+        style={{ width: '100%', padding: 0, overflow: 'hidden' }}
       >
         {/* macOS chrome */}
         <div
@@ -187,13 +190,13 @@ export default function AdminLogin() {
           </p>
 
           {/* Quick bypass button */}
-          <button
+          <Button
             onClick={handleQuickBypass}
-            className="cta-primary"
-            style={{ width: '100%', marginBottom: 20, justifyContent: 'center' }}
+            size="lg"
+            className="w-full mb-5 justify-center"
           >
-            Skip &amp; Enter Dashboard →
-          </button>
+            Skip &amp; Enter Dashboard {'\u2192'}
+          </Button>
 
           <div
             style={{
@@ -293,13 +296,14 @@ export default function AdminLogin() {
               </div>
             ) : null}
 
-            <button
+            <Button
               type="submit"
-              className="cta-ghost"
-              style={{ width: '100%', justifyContent: 'center' }}
+              variant="outline"
+              size="lg"
+              className="w-full justify-center"
             >
-              Enter Dashboard →
-            </button>
+              Enter Dashboard {'\u2192'}
+            </Button>
           </form>
 
           <div
@@ -317,6 +321,7 @@ export default function AdminLogin() {
           </div>
         </div>
       </div>
+      </AnimatedGroup>
     </div>
   );
 }

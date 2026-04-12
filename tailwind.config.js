@@ -23,7 +23,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "sans-serif"],
+        sans: ["Inter Tight", "Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "sans-serif"],
         serif: ["Playfair Display", "Georgia", "serif"],
       },
     },
