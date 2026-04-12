@@ -10,6 +10,7 @@ const NAV = [
   { href: "/dashboard/inbound", label: "Inbound Calls", icon: "↙" },
   { href: "/dashboard/outbound", label: "Outbound Calls", icon: "↗" },
   { href: "/dashboard/appointments", label: "Appointments", icon: "◉" },
+  { href: "/dashboard/analytics", label: "Analytics", icon: "▥" },
   { href: "/dashboard/agent", label: "Agent Settings", icon: "✦" },
   { href: "/dashboard/telegram", label: "Telegram EA", icon: "✉" },
   { href: "/dashboard/billing", label: "Billing", icon: "$" },

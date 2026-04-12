@@ -101,6 +101,57 @@ export default function OverviewPage() {
         />
       </div>
 
+      {/* Agent Quality KPIs */}
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.12em",
+          marginBottom: 12,
+        }}
+      >
+        Agent Quality
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 18,
+          marginBottom: 28,
+        }}
+      >
+        <DarkKpi
+          label="Answer Rate"
+          value="99.4%"
+          delta="↑ near-perfect pickup"
+          deltaColor="var(--emerald-bright)"
+          sub="163 of 164 calls answered"
+        />
+        <DarkKpi
+          label="Avg Time to Answer"
+          value="0.8s"
+          delta="↑ faster than human"
+          deltaColor="var(--emerald-bright)"
+          sub="Instant pickup, every time"
+        />
+        <DarkKpi
+          label="Qualification Rate"
+          value="62%"
+          delta="↑ 4% vs last week"
+          deltaColor="#c9a961"
+          sub="Of all inbound leads"
+        />
+        <DarkKpi
+          label="Booking Rate"
+          value="41%"
+          delta="↑ 7% vs last week"
+          deltaColor="#c9a961"
+          sub="Qualified → booked"
+        />
+      </div>
+
       {/* Chart */}
       <div className="dark-card" style={{ padding: 26 }}>
         <div
@@ -295,7 +346,7 @@ export default function OverviewPage() {
   );
 }
 
-function DarkKpi({ label, value, delta, action }) {
+function DarkKpi({ label, value, delta, action, deltaColor, sub }) {
   return (
     <div className="dark-card" style={{ padding: 22 }}>
       <div
@@ -335,10 +386,21 @@ function DarkKpi({ label, value, delta, action }) {
             marginTop: 8,
             fontSize: 13,
             fontWeight: 600,
-            color: "#c9a961",
+            color: deltaColor || "#c9a961",
           }}
         >
           {delta}
+        </div>
+      ) : null}
+      {sub ? (
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 11,
+            color: "var(--text-muted)",
+          }}
+        >
+          {sub}
         </div>
       ) : null}
     </div>
