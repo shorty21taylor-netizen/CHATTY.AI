@@ -1,15 +1,28 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Chatty.AI — Your AI Receptionist, Always On",
+  title: "Chatty.AI — The Sales OS for Home Services",
   description:
-    "Chatty.AI is a low-ticket AI voice agent platform powered by ElevenLabs. Inbound qualification, outbound outreach, and a Telegram executive assistant — starting at $97/mo.",
+    "Chatty.AI is the sales operating system for general contractors, remodelers, roofers, HVAC, and other home-service pros. Capture, convert, and reclaim every lead.",
 };
+
+// Anti-FOUC: apply saved theme (default light) before first paint.
+const themeInitScript = `
+(function(){
+  try {
+    var t = localStorage.getItem('chatty_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+`;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -18,10 +31,10 @@ export default function RootLayout({ children }) {
         />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
         />
       </head>
-      <body style={{ background: "var(--dark-bg)" }}>{children}</body>
+      <body style={{ background: "var(--app-bg)" }}>{children}</body>
     </html>
   );
 }

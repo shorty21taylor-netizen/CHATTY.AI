@@ -116,9 +116,8 @@ export function Pricing({ onGetStarted }) {
                   display: 'inline-block',
                   padding: '2px 7px',
                   borderRadius: 999,
-                  background: 'rgba(212,255,79,0.15)',
-                  border: '1px solid rgba(212,255,79,0.3)',
-                  color: '#d4ff4f',
+                  background: 'var(--emerald-bright)',
+                  color: '#ffffff',
                   fontSize: 9.5,
                   fontWeight: 800,
                   letterSpacing: '0.08em',
@@ -137,7 +136,7 @@ export function Pricing({ onGetStarted }) {
               className={`glow-card relative ${tier.popular ? 'glow-border' : ''}`}
               style={{
                 padding: 32,
-                boxShadow: tier.popular ? '0 0 60px rgba(52,211,153,0.15)' : undefined,
+                boxShadow: tier.popular ? '0 0 60px rgba(16,185,129,0.15)' : undefined,
               }}
             >
               {tier.popular && (

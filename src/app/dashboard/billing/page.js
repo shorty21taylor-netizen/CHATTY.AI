@@ -47,18 +47,18 @@ export default function BillingPage() {
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.04em",
-              background: "rgba(52,211,153,0.12)",
+              background: "var(--emerald-tint)",
               color: "var(--emerald-bright)",
-              border: "1px solid rgba(52,211,153,0.3)",
+              border: "1px solid rgba(16,185,129,0.3)",
             }}
           >
-            ● ACTIVE
+            {"\u25CF"} ACTIVE
           </span>
         </div>
 
         <div
           style={{
-            borderTop: "1px solid var(--dark-border)",
+            borderTop: "1px solid var(--border)",
             margin: "22px 0 18px",
           }}
         />

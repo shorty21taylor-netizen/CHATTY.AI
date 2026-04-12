@@ -151,19 +151,19 @@ function Td({ children }) {
 function OutcomePill({ outcome }) {
   const styles = {
     Booked: {
-      background: "rgba(52,211,153,0.12)",
+      background: "var(--emerald-tint)",
       color: "var(--emerald-bright)",
-      border: "1px solid rgba(52,211,153,0.3)",
+      border: "1px solid rgba(16,185,129,0.3)",
     },
     Qualified: {
-      background: "rgba(52,211,153,0.12)",
+      background: "var(--emerald-tint)",
       color: "var(--emerald-bright)",
-      border: "1px solid rgba(52,211,153,0.3)",
+      border: "1px solid rgba(16,185,129,0.3)",
     },
     "No-show": {
-      background: "rgba(248,113,113,0.12)",
-      color: "#f87171",
-      border: "1px solid rgba(248,113,113,0.3)",
+      background: "var(--negative-soft)",
+      color: "var(--negative)",
+      border: "1px solid rgba(239,68,68,0.3)",
     },
   };
   const s = styles[outcome] || styles["No-show"];

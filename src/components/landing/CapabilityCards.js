@@ -34,11 +34,11 @@ export function CapabilityCards() {
               <svg width="100%" height="100%" viewBox="0 0 400 120" fill="none" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#34d399" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
                   </linearGradient>
                 </defs>
-                <path d="M0 90 Q50 80 80 65 Q120 45 160 55 Q200 65 240 35 Q280 10 320 25 Q360 40 400 20" stroke="#34d399" strokeWidth="2" fill="none" />
+                <path d="M0 90 Q50 80 80 65 Q120 45 160 55 Q200 65 240 35 Q280 10 320 25 Q360 40 400 20" stroke="#10b981" strokeWidth="2" fill="none" />
                 <path d="M0 90 Q50 80 80 65 Q120 45 160 55 Q200 65 240 35 Q280 10 320 25 Q360 40 400 20 L400 120 L0 120 Z" fill="url(#chartGrad)" />
               </svg>
               {/* Tooltip badge */}
@@ -52,8 +52,8 @@ export function CapabilityCards() {
                   gap: 6,
                   padding: '5px 12px',
                   borderRadius: 8,
-                  background: 'rgba(52,211,153,0.12)',
-                  border: '1px solid rgba(52,211,153,0.25)',
+                  background: 'var(--emerald-tint)',
+                  border: '1px solid rgba(16,185,129,0.25)',
                   fontSize: 11,
                   fontWeight: 600,
                   color: 'var(--emerald-bright)',
@@ -98,7 +98,7 @@ export function CapabilityCards() {
                   zIndex: 2,
                 }}
               >
-                <span style={{ fontSize: 14, color: '#06140e', fontWeight: 800 }}>C</span>
+                <span style={{ fontSize: 14, color: '#ffffff', fontWeight: 800 }}>C</span>
               </div>
 
               {/* Orbiting icons */}
@@ -118,7 +118,7 @@ export function CapabilityCards() {
                       width: 32,
                       height: 32,
                       borderRadius: '50%',
-                      background: 'rgba(52,211,153,0.1)',
+                      background: 'var(--emerald-tint)',
                       border: '1px solid var(--dark-border)',
                       display: 'flex',
                       alignItems: 'center',

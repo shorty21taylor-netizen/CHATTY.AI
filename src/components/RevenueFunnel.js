@@ -10,7 +10,7 @@ const STAGES = [
 
 export function RevenueFunnel() {
   return (
-    <div className="glow-card" style={{ padding: 30, marginBottom: 22 }}>
+    <div className="dark-card" style={{ padding: 30, marginBottom: 22 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
         <div>
           <div className="t-eyebrow">Revenue funnel &middot; last 30 days</div>
@@ -25,8 +25,8 @@ export function RevenueFunnel() {
             gap: 6,
             padding: '5px 12px',
             borderRadius: 999,
-            background: 'rgba(52,211,153,0.1)',
-            border: '1px solid rgba(52,211,153,0.25)',
+            background: 'var(--emerald-tint)',
+            border: '1px solid rgba(16,185,129,0.25)',
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.08em',
@@ -61,8 +61,8 @@ export function RevenueFunnel() {
             style={{
               position: 'relative',
               padding: '18px 16px',
-              background: 'rgba(52,211,153,0.035)',
-              border: '1px solid var(--dark-border)',
+              background: 'var(--emerald-tint)',
+              border: '1px solid var(--border)',
               borderRadius: 12,
               display: 'flex',
               flexDirection: 'column',
@@ -81,8 +81,8 @@ export function RevenueFunnel() {
                   width: 20,
                   height: 20,
                   borderRadius: '50%',
-                  background: 'var(--dark-surface-3)',
-                  border: '1px solid var(--dark-border)',
+                  background: 'var(--surface-3)',
+                  border: '1px solid var(--border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -121,8 +121,8 @@ export function RevenueFunnel() {
                   gap: 5,
                   padding: '4px 9px',
                   borderRadius: 999,
-                  background: 'rgba(52,211,153,0.1)',
-                  border: '1px solid rgba(52,211,153,0.25)',
+                  background: 'var(--emerald-tint)',
+                  border: '1px solid rgba(16,185,129,0.25)',
                   color: 'var(--emerald-bright)',
                   fontSize: 10.5,
                   fontWeight: 700,
@@ -143,7 +143,7 @@ export function RevenueFunnel() {
         style={{
           marginTop: 26,
           paddingTop: 22,
-          borderTop: '1px solid var(--dark-border)',
+          borderTop: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'flex-end',
           justifyContent: 'space-between',
@@ -169,7 +169,7 @@ export function RevenueFunnel() {
             padding: '10px 18px',
             borderRadius: 10,
             background: 'var(--emerald-bright)',
-            color: '#06140e',
+            color: '#ffffff',
             fontSize: 13,
             fontWeight: 700,
             textDecoration: 'none',

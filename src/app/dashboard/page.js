@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import ClientOnly from "@/components/ClientOnly";
 import { AnimatedGroup } from "@/components/ui/AnimatedGroup";
+import { Delta } from "@/components/ui/Delta";
 import { RevenueFunnel } from "@/components/RevenueFunnel";
 
 const CHART_DATA = [
@@ -57,35 +58,31 @@ export default function OverviewPage() {
         <DarkKpi
           label="Answer Rate"
           value="99.4%"
-          delta="↑ near-perfect pickup"
-          deltaColor="var(--emerald-bright)"
+          deltaNode={<Delta value="near-perfect pickup" positive />}
           sub="163 of 164 calls answered"
         />
         <DarkKpi
           label="Avg Time to Answer"
           value="0.8s"
-          delta="↑ faster than human"
-          deltaColor="var(--emerald-bright)"
+          deltaNode={<Delta value="faster than human" positive />}
           sub="Instant pickup, every time"
         />
         <DarkKpi
           label="Qualification Rate"
           value="62%"
-          delta="↑ 4% vs last week"
-          deltaColor="#c9a961"
+          deltaNode={<Delta value={4} suffix="% vs last week" positive />}
           sub="Of all inbound leads"
         />
         <DarkKpi
           label="Booking Rate"
           value="41%"
-          delta="↑ 7% vs last week"
-          deltaColor="#c9a961"
-          sub="Qualified → booked"
+          deltaNode={<Delta value={7} suffix="% vs last week" positive />}
+          sub="Qualified to booked"
         />
       </div>
 
       {/* Chart */}
-      <div className="glow-card" style={{ padding: 26 }}>
+      <div className="dark-card" style={{ padding: 26 }}>
         <div
           style={{
             display: "flex",
@@ -104,7 +101,7 @@ export default function OverviewPage() {
           </div>
           <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
             <Legend color="var(--emerald-bright)" label="Inbound" />
-            <Legend color="#c9a961" label="Outbound" />
+            <Legend color="var(--text-muted)" label="Outbound" dashed />
           </div>
         </div>
 
@@ -132,42 +129,43 @@ export default function OverviewPage() {
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.04)"
+                  stroke="var(--border)"
                 />
                 <XAxis
                   dataKey="day"
-                  tick={{ fontSize: 11, fill: "#a8b3ad" }}
-                  axisLine={{ stroke: "var(--dark-border)" }}
+                  tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                  axisLine={{ stroke: "var(--border)" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: "#a8b3ad" }}
-                  axisLine={{ stroke: "var(--dark-border)" }}
+                  tick={{ fontSize: 11, fill: "var(--text-muted)" }}
+                  axisLine={{ stroke: "var(--border)" }}
                   tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "var(--dark-surface)",
-                    border: "1px solid var(--dark-border)",
+                    background: "var(--surface-1)",
+                    border: "1px solid var(--border)",
                     borderRadius: 10,
                     fontSize: 13,
-                    color: "#f5f7f5",
+                    color: "var(--text-bright)",
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="inbound"
-                  stroke="#34d399"
+                  stroke="var(--emerald-bright)"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: "#34d399" }}
+                  dot={{ r: 4, fill: "var(--emerald-bright)" }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="outbound"
-                  stroke="#c9a961"
+                  stroke="var(--text-muted)"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: "#c9a961" }}
+                  strokeDasharray="4 4"
+                  dot={{ r: 4, fill: "var(--text-muted)" }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -195,8 +193,8 @@ export default function OverviewPage() {
           <div
             style={{
               padding: 14,
-              background: "rgba(52,211,153,0.04)",
-              border: "1px solid var(--dark-border)",
+              background: "var(--emerald-tint)",
+              border: "1px solid var(--border)",
               borderRadius: 10,
             }}
           >
@@ -210,7 +208,7 @@ export default function OverviewPage() {
                 marginTop: 2,
               }}
             >
-              Today · 2:30 PM · Cleaning consultation
+              Today &middot; 2:30 PM &middot; Cleaning consultation
             </div>
           </div>
         </div>
@@ -240,7 +238,7 @@ export default function OverviewPage() {
   );
 }
 
-function DarkKpi({ label, value, delta, action, deltaColor, sub }) {
+function DarkKpi({ label, value, deltaNode, action, sub }) {
   return (
     <div className="dark-card" style={{ padding: 22 }}>
       <div
@@ -255,20 +253,12 @@ function DarkKpi({ label, value, delta, action, deltaColor, sub }) {
         </div>
         {action || null}
       </div>
-      <div className="t-kpi" style={{ marginTop: 12 }}
-      >
+      <div className="t-kpi" style={{ marginTop: 12 }}>
         {value}
       </div>
-      {delta ? (
-        <div
-          style={{
-            marginTop: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            color: deltaColor || "#c9a961",
-          }}
-        >
-          {delta}
+      {deltaNode ? (
+        <div style={{ marginTop: 8 }}>
+          {deltaNode}
         </div>
       ) : null}
       {sub ? (
@@ -286,7 +276,7 @@ function DarkKpi({ label, value, delta, action, deltaColor, sub }) {
   );
 }
 
-function Legend({ color, label }) {
+function Legend({ color, label, dashed }) {
   return (
     <div
       style={{
@@ -297,15 +287,26 @@ function Legend({ color, label }) {
         fontWeight: 600,
       }}
     >
-      <span
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-          background: color,
-          display: "inline-block",
-        }}
-      />
+      {dashed ? (
+        <span
+          style={{
+            width: 14,
+            height: 0,
+            borderTop: `2px dashed ${color}`,
+            display: "inline-block",
+          }}
+        />
+      ) : (
+        <span
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            background: color,
+            display: "inline-block",
+          }}
+        />
+      )}
       {label}
     </div>
   );
@@ -329,16 +330,14 @@ function StatusRow({ label, ok }) {
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.04em",
-          background: ok
-            ? "rgba(52,211,153,0.12)"
-            : "rgba(248,113,113,0.12)",
-          color: ok ? "var(--emerald-bright)" : "#f87171",
+          background: ok ? "var(--emerald-tint)" : "var(--negative-soft)",
+          color: ok ? "var(--emerald-bright)" : "var(--negative)",
           border: ok
-            ? "1px solid rgba(52,211,153,0.3)"
-            : "1px solid rgba(248,113,113,0.3)",
+            ? "1px solid rgba(16,185,129,0.3)"
+            : "1px solid rgba(239,68,68,0.3)",
         }}
       >
-        {ok ? "● ONLINE" : "OFFLINE"}
+        {ok ? "\u25CF ONLINE" : "OFFLINE"}
       </span>
     </div>
   );

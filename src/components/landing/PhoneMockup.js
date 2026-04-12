@@ -5,9 +5,9 @@ import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 
 const FLOATING_ICONS = [
   { Icon: Phone, bg: 'rgba(59,130,246,0.2)', color: '#60a5fa', top: '15%', left: '8%' },
-  { Icon: Calendar, bg: 'rgba(201,169,97,0.2)', color: '#c9a961', top: '60%', left: '5%' },
-  { Icon: MessageCircle, bg: 'rgba(52,211,153,0.2)', color: '#34d399', top: '25%', right: '8%' },
-  { Icon: BarChart3, bg: 'rgba(255,255,255,0.1)', color: '#f5f7f5', top: '65%', right: '6%' },
+  { Icon: Calendar, bg: 'rgba(16,185,129,0.18)', color: '#10b981', top: '60%', left: '5%' },
+  { Icon: MessageCircle, bg: 'rgba(16,185,129,0.2)', color: '#10b981', top: '25%', right: '8%' },
+  { Icon: BarChart3, bg: 'rgba(255,255,255,0.1)', color: '#fafafa', top: '65%', right: '6%' },
   { Icon: Zap, bg: 'rgba(250,204,21,0.15)', color: '#facc15', top: '8%', right: '22%' },
   { Icon: Heart, bg: 'rgba(244,114,182,0.15)', color: '#f472b6', bottom: '15%', left: '15%' },
 ];
@@ -30,7 +30,7 @@ export function PhoneMockup() {
                 borderRadius: 28,
                 border: '2px solid var(--dark-border)',
                 background: '#0a0f0d',
-                boxShadow: '0 0 60px rgba(52,211,153,0.12), 0 40px 80px rgba(0,0,0,0.5)',
+                boxShadow: '0 0 60px rgba(16,185,129,0.12), 0 40px 80px rgba(0,0,0,0.5)',
                 overflow: 'hidden',
                 zIndex: 5,
               }}
@@ -46,7 +46,7 @@ export function PhoneMockup() {
 
               {/* Header */}
               <div style={{ padding: '8px 16px 12px', borderBottom: '1px solid var(--dark-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(52,211,153,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <MessageCircle size={13} style={{ color: 'var(--emerald-bright)' }} />
                 </div>
                 <div>
@@ -75,8 +75,8 @@ export function PhoneMockup() {
                 <div style={{
                   padding: '10px 12px',
                   borderRadius: '14px 14px 4px 14px',
-                  background: 'rgba(52,211,153,0.15)',
-                  border: '1px solid rgba(52,211,153,0.25)',
+                  background: 'rgba(16,185,129,0.2)',
+                  border: '1px solid rgba(16,185,129,0.3)',
                   fontSize: 11,
                   lineHeight: 1.5,
                   color: 'var(--text-bright)',
@@ -119,7 +119,7 @@ export function PhoneMockup() {
                   background: 'var(--emerald-bright)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <span style={{ fontSize: 12, color: '#06140e' }}>{'\u2191'}</span>
+                  <span style={{ fontSize: 12, color: '#ffffff' }}>{'\u2191'}</span>
                 </div>
               </div>
             </div>

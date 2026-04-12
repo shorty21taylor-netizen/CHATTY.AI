@@ -50,7 +50,7 @@ export default function AdminLogin() {
     >
       <AnimatedGroup preset="blur-slide" style={{ width: 440 }}>
       <div
-        className="glow-card glow-border"
+        className="dark-card"
         style={{ width: '100%', padding: 0, overflow: 'hidden' }}
       >
         {/* macOS chrome */}
@@ -59,8 +59,8 @@ export default function AdminLogin() {
             display: 'flex',
             alignItems: 'center',
             padding: '12px 16px',
-            borderBottom: '1px solid var(--dark-border)',
-            background: 'rgba(255,255,255,0.02)',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-2)',
           }}
         >
           <div style={{ display: 'flex', gap: 6 }}>
@@ -114,8 +114,8 @@ export default function AdminLogin() {
               gap: 6,
               padding: '5px 12px',
               borderRadius: 999,
-              background: 'rgba(52,211,153,0.1)',
-              border: '1px solid rgba(52,211,153,0.25)',
+              background: 'var(--emerald-tint)',
+              border: '1px solid rgba(16,185,129,0.25)',
               fontSize: 11,
               fontWeight: 600,
               color: 'var(--emerald-bright)',
@@ -195,11 +195,11 @@ export default function AdminLogin() {
             }}
           >
             <div
-              style={{ flex: 1, height: 1, background: 'var(--dark-border)' }}
+              style={{ flex: 1, height: 1, background: 'var(--border)' }}
             />
             OR SIGN IN
             <div
-              style={{ flex: 1, height: 1, background: 'var(--dark-border)' }}
+              style={{ flex: 1, height: 1, background: 'var(--border)' }}
             />
           </div>
 
@@ -263,7 +263,7 @@ export default function AdminLogin() {
             style={{
               marginTop: 24,
               paddingTop: 20,
-              borderTop: '1px solid var(--dark-border)',
+              borderTop: '1px solid var(--border)',
               textAlign: 'center',
               fontSize: 11,
               color: 'var(--text-muted)',

@@ -46,8 +46,8 @@ export default function DashboardLayout({ children }) {
       {/* Sidebar */}
       <aside
         style={{
-          borderRight: "1px solid var(--dark-border)",
-          background: "#070908",
+          borderRight: "1px solid var(--border)",
+          background: "var(--sidebar-bg)",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }) {
             alignItems: "center",
             gap: 6,
             padding: "12px 16px",
-            borderBottom: "1px solid var(--dark-border)",
+            borderBottom: "1px solid var(--border)",
           }}
         >
           <span
@@ -115,11 +115,11 @@ export default function DashboardLayout({ children }) {
                 height: 36,
                 borderRadius: 10,
                 background:
-                  "linear-gradient(135deg, var(--emerald), var(--emerald-mid))",
+                  "linear-gradient(135deg, var(--emerald-bright), var(--emerald-hover))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                border: "1px solid var(--dark-border)",
+                border: "1px solid var(--border)",
                 position: "relative",
               }}
             >
@@ -155,9 +155,8 @@ export default function DashboardLayout({ children }) {
                       borderRadius: 999,
                       fontSize: 9,
                       fontWeight: 700,
-                      background: "rgba(52,211,153,0.1)",
-                      color: "var(--emerald-bright)",
-                      border: "1px solid rgba(52,211,153,0.25)",
+                      background: "var(--emerald-bright)",
+                      color: "#ffffff",
                       letterSpacing: "0.08em",
                     }}
                   >
@@ -202,7 +201,7 @@ export default function DashboardLayout({ children }) {
                   fontWeight: active ? 600 : 500,
                   color: active ? "var(--text-bright)" : "var(--text-muted)",
                   background: active
-                    ? "rgba(52,211,153,0.04)"
+                    ? "var(--emerald-tint)"
                     : "transparent",
                   borderLeft: active
                     ? "2px solid var(--emerald-bright)"
@@ -247,7 +246,7 @@ export default function DashboardLayout({ children }) {
         <div
           style={{
             padding: 16,
-            borderTop: "1px solid var(--dark-border)",
+            borderTop: "1px solid var(--border)",
           }}
         >
           <div className="t-eyebrow" style={{ marginBottom: 6 }}>Current Plan</div>

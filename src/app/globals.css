@@ -2,8 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ================================================== */
+/* THEME-INDEPENDENT TOKENS                            */
+/* ================================================== */
 :root {
-  /* Light palette — checkout/onboarding only */
+  --font-sans: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Inter Tight', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+
+  --emerald-bright: #10b981;
+  --emerald-hover: #059669;
+  --emerald-soft: #d1fae5;
+  --emerald-glow: rgba(16,185,129,0.25);
+  --negative: #ef4444;
+  --negative-soft: #fee2e2;
+
+  /* Legacy tokens kept for back-compat w/ checkout + landing gradients */
   --bg: #fafaf7;
   --surface: #ffffff;
   --surface-2: #f4f3ee;
@@ -12,32 +26,102 @@
   --green: #1a3a2e;
   --green-deep: #0f2620;
   --green-soft: #2d5a47;
-  --gold: #c9a961;
-  --gold-soft: #e6d4a3;
-  --border: rgba(26, 58, 46, 0.12);
   --shadow-mac: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(26, 58, 46, 0.08);
   --radius: 14px;
 
-  /* BLACKER palette — app-wide dark theme */
-  --dark-bg: #050706;
-  --dark-surface: #0a0d0b;
-  --dark-surface-2: #0e1210;
-  --dark-surface-3: #151917;
-  --dark-border: rgba(255,255,255,0.06);
-  --dark-border-strong: rgba(255,255,255,0.1);
   --emerald: #0f3d2e;
   --emerald-mid: #1f6f4a;
-  --emerald-bright: #34d399;
-  --emerald-glow: rgba(52,211,153,0.35);
+}
+
+/* ================================================== */
+/* LIGHT — default theme                               */
+/* ================================================== */
+:root, [data-theme="light"] {
+  --app-bg: #fafafa;
+  --surface-1: #ffffff;
+  --surface-2: #f7f8f7;
+  --surface-3: #f0f2f0;
+  --sidebar-bg: #ffffff;
+  --border: rgba(10,15,13,0.08);
+  --border-strong: rgba(10,15,13,0.14);
+  --text-bright: #0a0f0d;
+  --text-primary: #1a1f1d;
+  --text-muted: #5a625f;
+  --text-subtle: #8a9290;
+  --grid-line: rgba(10,15,13,0.025);
+  --hover-bg: rgba(10,15,13,0.03);
+  --emerald-tint: rgba(16,185,129,0.08);
+  --input-bg: #ffffff;
+  --shadow-card: 0 1px 2px rgba(10,15,13,0.04), 0 4px 16px rgba(10,15,13,0.04);
+
+  /* Aliases for legacy class selectors */
+  --dark-bg: var(--app-bg);
+  --dark-surface: var(--surface-1);
+  --dark-surface-2: var(--surface-2);
+  --dark-surface-3: var(--surface-3);
+  --dark-border: var(--border);
+  --dark-border-strong: var(--border-strong);
+}
+
+/* ================================================== */
+/* DARK — toggle only                                  */
+/* ================================================== */
+[data-theme="dark"] {
+  --app-bg: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #161616;
+  --surface-3: #1c1c1c;
+  --sidebar-bg: #0d0d0d;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.12);
   --text-bright: #fafafa;
   --text-primary: #e5e7e5;
   --text-muted: #8a9290;
   --text-subtle: #5a625f;
+  --grid-line: rgba(255,255,255,0.02);
+  --hover-bg: rgba(255,255,255,0.03);
+  --emerald-tint: rgba(16,185,129,0.06);
+  --input-bg: #161616;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.3);
 
-  /* Typography tokens */
-  --font-sans: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Inter Tight', 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+  --dark-bg: var(--app-bg);
+  --dark-surface: var(--surface-1);
+  --dark-surface-2: var(--surface-2);
+  --dark-surface-3: var(--surface-3);
+  --dark-border: var(--border);
+  --dark-border-strong: var(--border-strong);
+}
+
+/* ================================================== */
+/* LANDING SCOPE — always dark regardless of theme     */
+/* ================================================== */
+.landing-scope {
+  --app-bg: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #161616;
+  --surface-3: #1c1c1c;
+  --sidebar-bg: #0d0d0d;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.12);
+  --text-bright: #fafafa;
+  --text-primary: #e5e7e5;
+  --text-muted: #8a9290;
+  --text-subtle: #5a625f;
+  --grid-line: rgba(255,255,255,0.02);
+  --hover-bg: rgba(255,255,255,0.03);
+  --emerald-tint: rgba(16,185,129,0.08);
+  --input-bg: #161616;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.3);
+
+  --dark-bg: var(--app-bg);
+  --dark-surface: var(--surface-1);
+  --dark-surface-2: var(--surface-2);
+  --dark-surface-3: var(--surface-3);
+  --dark-border: var(--border);
+  --dark-border-strong: var(--border-strong);
+
+  background: var(--app-bg);
+  color: var(--text-primary);
 }
 
 * {
@@ -48,7 +132,7 @@ html, body {
   padding: 0;
   margin: 0;
   font-family: var(--font-sans);
-  background: var(--dark-bg);
+  background: var(--app-bg);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -130,18 +214,18 @@ a {
 
 input, textarea, select {
   font-family: var(--font-sans);
-  background: var(--dark-surface-3);
-  border: 1px solid var(--dark-border);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
   color: var(--text-bright);
   font-size: 14px;
   outline: none;
-  transition: border-color .15s, background .15s;
+  transition: border-color .15s, background .15s, box-shadow .15s;
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--emerald-bright);
-  background: var(--dark-surface-2);
+  box-shadow: 0 0 0 3px var(--emerald-tint);
 }
 input::placeholder, textarea::placeholder {
   color: var(--text-subtle);
@@ -160,14 +244,14 @@ input::placeholder, textarea::placeholder {
   font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--text-muted);
   padding: 14px 16px; text-align: left;
-  border-bottom: 1px solid var(--dark-border);
+  border-bottom: 1px solid var(--border);
 }
 .data-table tbody td {
   padding: 16px; font-size: 14px; color: var(--text-primary);
-  border-bottom: 1px solid var(--dark-border);
+  border-bottom: 1px solid var(--border);
 }
 .data-table tbody tr:hover {
-  background: rgba(255,255,255,0.02);
+  background: var(--hover-bg);
 }
 
 /* ================================================== */
@@ -175,23 +259,36 @@ input::placeholder, textarea::placeholder {
 /* ================================================== */
 
 .dark-card {
-  background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   border-radius: 12px;
+  box-shadow: var(--shadow-card);
   transition: border-color 0.15s;
 }
 .dark-card:hover {
-  border-color: var(--dark-border-strong);
+  border-color: var(--border-strong);
 }
 
+/* Flat by default — inside the app, glow-card is just a card. */
 .glow-card {
-  background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
-  border-radius: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
   position: relative;
-  overflow: hidden;
 }
-.glow-card::after {
+.glow-card::after { display: none; }
+
+/* Landing page re-enables the radial glow */
+.landing-scope .glow-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+.landing-scope .glow-card::after {
+  display: block;
   content: '';
   position: absolute;
   top: -60%;
@@ -199,11 +296,11 @@ input::placeholder, textarea::placeholder {
   transform: translateX(-50%);
   width: 70%;
   height: 70%;
-  background: radial-gradient(ellipse at center, rgba(52,211,153,0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(16,185,129,0.08) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
-.glow-card > * { position: relative; z-index: 1; }
+.landing-scope .glow-card > * { position: relative; z-index: 1; }
 
 .glow-border {
   position: relative;
@@ -212,40 +309,50 @@ input::placeholder, textarea::placeholder {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 17px;
+  border-radius: 13px;
   background: linear-gradient(135deg, var(--emerald-bright), transparent 40%);
   z-index: -1;
   opacity: 0.5;
 }
-
-.spotlight-card {
-  background: radial-gradient(circle at 50% 0%, rgba(52,211,153,0.25) 0%, rgba(15,61,46,0.1) 35%, var(--dark-surface) 70%);
-  border: 1px solid rgba(52,211,153,0.15);
-  border-radius: 20px;
-  padding: 56px 32px;
+.landing-scope .glow-border::before {
+  border-radius: 17px;
 }
 
-/* App background — clean black with subtle grid */
+/* Spotlight — landing only */
+.spotlight-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 56px 32px;
+}
+.landing-scope .spotlight-card {
+  background: radial-gradient(circle at 50% 0%, rgba(16,185,129,0.25) 0%, rgba(15,61,46,0.1) 35%, var(--surface-1) 70%);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 20px;
+}
+
+/* App background — clean surface with subtle grid */
 .app-bg {
-  background: var(--dark-bg);
+  background: var(--app-bg);
   min-height: 100vh;
 }
 .app-bg::before {
   content: '';
   position: fixed; inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Landing page mesh-bg — kept for landing only */
+/* Landing page mesh-bg — landing only */
+.landing-scope.mesh-bg,
 .mesh-bg {
   background: radial-gradient(
       circle at 20% 10%,
-      rgba(52, 211, 153, 0.12),
+      rgba(16,185,129,0.12),
       transparent 40%
     ),
     radial-gradient(
@@ -253,7 +360,7 @@ input::placeholder, textarea::placeholder {
       rgba(31, 111, 74, 0.18),
       transparent 50%
     ),
-    var(--dark-bg);
+    #0a0a0a;
 }
 
 /* ================================================== */
@@ -262,7 +369,7 @@ input::placeholder, textarea::placeholder {
 
 .mac-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(26, 58, 46, 0.12);
   border-radius: var(--radius);
   box-shadow: var(--shadow-mac);
   backdrop-filter: blur(20px);
@@ -272,7 +379,7 @@ input::placeholder, textarea::placeholder {
   display: flex;
   gap: 6px;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(26, 58, 46, 0.12);
   background: var(--surface-2);
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
@@ -311,7 +418,7 @@ input::placeholder, textarea::placeholder {
   padding: 12px 22px;
   border-radius: 10px;
   font-weight: 600;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(26, 58, 46, 0.12);
   transition: all 0.2s;
   display: inline-block;
   cursor: pointer;
@@ -324,7 +431,7 @@ input::placeholder, textarea::placeholder {
 .input-mac {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(26, 58, 46, 0.12);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 14px;
@@ -355,7 +462,7 @@ input::placeholder, textarea::placeholder {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: var(--dark-surface-3);
+  background: var(--surface-3);
   color: var(--text-muted);
 }
 
@@ -367,9 +474,9 @@ input::placeholder, textarea::placeholder {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(52, 211, 153, 0.08);
+  background: var(--emerald-tint);
   color: var(--emerald-bright);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  border: 1px solid rgba(16,185,129,0.25);
   letter-spacing: 0.02em;
 }
 .dark-pill .dot {
@@ -381,29 +488,29 @@ input::placeholder, textarea::placeholder {
 
 .lime-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  background: #d4ff4f; color: #0a0f0d;
+  background: var(--emerald-bright); color: #ffffff;
   padding: 10px 22px; border-radius: 999px;
   font-weight: 600; font-size: 14px;
-  box-shadow: 0 0 24px rgba(212,255,79,0.3);
+  box-shadow: 0 0 24px var(--emerald-glow);
   border: none; cursor: pointer;
-  transition: all 0.2s;
+  transition: all .2s;
 }
 .lime-pill:hover {
+  background: var(--emerald-hover);
   transform: translateY(-1px);
-  box-shadow: 0 0 32px rgba(212,255,79,0.45);
 }
 
 .tab-pill {
   background: transparent; color: var(--text-muted);
   padding: 8px 16px; border-radius: 999px;
-  border: 1px solid var(--dark-border);
+  border: 1px solid var(--border);
   font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s;
 }
 .tab-pill:hover { color: var(--text-bright); }
 .tab-pill.active {
-  background: rgba(52,211,153,0.1);
+  background: var(--emerald-tint);
   color: var(--emerald-bright);
-  border-color: rgba(52,211,153,0.3);
+  border-color: rgba(16,185,129,0.3);
 }
 
 .status-pill {
@@ -415,14 +522,14 @@ input::placeholder, textarea::placeholder {
   text-transform: uppercase;
 }
 .status-qualified {
-  background: rgba(52, 211, 153, 0.12);
+  background: var(--emerald-tint);
   color: var(--emerald-bright);
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  border: 1px solid rgba(16,185,129,0.3);
 }
 .status-booked {
-  background: rgba(201, 169, 97, 0.12);
-  color: var(--gold);
-  border: 1px solid rgba(201, 169, 97, 0.3);
+  background: var(--emerald-tint);
+  color: var(--emerald-bright);
+  border: 1px solid rgba(16,185,129,0.3);
 }
 
 /* ================================================== */
@@ -431,7 +538,7 @@ input::placeholder, textarea::placeholder {
 
 .cta-primary {
   background: var(--emerald-bright);
-  color: #06140e;
+  color: #ffffff;
   padding: 14px 26px;
   border-radius: 10px;
   font-weight: 600;
@@ -439,16 +546,17 @@ input::placeholder, textarea::placeholder {
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.4),
-    0 8px 24px rgba(52, 211, 153, 0.25);
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.4),
+    0 8px 24px rgba(16,185,129,0.25);
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 .cta-primary:hover {
+  background: var(--emerald-hover);
   transform: translateY(-1px);
-  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.6),
-    0 12px 32px rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.6),
+    0 12px 32px rgba(16,185,129,0.35);
 }
 
 .cta-ghost {
@@ -458,7 +566,7 @@ input::placeholder, textarea::placeholder {
   border-radius: 10px;
   font-weight: 500;
   font-size: 15px;
-  border: 1px solid var(--dark-border);
+  border: 1px solid var(--border);
   cursor: pointer;
   transition: all 0.2s;
   display: inline-flex;
@@ -471,10 +579,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .nav-scrolled {
-  background: rgba(5, 7, 6, 0.72);
+  background: rgba(10, 10, 10, 0.72);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--dark-border);
+  border-bottom: 1px solid var(--border);
 }
 
 .nav-link {
@@ -496,7 +604,7 @@ input::placeholder, textarea::placeholder {
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  border: 1px solid var(--dark-border);
+  border: 1px solid var(--border);
   box-shadow: 0 8px 24px rgba(15, 61, 46, 0.4);
 }
 
@@ -506,7 +614,7 @@ input::placeholder, textarea::placeholder {
   justify-content: center;
   width: 28px; height: 28px;
   border-radius: 8px;
-  background: rgba(52,211,153,0.12);
+  background: var(--emerald-tint);
   color: var(--emerald-bright);
   margin-right: 10px;
   flex-shrink: 0;
@@ -518,8 +626,8 @@ input::placeholder, textarea::placeholder {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--dark-border);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .pricing-row {
@@ -549,7 +657,7 @@ input::placeholder, textarea::placeholder {
 
 .orbital-ring {
   position: absolute;
-  border: 1px solid rgba(52,211,153,0.08);
+  border: 1px solid rgba(16,185,129,0.08);
   border-radius: 50%;
   pointer-events: none;
 }

@@ -27,7 +27,8 @@ export default function KpiCard({ label, value, delta, suffix, action }) {
           fontSize: 38,
           fontWeight: 700,
           color: "var(--ink)",
-          fontFamily: "Playfair Display, Georgia, serif",
+          fontFamily: "var(--font-display)",
+          letterSpacing: "-0.04em",
           lineHeight: 1,
         }}
       >
@@ -42,8 +43,12 @@ export default function KpiCard({ label, value, delta, suffix, action }) {
       </div>
       {delta ? (
         <div
-          className="gold-accent"
-          style={{ marginTop: 8, fontSize: 13, fontWeight: 600 }}
+          style={{
+            marginTop: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--emerald-bright)",
+          }}
         >
           {delta}
         </div>

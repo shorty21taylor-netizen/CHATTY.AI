@@ -17,11 +17,10 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
 
   return (
     <div
-      className="glow-card glow-border"
+      className="dark-card"
       style={{
         padding: 26,
         marginBottom: 22,
-        boxShadow: '0 0 40px rgba(212,255,79,0.08)',
       }}
     >
       {/* Header */}
@@ -34,9 +33,9 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
               gap: 5,
               padding: '3px 9px',
               borderRadius: 999,
-              background: 'rgba(212,255,79,0.12)',
-              border: '1px solid rgba(212,255,79,0.3)',
-              color: '#d4ff4f',
+              background: 'var(--emerald-tint)',
+              border: '1px solid rgba(16,185,129,0.3)',
+              color: 'var(--emerald-bright)',
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: '0.08em',
@@ -64,8 +63,8 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
             width: 44,
             height: 26,
             borderRadius: 999,
-            background: enabled ? 'var(--emerald-bright)' : 'var(--dark-surface-3)',
-            border: '1px solid ' + (enabled ? 'var(--emerald-bright)' : 'var(--dark-border)'),
+            background: enabled ? 'var(--emerald-bright)' : 'var(--surface-3)',
+            border: '1px solid ' + (enabled ? 'var(--emerald-bright)' : 'var(--border)'),
             position: 'relative',
             cursor: 'pointer',
             padding: 0,
@@ -80,7 +79,7 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
               width: 20,
               height: 20,
               borderRadius: '50%',
-              background: enabled ? '#06140e' : '#8a9290',
+              background: '#ffffff',
               transition: 'left .15s',
             }}
           />
@@ -135,7 +134,7 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
           justifyContent: 'space-between',
           gap: 14,
           paddingTop: 16,
-          borderTop: '1px solid var(--dark-border)',
+          borderTop: '1px solid var(--border)',
           flexWrap: 'wrap',
         }}
       >
@@ -150,7 +149,7 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
             padding: '9px 16px',
             borderRadius: 10,
             background: 'var(--emerald-bright)',
-            color: '#06140e',
+            color: '#ffffff',
             border: 'none',
             fontSize: 13,
             fontWeight: 700,
@@ -174,9 +173,9 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
             marginTop: 12,
             padding: '10px 14px',
             borderRadius: 10,
-            background: 'rgba(201,169,97,0.08)',
-            border: '1px solid rgba(201,169,97,0.25)',
-            color: '#c9a961',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
             fontSize: 13,
           }}
         >

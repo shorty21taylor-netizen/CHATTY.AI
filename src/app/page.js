@@ -6,6 +6,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 import { Button } from '@/components/ui/Button';
 import { devBypass, DEV_BYPASS_ENABLED } from '@/lib/admin';
+import { forceDarkForPage, restoreSavedTheme } from '@/lib/theme';
 import { HeroHeader } from '@/components/landing/HeroHeader';
 import { DashboardMockup } from '@/components/landing/DashboardMockup';
 import { Pillars } from '@/components/landing/Pillars';
@@ -47,20 +48,26 @@ export default function Landing() {
   }
 
   useEffect(() => {
+    // Landing page is always dark — force it, restore saved theme on unmount.
+    forceDarkForPage();
+
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         window.location.href = '/admin';
       }
     }
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      restoreSavedTheme();
+    };
   }, []);
 
   return (
     <>
       <HeroHeader onGetStarted={() => handleGetStarted('inbound')} />
 
-      <main className="overflow-hidden mesh-bg" style={{ minHeight: '100vh', color: 'var(--text-bright)' }}>
+      <main className="landing-scope overflow-hidden mesh-bg" style={{ minHeight: '100vh', color: 'var(--text-bright)' }}>
         {/* Ambient glow lights */}
         <div aria-hidden className="absolute inset-0 pointer-events-none isolate opacity-60 hidden lg:block" style={{ zIndex: 2 }}>
           <div
@@ -69,7 +76,7 @@ export default function Landing() {
               width: '35rem',
               height: '80rem',
               transform: 'translateY(-350px) rotate(-45deg)',
-              background: 'radial-gradient(68% 68% at 55% 31%, rgba(52,211,153,0.12) 0, rgba(31,111,74,0.04) 50%, transparent 80%)',
+              background: 'radial-gradient(68% 68% at 55% 31%, rgba(16,185,129,0.12) 0, rgba(31,111,74,0.04) 50%, transparent 80%)',
             }}
           />
           <div
@@ -77,7 +84,7 @@ export default function Landing() {
             style={{
               width: '40rem',
               height: '80rem',
-              background: 'radial-gradient(50% 50% at 50% 50%, rgba(52,211,153,0.08) 0, transparent 80%)',
+              background: 'radial-gradient(50% 50% at 50% 50%, rgba(16,185,129,0.08) 0, transparent 80%)',
             }}
           />
         </div>
@@ -98,7 +105,7 @@ export default function Landing() {
                   <a
                     href="#features"
                     className="hover:bg-white/5 group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 transition-all duration-300"
-                    style={{ borderColor: 'var(--dark-border)', background: 'rgba(52,211,153,0.05)' }}
+                    style={{ borderColor: 'var(--dark-border)', background: 'rgba(16,185,129,0.05)' }}
                   >
                     <span className="text-sm" style={{ color: 'var(--text-bright)' }}>
                       <span style={{ color: 'var(--emerald-bright)' }}>{'\u25CF'}</span> Built for roofers, HVAC, remodelers &amp; GCs
@@ -144,7 +151,7 @@ export default function Landing() {
                 >
                   <div
                     className="rounded-[14px] border p-0.5"
-                    style={{ borderColor: 'var(--dark-border)', background: 'rgba(52,211,153,0.1)' }}
+                    style={{ borderColor: 'var(--dark-border)', background: 'rgba(16,185,129,0.1)' }}
                   >
                     <Button size="lg" className="rounded-xl px-5 text-base" onClick={() => handleGetStarted('convert')}>
                       See Your Funnel

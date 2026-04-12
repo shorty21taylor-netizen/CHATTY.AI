@@ -76,11 +76,11 @@ export function TrustSection() {
                 gap: 6,
                 padding: '5px 14px',
                 borderRadius: 999,
-                background: 'rgba(212,255,79,0.1)',
-                border: '1px solid rgba(212,255,79,0.2)',
+                background: 'var(--emerald-tint)',
+                border: '1px solid rgba(16,185,129,0.25)',
                 fontSize: 11,
                 fontWeight: 600,
-                color: '#d4ff4f',
+                color: 'var(--emerald-bright)',
                 marginBottom: 28,
               }}
             >

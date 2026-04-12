@@ -23,7 +23,7 @@ export function DashboardMockup() {
               fontSize: 11,
               fontWeight: i === 0 ? 600 : 400,
               color: i === 0 ? 'var(--text-bright)' : 'var(--text-muted)',
-              background: i === 0 ? 'rgba(52,211,153,0.06)' : 'transparent',
+              background: i === 0 ? 'rgba(16,185,129,0.06)' : 'transparent',
               borderLeft: i === 0 ? '2px solid var(--emerald-bright)' : '2px solid transparent',
             }}
           >
@@ -45,7 +45,7 @@ export function DashboardMockup() {
             <div
               key={kpi.label}
               className="rounded-xl p-3"
-              style={{ background: 'rgba(52,211,153,0.03)', border: '1px solid var(--dark-border)' }}
+              style={{ background: 'rgba(16,185,129,0.03)', border: '1px solid var(--dark-border)' }}
             >
               <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {kpi.label}
@@ -53,7 +53,7 @@ export function DashboardMockup() {
               <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-bright)', lineHeight: 1, marginTop: 6 }}>
                 {kpi.value}
               </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: '#c9a961', marginTop: 4 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--emerald-bright)', marginTop: 4 }}>
                 {kpi.delta}
               </div>
             </div>
@@ -63,14 +63,14 @@ export function DashboardMockup() {
         {/* Mini chart mock */}
         <div
           className="rounded-xl p-4"
-          style={{ border: '1px solid var(--dark-border)', background: 'rgba(52,211,153,0.02)' }}
+          style={{ border: '1px solid var(--dark-border)', background: 'rgba(16,185,129,0.02)' }}
         >
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-bright)', marginBottom: 12 }}>
             Calls this week
           </div>
           <div className="flex items-end gap-1.5" style={{ height: 80 }}>
             {[35, 55, 40, 65, 80, 30, 50].map((h, i) => (
-              <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: `rgba(52,211,153,${0.2 + (h / 100) * 0.6})` }} />
+              <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: `rgba(16,185,129,${0.2 + (h / 100) * 0.6})` }} />
             ))}
           </div>
           <div className="flex justify-between mt-2" style={{ fontSize: 9, color: 'var(--text-muted)' }}>

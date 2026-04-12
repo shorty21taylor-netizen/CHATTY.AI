@@ -73,7 +73,7 @@ export function Pillars() {
               style={{
                 padding: 30,
                 minHeight: 340,
-                boxShadow: p.hero ? '0 0 60px rgba(52,211,153,0.15)' : undefined,
+                boxShadow: p.hero ? '0 0 60px rgba(16,185,129,0.15)' : undefined,
               }}
             >
               <div
@@ -83,8 +83,8 @@ export function Pillars() {
                   gap: 6,
                   padding: '4px 12px',
                   borderRadius: 999,
-                  background: 'rgba(52,211,153,0.12)',
-                  border: '1px solid rgba(52,211,153,0.3)',
+                  background: 'var(--emerald-tint)',
+                  border: '1px solid rgba(16,185,129,0.3)',
                   fontSize: 10.5,
                   fontWeight: 800,
                   letterSpacing: '0.12em',
@@ -142,9 +142,9 @@ export function Pillars() {
                             display: 'inline-block',
                             padding: '2px 8px',
                             borderRadius: 999,
-                            background: 'rgba(212,255,79,0.12)',
-                            border: '1px solid rgba(212,255,79,0.3)',
-                            color: '#d4ff4f',
+                            background: 'var(--emerald-bright)',
+                            border: 'none',
+                            color: '#ffffff',
                             fontSize: 9.5,
                             fontWeight: 800,
                             letterSpacing: '0.1em',

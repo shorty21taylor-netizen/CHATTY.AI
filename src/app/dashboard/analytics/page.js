@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ClientOnly from "@/components/ClientOnly";
+import { Delta } from "@/components/ui/Delta";
 
 const mock = {
   callsAnswered: 163,
@@ -101,7 +102,7 @@ export default function AnalyticsPage() {
           <div className="t-eyebrow" style={{ marginBottom: 14 }}>
             Missed Opportunity Cost &middot; Last 30 Days
           </div>
-          <div className="t-kpi-lg" style={{ textShadow: "0 0 60px rgba(52,211,153,0.2)" }}>
+          <div className="t-kpi-lg">
             ${missedCost.toLocaleString()}
           </div>
           <p className="t-body" style={{ color: "var(--text-muted)", marginTop: 12, marginBottom: 0 }}>
@@ -146,23 +147,23 @@ export default function AnalyticsPage() {
                 >
                   <XAxis
                     dataKey="week"
-                    tick={{ fontSize: 11, fill: "#a8b3ad" }}
+                    tick={{ fontSize: 11, fill: "var(--text-muted)" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
                     formatter={(v) => ["$" + v.toLocaleString(), "Recovered"]}
                     contentStyle={{
-                      background: "var(--dark-surface)",
-                      border: "1px solid var(--dark-border)",
+                      background: "var(--surface-1)",
+                      border: "1px solid var(--border)",
                       borderRadius: 10,
                       fontSize: 13,
-                      color: "#f5f7f5",
+                      color: "var(--text-bright)",
                     }}
                   />
                   <Bar
                     dataKey="value"
-                    fill="#34d399"
+                    fill="var(--emerald-bright)"
                     radius={[6, 6, 0, 0]}
                     barSize={36}
                   />
@@ -174,7 +175,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Section B — Funnel */}
-      <div className="glow-card" style={{ padding: 28, marginBottom: 22 }}>
+      <div className="dark-card" style={{ padding: 28, marginBottom: 22 }}>
         <div className="t-h2" style={{ marginBottom: 6 }}>
           Lead &rarr; Revenue Funnel
         </div>
@@ -217,7 +218,7 @@ export default function AnalyticsPage() {
                     flex: 1,
                     height: 32,
                     borderRadius: 8,
-                    background: "rgba(255,255,255,0.02)",
+                    background: "var(--surface-2)",
                     position: "relative",
                     overflow: "hidden",
                   }}
@@ -227,13 +228,13 @@ export default function AnalyticsPage() {
                       width: widthPct + "%",
                       height: "100%",
                       borderRadius: 8,
-                      background: `rgba(52,211,153,${0.9 - i * 0.15})`,
+                      background: `rgba(16,185,129,${0.9 - i * 0.15})`,
                       display: "flex",
                       alignItems: "center",
                       paddingLeft: 12,
                       fontSize: 12,
                       fontWeight: 700,
-                      color: i < 2 ? "#06140e" : "var(--text-bright)",
+                      color: "#ffffff",
                       transition: "width .5s ease",
                     }}
                   >
@@ -293,9 +294,9 @@ export default function AnalyticsPage() {
                     borderRadius: 6,
                     background:
                       intensity === 0
-                        ? "rgba(52,211,153,0.03)"
-                        : `rgba(52,211,153,${0.08 + intensity * 0.82})`,
-                    border: "1px solid var(--dark-border)",
+                        ? "var(--surface-2)"
+                        : `rgba(16,185,129,${0.08 + intensity * 0.82})`,
+                    border: "1px solid var(--border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -303,7 +304,7 @@ export default function AnalyticsPage() {
                     fontWeight: 600,
                     color:
                       intensity > 0.5
-                        ? "#06140e"
+                        ? "#ffffff"
                         : "var(--text-muted)",
                     cursor: "default",
                   }}
@@ -366,7 +367,7 @@ export default function AnalyticsPage() {
                 >
                   <XAxis
                     dataKey="day"
-                    tick={{ fontSize: 10, fill: "#a8b3ad" }}
+                    tick={{ fontSize: 10, fill: "var(--text-muted)" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -374,11 +375,11 @@ export default function AnalyticsPage() {
                   <Tooltip
                     formatter={(v) => [v + " min", "Duration"]}
                     contentStyle={{
-                      background: "var(--dark-surface)",
-                      border: "1px solid var(--dark-border)",
+                      background: "var(--surface-1)",
+                      border: "1px solid var(--border)",
                       borderRadius: 10,
                       fontSize: 13,
-                      color: "#f5f7f5",
+                      color: "var(--text-bright)",
                     }}
                   />
                   <defs>
@@ -391,12 +392,12 @@ export default function AnalyticsPage() {
                     >
                       <stop
                         offset="5%"
-                        stopColor="#34d399"
+                        stopColor="#10b981"
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
-                        stopColor="#34d399"
+                        stopColor="#10b981"
                         stopOpacity={0}
                       />
                     </linearGradient>
@@ -404,7 +405,7 @@ export default function AnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="dur"
-                    stroke="#34d399"
+                    stroke="#10b981"
                     strokeWidth={2}
                     fill="url(#emeraldFill)"
                     dot={false}
@@ -427,35 +428,37 @@ export default function AnalyticsPage() {
         <RevCard
           label="Total Revenue Generated"
           value={"$" + mock.totalRevenue.toLocaleString()}
-          delta="↑ 18% vs last month"
+          deltaNode={<Delta value={18} suffix="% vs last month" positive />}
         />
         <RevCard
           label="Avg Deal Size"
           value={"$" + mock.avgDealSize.toLocaleString()}
-          delta="↑ $200 vs last month"
+          deltaNode={<Delta value="$200 vs last month" positive />}
         />
         <RevCard
           label="Revenue per Call"
           value={"$" + mock.revenuePerCall}
-          delta="↑ 12% vs last month"
+          deltaNode={<Delta value={12} suffix="% vs last month" positive />}
         />
       </div>
     </div>
   );
 }
 
-function RevCard({ label, value, delta }) {
+function RevCard({ label, value, deltaNode }) {
   return (
-    <div className="glow-card" style={{ padding: 24 }}>
+    <div className="dark-card" style={{ padding: 24 }}>
       <div className="t-eyebrow" style={{ marginBottom: 10 }}>
         {label}
       </div>
       <div className="t-kpi" style={{ color: "var(--emerald-bright)" }}>
         {value}
       </div>
-      <div className="t-body-sm" style={{ marginTop: 8, fontWeight: 600, color: "#c9a961" }}>
-        {delta}
-      </div>
+      {deltaNode ? (
+        <div style={{ marginTop: 8 }}>
+          {deltaNode}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -178,7 +178,7 @@ export default function AppointmentsPage() {
               gridTemplateColumns: "1fr 1fr 120px 1fr",
               alignItems: "center",
               padding: "18px 20px",
-              borderBottom: "1px solid var(--dark-border)",
+              borderBottom: "1px solid var(--border)",
               gap: 14,
             }}
           >
@@ -269,9 +269,9 @@ function ActionCell({ row, onShowInput, onCancel, onConfirm, onLost, onEdit }) {
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: "0.04em",
-            background: "rgba(52,211,153,0.12)",
+            background: "var(--emerald-tint)",
             color: "var(--emerald-bright)",
-            border: "1px solid rgba(52,211,153,0.3)",
+            border: "1px solid rgba(16,185,129,0.3)",
           }}
         >
           ✓ Closed · ${row.dealValue.toLocaleString()}
@@ -301,8 +301,8 @@ function ActionCell({ row, onShowInput, onCancel, onConfirm, onLost, onEdit }) {
           style={{
             display: "flex",
             alignItems: "center",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid var(--dark-border)",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
             borderRadius: 8,
             padding: "0 10px",
           }}
@@ -388,13 +388,11 @@ function SourcePill({ source }) {
         fontWeight: 700,
         letterSpacing: "0.04em",
         textTransform: "uppercase",
-        background: isInbound
-          ? "rgba(52,211,153,0.12)"
-          : "rgba(201,169,97,0.12)",
-        color: isInbound ? "var(--emerald-bright)" : "#c9a961",
+        background: isInbound ? "var(--emerald-tint)" : "var(--surface-2)",
+        color: isInbound ? "var(--emerald-bright)" : "var(--text-muted)",
         border: isInbound
-          ? "1px solid rgba(52,211,153,0.3)"
-          : "1px solid rgba(201,169,97,0.3)",
+          ? "1px solid rgba(16,185,129,0.3)"
+          : "1px solid var(--border)",
       }}
     >
       {source}

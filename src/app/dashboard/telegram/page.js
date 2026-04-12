@@ -58,7 +58,7 @@ export default function TelegramPage() {
 
           <div
             style={{
-              borderTop: "1px solid var(--dark-border)",
+              borderTop: "1px solid var(--border)",
               margin: "26px 0 20px",
             }}
           />
@@ -135,15 +135,15 @@ export default function TelegramPage() {
         </div>
 
         {/* Example chat — dark window chrome */}
-        <div className="dark-card glow-border" style={{ overflow: "hidden" }}>
+        <div className="dark-card" style={{ overflow: "hidden" }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
               padding: "12px 16px",
-              borderBottom: "1px solid var(--dark-border)",
-              background: "rgba(10,15,13,0.5)",
+              borderBottom: "1px solid var(--border)",
+              background: "var(--surface-2)",
             }}
           >
             <span
@@ -232,9 +232,9 @@ function Bubble({ who, text }) {
           padding: "10px 14px",
           borderRadius: 16,
           background: isAgent
-            ? "var(--dark-surface-2)"
-            : "rgba(52,211,153,0.15)",
-          color: isAgent ? "var(--text-bright)" : "var(--text-bright)",
+            ? "var(--surface-2)"
+            : "var(--emerald-bright)",
+          color: isAgent ? "var(--text-bright)" : "#ffffff",
           fontSize: 13.5,
           lineHeight: 1.5,
           borderBottomLeftRadius: isAgent ? 4 : 16,
@@ -244,7 +244,7 @@ function Bubble({ who, text }) {
             : "none",
           border: isAgent
             ? undefined
-            : "1px solid rgba(52,211,153,0.25)",
+            : "1px solid rgba(16,185,129,0.4)",
         }}
       >
         {text}

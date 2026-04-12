@@ -136,7 +136,7 @@ export function agentsByPillar(pillarTag) {
 }
 
 export const STATUS_META = {
-  active: { label: 'Active', color: 'var(--emerald-bright)', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.3)' },
-  paused: { label: 'Paused', color: '#8a9290', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' },
-  not_configured: { label: 'Not Configured', color: '#c9a961', bg: 'rgba(201,169,97,0.12)', border: 'rgba(201,169,97,0.3)' },
+  active: { label: 'Active', color: 'var(--emerald-bright)', bg: 'var(--emerald-tint)', border: 'rgba(16,185,129,0.3)' },
+  paused: { label: 'Paused', color: 'var(--text-muted)', bg: 'var(--surface-2)', border: 'var(--border)' },
+  not_configured: { label: 'Not Configured', color: 'var(--text-muted)', bg: 'var(--surface-2)', border: 'var(--border)' },
 };
