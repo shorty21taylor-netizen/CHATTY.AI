@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { devBypass, DEV_BYPASS_ENABLED } from '@/lib/admin';
 import { HeroHeader } from '@/components/landing/HeroHeader';
 import { DashboardMockup } from '@/components/landing/DashboardMockup';
-import { LogoWall } from '@/components/landing/LogoWall';
-import { FeatureGrid } from '@/components/landing/FeatureGrid';
+import { CapabilityCards } from '@/components/landing/CapabilityCards';
+import { InlineFeatures } from '@/components/landing/InlineFeatures';
+import { CenterpieceCard } from '@/components/landing/CenterpieceCard';
+import { PhoneMockup } from '@/components/landing/PhoneMockup';
+import { TrustSection } from '@/components/landing/TrustSection';
 import { Pricing } from '@/components/landing/Pricing';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
@@ -176,8 +179,11 @@ export default function Landing() {
           </div>
         </section>
 
-        <LogoWall />
-        <FeatureGrid />
+        <CapabilityCards />
+        <InlineFeatures />
+        <CenterpieceCard />
+        <PhoneMockup />
+        <TrustSection />
         <Pricing onGetStarted={handleGetStarted} />
         <FinalCTA onGetStarted={() => handleGetStarted('inbound')} />
         <Footer />

@@ -64,15 +64,17 @@ const maxHourly = Math.max(...mock.hourly);
 export default function AnalyticsPage() {
   return (
     <div>
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
+      {/* Header + time-range tabs */}
+      <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 500,
             color: "var(--text-muted)",
             textTransform: "uppercase",
-            letterSpacing: "0.12em",
+            letterSpacing: "0.14em",
+            marginBottom: 16,
           }}
         >
           Analytics
@@ -92,11 +94,17 @@ export default function AnalyticsPage() {
         <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
           What Chatty is producing for your business.
         </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="tab-pill active">Last 30 days</button>
+          <button className="tab-pill">Last 7 days</button>
+          <button className="tab-pill">Last 90 days</button>
+        </div>
       </div>
 
       {/* Section A — Hero: Missed Opportunity Cost */}
       <div
-        className="dark-card glow-border"
+        className="spotlight-card"
         style={{
           padding: 40,
           marginBottom: 28,
@@ -231,7 +239,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Section B — Funnel */}
-      <div className="dark-card" style={{ padding: 28, marginBottom: 22 }}>
+      <div className="glow-card" style={{ padding: 28, marginBottom: 22 }}>
         <div
           style={{
             fontSize: 20,
@@ -550,7 +558,7 @@ export default function AnalyticsPage() {
 
 function RevCard({ label, value, delta }) {
   return (
-    <div className="dark-card" style={{ padding: 24 }}>
+    <div className="glow-card" style={{ padding: 24 }}>
       <div
         style={{
           fontSize: 11,

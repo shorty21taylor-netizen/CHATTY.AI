@@ -432,3 +432,79 @@ a {
 .footer-link:hover {
   color: var(--emerald-bright);
 }
+
+/* ================================================== */
+/* Astra-style polish                                  */
+/* ================================================== */
+
+.glow-card {
+  position: relative;
+  background: linear-gradient(180deg, #0d1411 0%, #0a0f0d 100%);
+  border: 1px solid var(--dark-border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.glow-card::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.glow-card > * { position: relative; z-index: 1; }
+
+.spotlight-card {
+  background: radial-gradient(circle at 50% 0%, rgba(52,211,153,0.35) 0%, rgba(15,61,46,0.15) 35%, #0a0f0d 70%);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 24px;
+  padding: 64px 32px;
+}
+
+.feature-icon-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(52,211,153,0.12);
+  color: var(--emerald-bright);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.lime-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #d4ff4f; color: #0a0f0d;
+  padding: 10px 22px; border-radius: 999px;
+  font-weight: 600; font-size: 14px;
+  box-shadow: 0 0 24px rgba(212,255,79,0.3);
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.lime-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px rgba(212,255,79,0.45);
+}
+
+.tab-pill {
+  background: transparent; color: var(--text-muted);
+  padding: 8px 16px; border-radius: 999px;
+  border: 1px solid var(--dark-border);
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s;
+}
+.tab-pill:hover { color: var(--text-bright); }
+.tab-pill.active {
+  background: rgba(52,211,153,0.1);
+  color: var(--emerald-bright);
+  border-color: rgba(52,211,153,0.3);
+}
+
+.orbital-ring {
+  position: absolute; border: 1px solid rgba(52,211,153,0.08);
+  border-radius: 50%; pointer-events: none;
+}

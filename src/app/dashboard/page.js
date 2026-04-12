@@ -153,7 +153,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Chart */}
-      <div className="dark-card" style={{ padding: 26 }}>
+      <div className="glow-card" style={{ padding: 26 }}>
         <div
           style={{
             display: "flex",

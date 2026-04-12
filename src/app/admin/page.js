@@ -50,7 +50,7 @@ export default function AdminLogin() {
     >
       <AnimatedGroup preset="blur-slide" style={{ width: 440 }}>
       <div
-        className="dark-card glow-border"
+        className="glow-card glow-border"
         style={{ width: '100%', padding: 0, overflow: 'hidden' }}
       >
         {/* macOS chrome */}

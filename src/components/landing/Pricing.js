@@ -1,5 +1,6 @@
 'use client';
 
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 
@@ -41,7 +42,7 @@ export function Pricing({ onGetStarted }) {
     <section id="pricing" className="py-20 md:py-28">
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center mb-16">
-          <div className="dark-pill mx-auto mb-5" style={{ width: 'fit-content' }}>
+          <div style={{ fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 500, marginBottom: 16 }}>
             Simple pricing
           </div>
           <h2
@@ -59,39 +60,30 @@ export function Pricing({ onGetStarted }) {
           {TIERS.map((tier) => (
             <div
               key={tier.name}
-              className={`dark-card relative ${tier.popular ? 'glow-border' : ''}`}
-              style={{ padding: 40 }}
+              className={`glow-card relative ${tier.popular ? 'glow-border' : ''}`}
+              style={{
+                padding: 40,
+                boxShadow: tier.popular ? '0 0 60px rgba(52,211,153,0.15)' : undefined,
+              }}
             >
               {tier.popular && (
                 <div
+                  className="lime-pill"
                   style={{
                     position: 'absolute',
-                    top: -14,
+                    top: -16,
                     right: 28,
-                    background: '#c9a961',
-                    color: '#1a1f1a',
+                    padding: '5px 14px',
                     fontSize: 10.5,
                     fontWeight: 800,
-                    padding: '6px 14px',
-                    borderRadius: 999,
                     letterSpacing: '0.1em',
-                    border: '1px solid rgba(201,169,97,0.5)',
-                    boxShadow: '0 8px 24px rgba(201,169,97,0.25)',
                   }}
                 >
                   MOST POPULAR
                 </div>
               )}
 
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                }}
-              >
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {tier.name}
               </div>
 
@@ -111,15 +103,15 @@ export function Pricing({ onGetStarted }) {
 
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px' }}>
                 {tier.features.map((f) => (
-                  <li key={f} className="pricing-row">
-                    <span className="check">{'\u2713'}</span>
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', fontSize: 14, color: 'var(--text-bright)' }}>
+                    <Check size={16} style={{ color: 'var(--emerald-bright)', flexShrink: 0 }} />
                     {f}
                   </li>
                 ))}
               </ul>
 
               <Button
-                variant={tier.popular ? 'default' : 'outline'}
+                variant="default"
                 size="lg"
                 className="w-full justify-center"
                 onClick={() => onGetStarted(tier.plan)}
