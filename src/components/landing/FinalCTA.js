@@ -13,13 +13,13 @@ export function FinalCTA({ onGetStarted }) {
               className="font-bold tracking-tight mx-auto max-w-3xl"
               style={{ fontSize: 48, color: 'var(--text-bright)', letterSpacing: '-0.03em', lineHeight: 1.05 }}
             >
-              Stop missing calls.
+              Stop leaking leads.
               <br />
-              Start booking appointments.
+              Start closing bids.
             </h2>
             <div className="mt-10">
               <Button size="lg" onClick={onGetStarted}>
-                Get Chatty.AI {'\u2192'}
+                See Your Funnel {'\u2192'}
               </Button>
             </div>
           </div>

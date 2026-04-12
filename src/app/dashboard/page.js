@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -12,6 +11,7 @@ import {
 } from "recharts";
 import ClientOnly from "@/components/ClientOnly";
 import { AnimatedGroup } from "@/components/ui/AnimatedGroup";
+import { RevenueFunnel } from "@/components/RevenueFunnel";
 
 const CHART_DATA = [
   { day: "Mon", inbound: 8, outbound: 3 },
@@ -24,8 +24,6 @@ const CHART_DATA = [
 ];
 
 export default function OverviewPage() {
-  const [closedDeals, setClosedDeals] = useState(7);
-
   return (
     <div>
       {/* Header */}
@@ -35,56 +33,18 @@ export default function OverviewPage() {
           Good morning, Harbor Dental.
         </h1>
         <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
-          Here&apos;s how Chatty is performing today.
+          Here&apos;s how your funnel is performing today.
         </p>
       </div>
 
-      {/* KPI Grid */}
-      <AnimatedGroup preset="blur-slide" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 18,
-          marginBottom: 28,
-        }}
-      >
-        <DarkKpi label="Inbound Today" value="14" delta="↑ 22% vs yesterday" />
-        <DarkKpi
-          label="Outbound Today"
-          value="6"
-          delta="↑ 3 calls vs yesterday"
-        />
-        <DarkKpi label="Appointments" value="9" delta="↑ 4 vs yesterday" />
-        <DarkKpi
-          label="Closed Deals"
-          value={closedDeals}
-          delta="This week"
-          action={
-            <button
-              onClick={() => setClosedDeals((n) => n + 1)}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                background: "var(--emerald-bright)",
-                color: "#06140e",
-                border: "none",
-                fontSize: 18,
-                fontWeight: 700,
-                cursor: "pointer",
-                lineHeight: 1,
-                boxShadow: "0 0 16px rgba(52,211,153,0.3)",
-              }}
-              aria-label="Increment closed deals"
-            >
-              +
-            </button>
-          }
-        />
+      {/* Revenue Funnel Hero */}
+      <AnimatedGroup preset="blur-slide">
+        <RevenueFunnel />
       </AnimatedGroup>
 
       {/* Agent Quality KPIs */}
-      <div className="t-eyebrow" style={{ marginBottom: 12 }}>
-        Agent Quality
+      <div className="t-eyebrow" style={{ marginBottom: 12, marginTop: 8 }}>
+        Agent quality
       </div>
       <div
         style={{

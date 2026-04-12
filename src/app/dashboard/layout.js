@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Bot } from "lucide-react";
 import { getAdminSession, clearAdminSession } from "@/lib/admin";
 import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
+  { href: "/dashboard/agents", label: "Agents", lucide: Bot, pulse: true },
   { href: "/dashboard/inbound", label: "Inbound Calls", icon: "↙" },
   { href: "/dashboard/outbound", label: "Outbound Calls", icon: "↗" },
   { href: "/dashboard/appointments", label: "Appointments", icon: "◉" },
@@ -185,6 +187,7 @@ export default function DashboardLayout({ children }) {
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(item.href);
+            const LucideIcon = item.lucide;
             return (
               <Link
                 key={item.href}
@@ -205,6 +208,7 @@ export default function DashboardLayout({ children }) {
                     ? "2px solid var(--emerald-bright)"
                     : "2px solid transparent",
                   transition: "all .15s",
+                  position: "relative",
                 }}
               >
                 <span
@@ -218,9 +222,22 @@ export default function DashboardLayout({ children }) {
                     fontSize: 15,
                   }}
                 >
-                  {item.icon}
+                  {LucideIcon ? <LucideIcon size={15} /> : item.icon}
                 </span>
-                {item.label}
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.pulse ? (
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "var(--emerald-bright)",
+                      boxShadow: "0 0 8px var(--emerald-glow)",
+                      animation: "pulse-dot 2s infinite",
+                    }}
+                  />
+                ) : null}
               </Link>
             );
           })}

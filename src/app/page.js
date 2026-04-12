@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { devBypass, DEV_BYPASS_ENABLED } from '@/lib/admin';
 import { HeroHeader } from '@/components/landing/HeroHeader';
 import { DashboardMockup } from '@/components/landing/DashboardMockup';
+import { Pillars } from '@/components/landing/Pillars';
+import { TradesStrip } from '@/components/landing/TradesStrip';
 import { CapabilityCards } from '@/components/landing/CapabilityCards';
 import { InlineFeatures } from '@/components/landing/InlineFeatures';
 import { CenterpieceCard } from '@/components/landing/CenterpieceCard';
@@ -41,7 +43,7 @@ export default function Landing() {
       router.push('/dashboard');
       return;
     }
-    router.push(`/checkout?plan=${plan || 'inbound'}`);
+    router.push(`/checkout?plan=${plan || 'convert'}`);
   }
 
   useEffect(() => {
@@ -99,7 +101,7 @@ export default function Landing() {
                     style={{ borderColor: 'var(--dark-border)', background: 'rgba(52,211,153,0.05)' }}
                   >
                     <span className="text-sm" style={{ color: 'var(--text-bright)' }}>
-                      <span style={{ color: 'var(--emerald-bright)' }}>{'\u25CF'}</span> Live AI receptionist &middot; always answering
+                      <span style={{ color: 'var(--emerald-bright)' }}>{'\u25CF'}</span> Built for roofers, HVAC, remodelers &amp; GCs
                     </span>
                     <span className="block h-4 w-0.5" style={{ background: 'var(--dark-border)' }} />
                     <div
@@ -122,13 +124,13 @@ export default function Landing() {
                     className="mt-8 max-w-5xl mx-auto text-balance font-bold tracking-tight text-5xl md:text-6xl lg:mt-16 xl:text-7xl"
                     style={{ color: 'var(--text-bright)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
                   >
-                    The AI receptionist your business{' '}
-                    <span style={{ color: 'var(--emerald-bright)' }}>never knew it could afford.</span>
+                    Close more bids. Chase fewer leads.{' '}
+                    <span style={{ color: 'var(--emerald-bright)' }}>The sales OS for home services.</span>
                   </h1>
 
                   {/* Subhead */}
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg" style={{ color: 'var(--text-muted)' }}>
-                    Chatty answers every call, qualifies every lead, and books every appointment &mdash; for less than a single missed sale per month.
+                    Every lead answered. Every estimate followed up. Every dead lead worked. Chatty is the AI sales team built for general contractors, remodelers, roofers, and HVAC pros &mdash; we close the leaks in your funnel so you close more jobs.
                   </p>
                 </AnimatedGroup>
 
@@ -144,12 +146,12 @@ export default function Landing() {
                     className="rounded-[14px] border p-0.5"
                     style={{ borderColor: 'var(--dark-border)', background: 'rgba(52,211,153,0.1)' }}
                   >
-                    <Button size="lg" className="rounded-xl px-5 text-base" onClick={() => handleGetStarted('inbound')}>
-                      Start for $97/mo
+                    <Button size="lg" className="rounded-xl px-5 text-base" onClick={() => handleGetStarted('convert')}>
+                      See Your Funnel
                     </Button>
                   </div>
                   <Button size="lg" variant="ghost" className="rounded-xl px-5">
-                    See it in action
+                    Book a demo
                   </Button>
                 </AnimatedGroup>
               </div>
@@ -179,13 +181,15 @@ export default function Landing() {
           </div>
         </section>
 
+        <Pillars />
+        <TradesStrip />
         <CapabilityCards />
         <InlineFeatures />
         <CenterpieceCard />
         <PhoneMockup />
         <TrustSection />
         <Pricing onGetStarted={handleGetStarted} />
-        <FinalCTA onGetStarted={() => handleGetStarted('inbound')} />
+        <FinalCTA onGetStarted={() => handleGetStarted('convert')} />
         <Footer />
       </main>
     </>
