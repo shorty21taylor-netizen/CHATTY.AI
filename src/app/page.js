@@ -2,8 +2,10 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Button } from '@/components/ui/Button';
 import { devBypass, DEV_BYPASS_ENABLED } from '@/lib/admin';
 import { forceDarkForPage, restoreSavedTheme } from '@/lib/theme';
@@ -19,6 +21,30 @@ import { TrustSection } from '@/components/landing/TrustSection';
 import { Pricing } from '@/components/landing/Pricing';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
+
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
+  return (
+    <motion.div
+      style={{
+        scaleX,
+        transformOrigin: '0%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 2,
+        background: 'var(--emerald-bright)',
+        zIndex: 100,
+      }}
+    />
+  );
+}
 
 const transitionVariants = {
   container: {
@@ -65,6 +91,7 @@ export default function Landing() {
 
   return (
     <>
+      <ScrollProgress />
       <HeroHeader onGetStarted={() => handleGetStarted('inbound')} />
 
       <main className="landing-scope overflow-hidden mesh-bg" style={{ minHeight: '100vh', color: 'var(--text-bright)' }}>
@@ -188,16 +215,45 @@ export default function Landing() {
           </div>
         </section>
 
-        <Pillars />
-        <TradesStrip />
-        <CapabilityCards />
-        <InlineFeatures />
-        <CenterpieceCard />
-        <PhoneMockup />
-        <TrustSection />
-        <Pricing onGetStarted={handleGetStarted} />
-        <FinalCTA onGetStarted={() => handleGetStarted('convert')} />
-        <Footer />
+        <ScrollReveal variant="fadeUp" amount={0.2}>
+          <Pillars />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.3}>
+          <TradesStrip />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.2}>
+          <CapabilityCards />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.2}>
+          <InlineFeatures />
+        </ScrollReveal>
+
+        <ScrollReveal variant="scaleIn" amount={0.3}>
+          <CenterpieceCard />
+        </ScrollReveal>
+
+        <ScrollReveal variant="scaleIn" amount={0.25}>
+          <PhoneMockup />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.2}>
+          <TrustSection />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.15}>
+          <Pricing onGetStarted={handleGetStarted} />
+        </ScrollReveal>
+
+        <ScrollReveal variant="scaleIn" amount={0.3}>
+          <FinalCTA onGetStarted={() => handleGetStarted('convert')} />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeIn" amount={0.1}>
+          <Footer />
+        </ScrollReveal>
       </main>
     </>
   );
