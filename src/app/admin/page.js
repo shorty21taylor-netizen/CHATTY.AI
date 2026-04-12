@@ -6,6 +6,7 @@ import {
   isAdmin,
   setAdminSession,
   ADMIN_BYPASS_PASSWORD,
+  devBypass,
 } from '@/lib/admin';
 
 export default function AdminLogin() {
@@ -22,40 +23,79 @@ export default function AdminLogin() {
       return;
     }
     if (password !== ADMIN_BYPASS_PASSWORD) {
-      setError('Wrong password');
+      setError('Incorrect password');
       return;
     }
     setAdminSession(email);
     router.push('/dashboard');
   }
 
+  function handleQuickBypass() {
+    devBypass();
+    router.push('/dashboard');
+  }
+
   return (
     <div
+      className="mesh-bg"
       style={{
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'var(--bg)',
         padding: 24,
       }}
     >
       <div
-        className="mac-card"
-        style={{ width: 420, overflow: 'hidden' }}
+        className="dark-card glow-border"
+        style={{ width: 440, padding: 0, overflow: 'hidden' }}
       >
-        <div className="mac-traffic">
-          <span className="dot-red" />
-          <span className="dot-yellow" />
-          <span className="dot-green" />
+        {/* macOS chrome */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--dark-border)',
+            background: 'rgba(255,255,255,0.02)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 6 }}>
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: '#ff5f57',
+                display: 'inline-block',
+              }}
+            />
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: '#febc2e',
+                display: 'inline-block',
+              }}
+            />
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: '#28c840',
+                display: 'inline-block',
+              }}
+            />
+          </div>
           <div
             style={{
               flex: 1,
               textAlign: 'center',
               fontSize: 12,
-              fontWeight: 600,
-              color: 'var(--ink-soft)',
-              marginRight: 48,
+              color: 'var(--text-muted)',
+              fontWeight: 500,
             }}
           >
             chatty.ai — admin
@@ -63,84 +103,190 @@ export default function AdminLogin() {
         </div>
 
         <div style={{ padding: 36 }}>
+          {/* Restricted pill */}
           <div
             style={{
-              display: 'inline-block',
-              padding: '3px 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 12px',
               borderRadius: 999,
+              background: 'rgba(52,211,153,0.1)',
+              border: '1px solid rgba(52,211,153,0.25)',
               fontSize: 11,
-              fontWeight: 700,
-              background: 'var(--gold-soft)',
-              color: 'var(--green-deep)',
+              fontWeight: 600,
+              color: 'var(--emerald-bright)',
               letterSpacing: '0.08em',
-              marginBottom: 14,
+              textTransform: 'uppercase',
+              marginBottom: 20,
             }}
           >
-            RESTRICTED
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: 'var(--emerald-bright)',
+                boxShadow: '0 0 8px var(--emerald-glow)',
+                display: 'inline-block',
+              }}
+            />
+            Restricted
           </div>
-          <h1
-            className="font-serif"
+
+          {/* Brand wordmark */}
+          <div
             style={{
-              fontFamily: 'Playfair Display, Georgia, serif',
-              fontSize: 30,
-              color: 'var(--green)',
-              margin: '0 0 6px',
-              letterSpacing: '-0.02em',
-              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 24,
+            }}
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: 'var(--emerald-bright)',
+                boxShadow: '0 0 10px var(--emerald-glow)',
+                display: 'inline-block',
+              }}
+            />
+            <span
+              style={{
+                color: 'var(--text-bright)',
+                fontWeight: 600,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Chatty.AI
+            </span>
+          </div>
+
+          <h1
+            style={{
+              fontSize: 32,
+              fontWeight: 700,
+              color: 'var(--text-bright)',
+              margin: '0 0 8px',
+              letterSpacing: '-0.03em',
             }}
           >
             Admin Access
           </h1>
           <p
             style={{
-              color: 'var(--ink-soft)',
+              color: 'var(--text-muted)',
               fontSize: 14,
-              marginBottom: 24,
+              margin: '0 0 28px',
+              lineHeight: 1.5,
             }}
           >
-            Bypass landing &amp; checkout · go straight to dashboard
+            Bypass landing &amp; checkout — go straight to dashboard
           </p>
 
-          <form
-            onSubmit={handleLogin}
-            style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+          {/* Quick bypass button */}
+          <button
+            onClick={handleQuickBypass}
+            className="cta-primary"
+            style={{ width: '100%', marginBottom: 20, justifyContent: 'center' }}
           >
-            <div>
-              <label className="label-mac">Admin Email</label>
-              <input
-                type="email"
-                className="input-mac"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-              />
-            </div>
+            Skip &amp; Enter Dashboard →
+          </button>
 
-            <div>
-              <label className="label-mac">Admin Password</label>
-              <input
-                type="password"
-                className="input-mac"
-                placeholder="••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              margin: '20px 0',
+              color: 'var(--text-muted)',
+              fontSize: 11,
+              letterSpacing: '0.1em',
+            }}
+          >
+            <div
+              style={{ flex: 1, height: 1, background: 'var(--dark-border)' }}
+            />
+            OR SIGN IN
+            <div
+              style={{ flex: 1, height: 1, background: 'var(--dark-border)' }}
+            />
+          </div>
+
+          <form onSubmit={handleLogin}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+                marginBottom: 6,
+                letterSpacing: '0.02em',
+              }}
+            >
+              Admin Email
+            </label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                marginBottom: 16,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--dark-border)',
+                borderRadius: 8,
+                color: 'var(--text-bright)',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+
+            <label
+              style={{
+                display: 'block',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+                marginBottom: 6,
+                letterSpacing: '0.02em',
+              }}
+            >
+              Admin Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                marginBottom: 16,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--dark-border)',
+                borderRadius: 8,
+                color: 'var(--text-bright)',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
 
             {error ? (
               <div
                 style={{
-                  color: '#c0392b',
+                  color: '#f87171',
                   fontSize: 13,
+                  marginBottom: 12,
                   fontWeight: 600,
-                  background: 'rgba(192,57,43,0.08)',
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(192,57,43,0.2)',
                 }}
               >
                 {error}
@@ -149,8 +295,8 @@ export default function AdminLogin() {
 
             <button
               type="submit"
-              className="mac-btn"
-              style={{ width: '100%', marginTop: 6, fontSize: 15 }}
+              className="cta-ghost"
+              style={{ width: '100%', justifyContent: 'center' }}
             >
               Enter Dashboard →
             </button>
@@ -158,12 +304,13 @@ export default function AdminLogin() {
 
           <div
             style={{
-              marginTop: 22,
-              paddingTop: 16,
-              borderTop: '1px solid var(--border)',
-              fontSize: 12,
-              color: 'var(--ink-soft)',
+              marginTop: 24,
+              paddingTop: 20,
+              borderTop: '1px solid var(--dark-border)',
               textAlign: 'center',
+              fontSize: 11,
+              color: 'var(--text-muted)',
+              letterSpacing: '0.05em',
             }}
           >
             Authorized personnel only · Chatty.AI

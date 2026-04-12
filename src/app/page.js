@@ -1,10 +1,22 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { devBypass, DEV_BYPASS_ENABLED } from "@/lib/admin";
 
 export default function LandingPage() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+
+  function handleGetStarted(plan) {
+    if (DEV_BYPASS_ENABLED) {
+      devBypass();
+      router.push("/dashboard");
+      return;
+    }
+    router.push(`/checkout?plan=${plan}`);
+  }
 
   // Keyboard shortcut: Cmd/Ctrl + Shift + A → /admin
   useEffect(() => {
@@ -110,13 +122,13 @@ export default function LandingPage() {
             <Link href="/admin" className="cta-ghost" style={{ padding: "10px 18px" }}>
               Sign in
             </Link>
-            <Link
-              href="/checkout?plan=inbound"
+            <button
+              onClick={() => handleGetStarted("inbound")}
               className="cta-primary"
               style={{ padding: "10px 20px" }}
             >
               Get Started
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -188,9 +200,12 @@ export default function LandingPage() {
               flexWrap: "wrap",
             }}
           >
-            <Link href="/checkout?plan=inbound" className="cta-primary">
+            <button
+              onClick={() => handleGetStarted("inbound")}
+              className="cta-primary"
+            >
               Start for $97/mo →
-            </Link>
+            </button>
             <a href="#features" className="cta-ghost">
               ▶ See it in action
             </a>
@@ -572,7 +587,7 @@ export default function LandingPage() {
               "Telegram EA included",
             ]}
             cta="Start with Inbound"
-            ctaHref="/checkout?plan=inbound"
+            onCtaClick={() => handleGetStarted("inbound")}
           />
           <PricingCard
             name="Inbound + Outbound"
@@ -586,7 +601,7 @@ export default function LandingPage() {
               "Priority support",
             ]}
             cta="Start with Both"
-            ctaHref="/checkout?plan=both"
+            onCtaClick={() => handleGetStarted("both")}
             popular
           />
         </div>
@@ -702,9 +717,12 @@ export default function LandingPage() {
               justifyContent: "center",
             }}
           >
-            <Link href="/checkout?plan=inbound" className="cta-primary">
+            <button
+              onClick={() => handleGetStarted("inbound")}
+              className="cta-primary"
+            >
               Get Chatty.AI →
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -936,7 +954,7 @@ function PricingCard({
   tagline,
   features,
   cta,
-  ctaHref,
+  onCtaClick,
   popular,
 }) {
   return (
@@ -1038,8 +1056,8 @@ function PricingCard({
         ))}
       </ul>
 
-      <Link
-        href={ctaHref}
+      <button
+        onClick={onCtaClick}
         className={popular ? "cta-primary" : "cta-ghost"}
         style={{
           display: "flex",
@@ -1048,7 +1066,7 @@ function PricingCard({
         }}
       >
         {cta} →
-      </Link>
+      </button>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 export const ADMIN_EMAILS = ['shorty21taylor@gmail.com'];
 export const ADMIN_BYPASS_PASSWORD =
   process.env.ADMIN_BYPASS_PASSWORD || 'Chatty2026!';
+export const DEV_BYPASS_ENABLED = true; // flip to false when going live
 
 export function isAdmin(email) {
   if (!email) return false;
@@ -33,4 +34,8 @@ export function clearAdminSession() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('chatty_admin_session');
   }
+}
+
+export function devBypass() {
+  setAdminSession('shorty21taylor@gmail.com');
 }
