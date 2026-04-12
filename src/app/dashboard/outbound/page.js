@@ -47,27 +47,28 @@ export default function OutboundPage() {
       <div style={{ marginBottom: 28 }}>
         <div
           style={{
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: 600,
-            color: "var(--ink-soft)",
+            color: "var(--text-muted)",
             textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.12em",
           }}
         >
           Outbound
         </div>
         <h1
-          className="font-serif"
           style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: 36,
             fontWeight: 600,
             margin: "6px 0 4px",
             letterSpacing: "-0.02em",
+            color: "var(--text-bright)",
           }}
         >
           Outbound calls
         </h1>
-        <div style={{ color: "var(--ink-soft)", fontSize: 15 }}>
+        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
           Every lead Chatty reached out to today.
         </div>
       </div>
@@ -79,13 +80,13 @@ export default function OutboundPage() {
 
 function CallsTable({ calls }) {
   return (
-    <div className="mac-card" style={{ overflow: "hidden" }}>
+    <div className="dark-card" style={{ overflow: "hidden" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr
             style={{
-              background: "var(--surface-2)",
-              borderBottom: "1px solid var(--border)",
+              background: "var(--dark-surface-2)",
+              borderBottom: "1px solid var(--dark-border)",
             }}
           >
             <Th>Time</Th>
@@ -99,12 +100,14 @@ function CallsTable({ calls }) {
           {calls.map((c) => (
             <tr
               key={c.id}
-              style={{ borderBottom: "1px solid var(--border)" }}
+              style={{ borderBottom: "1px solid var(--dark-border)" }}
             >
               <Td>{c.time}</Td>
               <Td>
-                <div style={{ fontWeight: 600 }}>{c.name}</div>
-                <div style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                <div style={{ fontWeight: 600, color: "var(--text-bright)" }}>
+                  {c.name}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
                   {c.caller}
                 </div>
               </Td>
@@ -115,7 +118,7 @@ function CallsTable({ calls }) {
               <Td>
                 <span
                   style={{
-                    color: "var(--green)",
+                    color: "var(--emerald-bright)",
                     fontWeight: 600,
                     fontSize: 13,
                     cursor: "pointer",
@@ -138,11 +141,11 @@ function Th({ children }) {
       style={{
         textAlign: "left",
         padding: "14px 20px",
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 700,
-        color: "var(--ink-soft)",
+        color: "var(--text-muted)",
         textTransform: "uppercase",
-        letterSpacing: "0.06em",
+        letterSpacing: "0.12em",
       }}
     >
       {children}
@@ -152,17 +155,51 @@ function Th({ children }) {
 
 function Td({ children }) {
   return (
-    <td style={{ padding: "16px 20px", fontSize: 14, color: "var(--ink)" }}>
+    <td
+      style={{
+        padding: "16px 20px",
+        fontSize: 14,
+        color: "var(--text-bright)",
+      }}
+    >
       {children}
     </td>
   );
 }
 
 function OutcomePill({ outcome }) {
-  const map = {
-    Booked: "pill pill-green",
-    Qualified: "pill pill-gold",
-    "No-show": "pill",
+  const styles = {
+    Booked: {
+      background: "rgba(52,211,153,0.12)",
+      color: "var(--emerald-bright)",
+      border: "1px solid rgba(52,211,153,0.3)",
+    },
+    Qualified: {
+      background: "rgba(52,211,153,0.12)",
+      color: "var(--emerald-bright)",
+      border: "1px solid rgba(52,211,153,0.3)",
+    },
+    "No-show": {
+      background: "rgba(248,113,113,0.12)",
+      color: "#f87171",
+      border: "1px solid rgba(248,113,113,0.3)",
+    },
   };
-  return <span className={map[outcome] || "pill"}>{outcome}</span>;
+  const s = styles[outcome] || styles["No-show"];
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "3px 10px",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        ...s,
+      }}
+    >
+      {outcome}
+    </span>
+  );
 }

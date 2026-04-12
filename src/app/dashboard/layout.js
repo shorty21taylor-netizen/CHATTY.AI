@@ -32,18 +32,18 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
+      className="mesh-bg"
       style={{
         minHeight: "100vh",
         display: "grid",
         gridTemplateColumns: "260px 1fr",
-        background: "var(--bg)",
       }}
     >
       {/* Sidebar */}
       <aside
         style={{
-          borderRight: "1px solid var(--border)",
-          background: "var(--surface)",
+          borderRight: "1px solid var(--dark-border)",
+          background: "#070b09",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -51,20 +51,50 @@ export default function DashboardLayout({ children }) {
           height: "100vh",
         }}
       >
+        {/* Traffic-light chrome */}
         <div
-          className="mac-traffic"
-          style={{ borderBottom: "1px solid var(--border)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "12px 16px",
+            borderBottom: "1px solid var(--dark-border)",
+          }}
         >
-          <span className="dot-red" />
-          <span className="dot-yellow" />
-          <span className="dot-green" />
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: "#ff5f57",
+              display: "inline-block",
+            }}
+          />
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: "#febc2e",
+              display: "inline-block",
+            }}
+          />
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: "#28c840",
+              display: "inline-block",
+            }}
+          />
           <div
             style={{
               flex: 1,
               textAlign: "center",
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: 600,
-              color: "var(--ink-soft)",
+              color: "var(--text-muted)",
               marginRight: 48,
             }}
           >
@@ -72,24 +102,33 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <div style={{ padding: "22px 20px 10px" }}>
+        {/* Workspace card */}
+        <div style={{ padding: "22px 20px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
               style={{
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "var(--green)",
-                color: "var(--gold)",
+                background:
+                  "linear-gradient(135deg, var(--emerald), var(--emerald-mid))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontWeight: 800,
-                fontSize: 18,
-                fontFamily: "Playfair Display, Georgia, serif",
+                border: "1px solid var(--dark-border)",
+                position: "relative",
               }}
             >
-              C
+              <span
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: "var(--emerald-bright)",
+                  boxShadow: "0 0 12px var(--emerald-glow)",
+                  display: "inline-block",
+                }}
+              />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
@@ -99,19 +138,28 @@ export default function DashboardLayout({ children }) {
                   gap: 8,
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color: "var(--text-bright)",
+                  }}
+                >
                   Harbor Dental
                 </div>
                 {admin ? (
                   <span
                     style={{
-                      display: "inline-block",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
                       padding: "2px 8px",
                       borderRadius: 999,
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: 700,
-                      background: "var(--gold)",
-                      color: "var(--green-deep)",
+                      background: "rgba(52,211,153,0.1)",
+                      color: "var(--emerald-bright)",
+                      border: "1px solid rgba(52,211,153,0.25)",
                       letterSpacing: "0.08em",
                     }}
                   >
@@ -122,7 +170,7 @@ export default function DashboardLayout({ children }) {
               <div
                 style={{
                   fontSize: 12,
-                  color: "var(--ink-soft)",
+                  color: "var(--text-muted)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -134,10 +182,11 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
+        {/* Nav */}
         <nav
           style={{
             flex: 1,
-            padding: "14px 12px",
+            padding: "10px 12px",
             display: "flex",
             flexDirection: "column",
             gap: 2,
@@ -160,9 +209,14 @@ export default function DashboardLayout({ children }) {
                   borderRadius: 10,
                   fontSize: 14,
                   fontWeight: active ? 600 : 500,
-                  color: active ? "var(--green)" : "var(--ink-soft)",
-                  background: active ? "var(--surface-2)" : "transparent",
-                  transition: "background .15s",
+                  color: active ? "var(--text-bright)" : "var(--text-muted)",
+                  background: active
+                    ? "rgba(52,211,153,0.06)"
+                    : "transparent",
+                  borderLeft: active
+                    ? "2px solid var(--emerald-bright)"
+                    : "2px solid transparent",
+                  transition: "all .15s",
                 }}
               >
                 <span
@@ -170,7 +224,10 @@ export default function DashboardLayout({ children }) {
                     width: 22,
                     display: "inline-flex",
                     justifyContent: "center",
-                    color: active ? "var(--gold)" : "var(--ink-soft)",
+                    color: active
+                      ? "var(--emerald-bright)"
+                      : "var(--text-muted)",
+                    fontSize: 15,
                   }}
                 >
                   {item.icon}
@@ -181,20 +238,29 @@ export default function DashboardLayout({ children }) {
           })}
         </nav>
 
+        {/* Bottom plan + sign-out */}
         <div
           style={{
             padding: 16,
-            borderTop: "1px solid var(--border)",
+            borderTop: "1px solid var(--dark-border)",
             fontSize: 12,
-            color: "var(--ink-soft)",
           }}
         >
-          <div style={{ fontWeight: 600, color: "var(--ink)" }}>
+          <div
+            style={{
+              fontWeight: 600,
+              color: "var(--text-bright)",
+            }}
+          >
             Inbound Plan · $97/mo
           </div>
           <Link
             href="/dashboard/billing"
-            style={{ color: "var(--green)", fontWeight: 600 }}
+            style={{
+              color: "var(--emerald-bright)",
+              fontWeight: 600,
+              fontSize: 12,
+            }}
           >
             Upgrade →
           </Link>
@@ -202,19 +268,14 @@ export default function DashboardLayout({ children }) {
             <button
               type="button"
               onClick={handleSignOut}
+              className="cta-ghost"
               style={{
                 display: "block",
                 marginTop: 12,
                 width: "100%",
                 padding: "8px 12px",
-                background: "var(--surface-2)",
-                color: "var(--ink)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
                 fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                textAlign: "center",
+                justifyContent: "center",
               }}
             >
               Sign Out (Admin)
@@ -224,7 +285,13 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main content */}
-      <main style={{ padding: "36px 44px", overflowY: "auto" }}>
+      <main
+        style={{
+          padding: "40px 44px",
+          overflowY: "auto",
+          color: "var(--text-bright)",
+        }}
+      >
         {children}
       </main>
     </div>

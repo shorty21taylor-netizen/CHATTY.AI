@@ -58,33 +58,34 @@ export default function AppointmentsPage() {
       <div style={{ marginBottom: 28 }}>
         <div
           style={{
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: 600,
-            color: "var(--ink-soft)",
+            color: "var(--text-muted)",
             textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.12em",
           }}
         >
           Appointments
         </div>
         <h1
-          className="font-serif"
           style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: 36,
             fontWeight: 600,
             margin: "6px 0 4px",
             letterSpacing: "-0.02em",
+            color: "var(--text-bright)",
           }}
         >
           Booked appointments
         </h1>
-        <div style={{ color: "var(--ink-soft)", fontSize: 15 }}>
+        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
           Everything Chatty put on your calendar. Mark closed to track revenue.
         </div>
       </div>
 
       <div
-        className="mac-card"
+        className="dark-card"
         style={{ padding: 8, display: "flex", flexDirection: "column" }}
       >
         {rows.map((row) => (
@@ -95,42 +96,56 @@ export default function AppointmentsPage() {
               gridTemplateColumns: "1fr 1fr 140px 160px",
               alignItems: "center",
               padding: "18px 20px",
-              borderBottom: "1px solid var(--border)",
+              borderBottom: "1px solid var(--dark-border)",
               gap: 14,
             }}
           >
             <div>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>{row.name}</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: 15,
+                  color: "var(--text-bright)",
+                }}
+              >
+                {row.name}
+              </div>
               <div
                 style={{
                   fontSize: 12,
-                  color: "var(--ink-soft)",
+                  color: "var(--text-muted)",
                   marginTop: 2,
                 }}
               >
                 {row.type}
               </div>
             </div>
-            <div style={{ fontSize: 14, color: "var(--ink-soft)" }}>
+            <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
               {row.date}
             </div>
             <div>
-              <span
-                className={
-                  row.source === "Inbound" ? "pill pill-green" : "pill pill-gold"
-                }
-              >
-                {row.source}
-              </span>
+              <SourcePill source={row.source} />
             </div>
             <div style={{ textAlign: "right" }}>
               <button
                 onClick={() => toggle(row.id)}
-                className={row.closed ? "mac-btn" : "mac-btn-outline"}
                 style={{
                   fontSize: 13,
                   padding: "8px 16px",
                   cursor: "pointer",
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  transition: "all .2s",
+                  background: row.closed
+                    ? "var(--emerald-bright)"
+                    : "transparent",
+                  color: row.closed ? "#06140e" : "var(--text-bright)",
+                  border: row.closed
+                    ? "1px solid var(--emerald-bright)"
+                    : "1px solid var(--dark-border)",
+                  boxShadow: row.closed
+                    ? "0 0 16px rgba(52,211,153,0.3)"
+                    : "none",
                 }}
               >
                 {row.closed ? "✓ Closed" : "Mark Closed"}
@@ -140,5 +155,31 @@ export default function AppointmentsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+function SourcePill({ source }) {
+  const isInbound = source === "Inbound";
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "3px 10px",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        background: isInbound
+          ? "rgba(52,211,153,0.12)"
+          : "rgba(201,169,97,0.12)",
+        color: isInbound ? "var(--emerald-bright)" : "#c9a961",
+        border: isInbound
+          ? "1px solid rgba(52,211,153,0.3)"
+          : "1px solid rgba(201,169,97,0.3)",
+      }}
+    >
+      {source}
+    </span>
   );
 }

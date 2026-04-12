@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ClientOnly from "@/components/ClientOnly";
-import KpiCard from "@/components/KpiCard";
 
 const CHART_DATA = [
   { day: "Mon", inbound: 8, outbound: 3 },
@@ -28,31 +27,33 @@ export default function OverviewPage() {
 
   return (
     <div>
+      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div
           style={{
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: 600,
-            color: "var(--ink-soft)",
+            color: "var(--text-muted)",
             textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.12em",
           }}
         >
           Dashboard
         </div>
         <h1
-          className="font-serif"
           style={{
-            fontSize: 36,
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 40,
             fontWeight: 600,
             margin: "6px 0 4px",
             letterSpacing: "-0.02em",
+            color: "var(--text-bright)",
           }}
         >
           Good morning, Harbor Dental.
         </h1>
-        <div style={{ color: "var(--ink-soft)", fontSize: 15 }}>
-          Here's how Chatty is performing today.
+        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
+          Here&apos;s how Chatty is performing today.
         </div>
       </div>
 
@@ -65,22 +66,14 @@ export default function OverviewPage() {
           marginBottom: 28,
         }}
       >
-        <KpiCard
-          label="Inbound Today"
-          value="14"
-          delta="↑ 22% vs yesterday"
-        />
-        <KpiCard
+        <DarkKpi label="Inbound Today" value="14" delta="↑ 22% vs yesterday" />
+        <DarkKpi
           label="Outbound Today"
           value="6"
           delta="↑ 3 calls vs yesterday"
         />
-        <KpiCard
-          label="Appointments"
-          value="9"
-          delta="↑ 4 vs yesterday"
-        />
-        <KpiCard
+        <DarkKpi label="Appointments" value="9" delta="↑ 4 vs yesterday" />
+        <DarkKpi
           label="Closed Deals"
           value={closedDeals}
           delta="This week"
@@ -91,13 +84,14 @@ export default function OverviewPage() {
                 width: 30,
                 height: 30,
                 borderRadius: 8,
-                background: "var(--green)",
-                color: "var(--gold)",
+                background: "var(--emerald-bright)",
+                color: "#06140e",
                 border: "none",
                 fontSize: 18,
                 fontWeight: 700,
                 cursor: "pointer",
                 lineHeight: 1,
+                boxShadow: "0 0 16px rgba(52,211,153,0.3)",
               }}
               aria-label="Increment closed deals"
             >
@@ -108,7 +102,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Chart */}
-      <div className="mac-card" style={{ padding: 26 }}>
+      <div className="dark-card" style={{ padding: 26 }}>
         <div
           style={{
             display: "flex",
@@ -119,15 +113,18 @@ export default function OverviewPage() {
         >
           <div>
             <div
-              className="font-serif"
-              style={{ fontSize: 22, fontWeight: 600 }}
+              style={{
+                fontSize: 20,
+                fontWeight: 600,
+                color: "var(--text-bright)",
+              }}
             >
               Calls this week
             </div>
             <div
               style={{
                 fontSize: 13,
-                color: "var(--ink-soft)",
+                color: "var(--text-muted)",
                 marginTop: 2,
               }}
             >
@@ -135,8 +132,8 @@ export default function OverviewPage() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
-            <Legend color="var(--green)" label="Inbound" />
-            <Legend color="var(--gold)" label="Outbound" />
+            <Legend color="var(--emerald-bright)" label="Inbound" />
+            <Legend color="#c9a961" label="Outbound" />
           </div>
         </div>
 
@@ -149,7 +146,7 @@ export default function OverviewPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--ink-soft)",
+                  color: "var(--text-muted)",
                   fontSize: 13,
                 }}
               >
@@ -164,41 +161,42 @@ export default function OverviewPage() {
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(26,58,46,0.08)"
+                  stroke="rgba(255,255,255,0.04)"
                 />
                 <XAxis
                   dataKey="day"
-                  tick={{ fontSize: 12, fill: "var(--ink-soft)" }}
-                  axisLine={{ stroke: "var(--border)" }}
+                  tick={{ fontSize: 11, fill: "#a8b3ad" }}
+                  axisLine={{ stroke: "var(--dark-border)" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: "var(--ink-soft)" }}
-                  axisLine={{ stroke: "var(--border)" }}
+                  tick={{ fontSize: 11, fill: "#a8b3ad" }}
+                  axisLine={{ stroke: "var(--dark-border)" }}
                   tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
+                    background: "var(--dark-surface)",
+                    border: "1px solid var(--dark-border)",
                     borderRadius: 10,
                     fontSize: 13,
+                    color: "#f5f7f5",
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="inbound"
-                  stroke="var(--green)"
+                  stroke="#34d399"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: "var(--green)" }}
+                  dot={{ r: 4, fill: "#34d399" }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="outbound"
-                  stroke="var(--gold)"
+                  stroke="#c9a961"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: "var(--gold)" }}
+                  dot={{ r: 4, fill: "#c9a961" }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -216,17 +214,21 @@ export default function OverviewPage() {
           marginTop: 22,
         }}
       >
-        <div className="mac-card" style={{ padding: 24 }}>
+        <div className="dark-card" style={{ padding: 24 }}>
           <div
-            className="font-serif"
-            style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              color: "var(--text-bright)",
+              marginBottom: 4,
+            }}
           >
             Next appointment
           </div>
           <div
             style={{
               fontSize: 13,
-              color: "var(--ink-soft)",
+              color: "var(--text-muted)",
               marginBottom: 14,
             }}
           >
@@ -235,15 +237,18 @@ export default function OverviewPage() {
           <div
             style={{
               padding: 14,
-              background: "var(--surface-2)",
+              background: "rgba(52,211,153,0.04)",
+              border: "1px solid var(--dark-border)",
               borderRadius: 10,
             }}
           >
-            <div style={{ fontWeight: 600 }}>Mike Reynolds</div>
+            <div style={{ fontWeight: 600, color: "var(--text-bright)" }}>
+              Mike Reynolds
+            </div>
             <div
               style={{
                 fontSize: 13,
-                color: "var(--ink-soft)",
+                color: "var(--text-muted)",
                 marginTop: 2,
               }}
             >
@@ -252,17 +257,21 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        <div className="mac-card" style={{ padding: 24 }}>
+        <div className="dark-card" style={{ padding: 24 }}>
           <div
-            className="font-serif"
-            style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              color: "var(--text-bright)",
+              marginBottom: 4,
+            }}
           >
             Agent status
           </div>
           <div
             style={{
               fontSize: 13,
-              color: "var(--ink-soft)",
+              color: "var(--text-muted)",
               marginBottom: 14,
             }}
           >
@@ -286,6 +295,56 @@ export default function OverviewPage() {
   );
 }
 
+function DarkKpi({ label, value, delta, action }) {
+  return (
+    <div className="dark-card" style={{ padding: 22 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.12em",
+          }}
+        >
+          {label}
+        </div>
+        {action || null}
+      </div>
+      <div
+        style={{
+          marginTop: 12,
+          fontSize: 36,
+          fontWeight: 700,
+          color: "var(--text-bright)",
+          lineHeight: 1,
+        }}
+      >
+        {value}
+      </div>
+      {delta ? (
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#c9a961",
+          }}
+        >
+          {delta}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function Legend({ color, label }) {
   return (
     <div
@@ -293,7 +352,7 @@ function Legend({ color, label }) {
         display: "flex",
         alignItems: "center",
         gap: 6,
-        color: "var(--ink-soft)",
+        color: "var(--text-muted)",
         fontWeight: 600,
       }}
     >
@@ -318,12 +377,25 @@ function StatusRow({ label, ok }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        color: "var(--text-bright)",
       }}
     >
       <span>{label}</span>
       <span
-        className={ok ? "pill pill-green" : "pill"}
-        style={{ fontSize: 11 }}
+        style={{
+          padding: "3px 10px",
+          borderRadius: 999,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.04em",
+          background: ok
+            ? "rgba(52,211,153,0.12)"
+            : "rgba(248,113,113,0.12)",
+          color: ok ? "var(--emerald-bright)" : "#f87171",
+          border: ok
+            ? "1px solid rgba(52,211,153,0.3)"
+            : "1px solid rgba(248,113,113,0.3)",
+        }}
       >
         {ok ? "● ONLINE" : "OFFLINE"}
       </span>
