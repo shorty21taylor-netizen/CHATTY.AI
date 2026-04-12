@@ -1,7 +1,9 @@
 'use client';
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getAdminSession, clearAdminSession } from "@/lib/admin";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
@@ -15,6 +17,18 @@ const NAV = [
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    setAdmin(getAdminSession());
+  }, []);
+
+  function handleSignOut() {
+    clearAdminSession();
+    setAdmin(null);
+    router.push("/");
+  }
 
   return (
     <div
@@ -77,12 +91,44 @@ export default function DashboardLayout({ children }) {
             >
               C
             </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>
-                Harbor Dental
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  Harbor Dental
+                </div>
+                {admin ? (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      background: "var(--gold)",
+                      color: "var(--green-deep)",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    ADMIN
+                  </span>
+                ) : null}
               </div>
-              <div style={{ fontSize: 12, color: "var(--ink-soft)" }}>
-                Workspace
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--ink-soft)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {admin ? admin.email : "Workspace"}
               </div>
             </div>
           </div>
@@ -152,6 +198,28 @@ export default function DashboardLayout({ children }) {
           >
             Upgrade →
           </Link>
+          {admin ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              style={{
+                display: "block",
+                marginTop: 12,
+                width: "100%",
+                padding: "8px 12px",
+                background: "var(--surface-2)",
+                color: "var(--ink)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+                textAlign: "center",
+              }}
+            >
+              Sign Out (Admin)
+            </button>
+          ) : null}
         </div>
       </aside>
 

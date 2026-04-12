@@ -1,9 +1,11 @@
 import Link from "next/link";
 import MacWindow from "@/components/MacWindow";
+import AdminKeyListener from "@/components/AdminKeyListener";
 
 export default function LandingPage() {
   return (
     <main style={{ minHeight: "100vh" }}>
+      <AdminKeyListener />
       {/* Top Nav */}
       <header
         style={{
