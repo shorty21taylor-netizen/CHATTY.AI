@@ -39,7 +39,7 @@ export default function AdminLogin() {
 
   return (
     <div
-      className="mesh-bg"
+      className="app-bg"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -167,26 +167,11 @@ export default function AdminLogin() {
             </span>
           </div>
 
-          <h1
-            style={{
-              fontSize: 32,
-              fontWeight: 700,
-              color: 'var(--text-bright)',
-              margin: '0 0 8px',
-              letterSpacing: '-0.03em',
-            }}
-          >
+          <h1 className="t-h1" style={{ margin: '0 0 8px' }}>
             Admin Access
           </h1>
-          <p
-            style={{
-              color: 'var(--text-muted)',
-              fontSize: 14,
-              margin: '0 0 28px',
-              lineHeight: 1.5,
-            }}
-          >
-            Bypass landing &amp; checkout — go straight to dashboard
+          <p className="t-body-sm" style={{ margin: '0 0 28px' }}>
+            Bypass landing &amp; checkout &mdash; go straight to dashboard
           </p>
 
           {/* Quick bypass button */}
@@ -220,14 +205,8 @@ export default function AdminLogin() {
 
           <form onSubmit={handleLogin}>
             <label
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'var(--text-bright)',
-                marginBottom: 6,
-                letterSpacing: '0.02em',
-              }}
+              className="t-eyebrow"
+              style={{ display: 'block', marginBottom: 6, letterSpacing: '0.08em' }}
             >
               Admin Email
             </label>
@@ -238,28 +217,12 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                marginBottom: 16,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid var(--dark-border)',
-                borderRadius: 8,
-                color: 'var(--text-bright)',
-                fontSize: 14,
-                outline: 'none',
-              }}
+              style={{ width: '100%', marginBottom: 16 }}
             />
 
             <label
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'var(--text-bright)',
-                marginBottom: 6,
-                letterSpacing: '0.02em',
-              }}
+              className="t-eyebrow"
+              style={{ display: 'block', marginBottom: 6, letterSpacing: '0.08em' }}
             >
               Admin Password
             </label>
@@ -270,17 +233,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                marginBottom: 16,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid var(--dark-border)',
-                borderRadius: 8,
-                color: 'var(--text-bright)',
-                fontSize: 14,
-                outline: 'none',
-              }}
+              style={{ width: '100%', marginBottom: 16 }}
             />
 
             {error ? (

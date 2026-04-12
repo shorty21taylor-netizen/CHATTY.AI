@@ -45,32 +45,13 @@ export default function OutboundPage() {
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-          }}
-        >
-          Outbound
-        </div>
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 36,
-            fontWeight: 600,
-            margin: "6px 0 4px",
-            letterSpacing: "-0.02em",
-            color: "var(--text-bright)",
-          }}
-        >
+        <div className="t-eyebrow">Outbound</div>
+        <h1 className="t-h1" style={{ margin: "8px 0 6px" }}>
           Outbound calls
         </h1>
-        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
+        <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
           Every lead Chatty reached out to today.
-        </div>
+        </p>
       </div>
 
       <CallsTable calls={CALLS} />

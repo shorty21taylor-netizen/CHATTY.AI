@@ -9,32 +9,13 @@ export default function TelegramPage() {
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-          }}
-        >
-          Telegram EA
-        </div>
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 36,
-            fontWeight: 600,
-            margin: "6px 0 4px",
-            letterSpacing: "-0.02em",
-            color: "var(--text-bright)",
-          }}
-        >
+        <div className="t-eyebrow">Telegram EA</div>
+        <h1 className="t-h1" style={{ margin: "8px 0 6px" }}>
           Your executive assistant, on Telegram.
         </h1>
-        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
+        <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
           Ask Chatty anything from your phone. She replies in plain English.
-        </div>
+        </p>
       </div>
 
       <div

@@ -30,32 +30,13 @@ export default function OverviewPage() {
     <div>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-          }}
-        >
-          Dashboard
-        </div>
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 40,
-            fontWeight: 600,
-            margin: "6px 0 4px",
-            letterSpacing: "-0.02em",
-            color: "var(--text-bright)",
-          }}
-        >
+        <div className="t-eyebrow">Dashboard</div>
+        <h1 className="t-display" style={{ margin: "8px 0 6px" }}>
           Good morning, Harbor Dental.
         </h1>
-        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
+        <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
           Here&apos;s how Chatty is performing today.
-        </div>
+        </p>
       </div>
 
       {/* KPI Grid */}
@@ -102,16 +83,7 @@ export default function OverviewPage() {
       </AnimatedGroup>
 
       {/* Agent Quality KPIs */}
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          marginBottom: 12,
-        }}
-      >
+      <div className="t-eyebrow" style={{ marginBottom: 12 }}>
         Agent Quality
       </div>
       <div
@@ -163,23 +135,11 @@ export default function OverviewPage() {
           }}
         >
           <div>
-            <div
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                color: "var(--text-bright)",
-              }}
-            >
+            <div className="t-h2">
               Calls this week
             </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: "var(--text-muted)",
-                marginTop: 2,
-              }}
-            >
-              Last 7 days · inbound vs outbound
+            <div className="t-body-sm" style={{ marginTop: 2 }}>
+              Last 7 days &middot; inbound vs outbound
             </div>
           </div>
           <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
@@ -266,24 +226,11 @@ export default function OverviewPage() {
         }}
       >
         <div className="dark-card" style={{ padding: 24 }}>
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "var(--text-bright)",
-              marginBottom: 4,
-            }}
-          >
+          <div className="t-h2" style={{ marginBottom: 4 }}>
             Next appointment
           </div>
-          <div
-            style={{
-              fontSize: 13,
-              color: "var(--text-muted)",
-              marginBottom: 14,
-            }}
-          >
-            Booked by Chatty · 12 minutes ago
+          <div className="t-body-sm" style={{ marginBottom: 14 }}>
+            Booked by Chatty &middot; 12 minutes ago
           </div>
           <div
             style={{
@@ -309,23 +256,10 @@ export default function OverviewPage() {
         </div>
 
         <div className="dark-card" style={{ padding: 24 }}>
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "var(--text-bright)",
-              marginBottom: 4,
-            }}
-          >
+          <div className="t-h2" style={{ marginBottom: 4 }}>
             Agent status
           </div>
-          <div
-            style={{
-              fontSize: 13,
-              color: "var(--text-muted)",
-              marginBottom: 14,
-            }}
-          >
+          <div className="t-body-sm" style={{ marginBottom: 14 }}>
             All systems operational
           </div>
           <div
@@ -356,27 +290,12 @@ function DarkKpi({ label, value, delta, action, deltaColor, sub }) {
           alignItems: "flex-start",
         }}
       >
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-          }}
-        >
+        <div className="t-eyebrow">
           {label}
         </div>
         {action || null}
       </div>
-      <div
-        style={{
-          marginTop: 12,
-          fontSize: 36,
-          fontWeight: 700,
-          color: "var(--text-bright)",
-          lineHeight: 1,
-        }}
+      <div className="t-kpi" style={{ marginTop: 12 }}
       >
         {value}
       </div>

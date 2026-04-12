@@ -34,18 +34,18 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
-      className="mesh-bg"
+      className="app-bg"
       style={{
-        minHeight: "100vh",
         display: "grid",
         gridTemplateColumns: "260px 1fr",
+        position: "relative",
       }}
     >
       {/* Sidebar */}
       <aside
         style={{
           borderRight: "1px solid var(--dark-border)",
-          background: "#070b09",
+          background: "#070908",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -140,13 +140,7 @@ export default function DashboardLayout({ children }) {
                   gap: 8,
                 }}
               >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 15,
-                    color: "var(--text-bright)",
-                  }}
-                >
+                <div className="t-h3">
                   Harbor Dental
                 </div>
                 {admin ? (
@@ -169,15 +163,7 @@ export default function DashboardLayout({ children }) {
                   </span>
                 ) : null}
               </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "var(--text-muted)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <div className="t-body-sm" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {admin ? admin.email : "Workspace"}
               </div>
             </div>
@@ -213,7 +199,7 @@ export default function DashboardLayout({ children }) {
                   fontWeight: active ? 600 : 500,
                   color: active ? "var(--text-bright)" : "var(--text-muted)",
                   background: active
-                    ? "rgba(52,211,153,0.06)"
+                    ? "rgba(52,211,153,0.04)"
                     : "transparent",
                   borderLeft: active
                     ? "2px solid var(--emerald-bright)"
@@ -245,16 +231,11 @@ export default function DashboardLayout({ children }) {
           style={{
             padding: 16,
             borderTop: "1px solid var(--dark-border)",
-            fontSize: 12,
           }}
         >
-          <div
-            style={{
-              fontWeight: 600,
-              color: "var(--text-bright)",
-            }}
-          >
-            Inbound Plan · $97/mo
+          <div className="t-eyebrow" style={{ marginBottom: 6 }}>Current Plan</div>
+          <div className="t-body-sm" style={{ color: "var(--text-bright)", fontWeight: 600 }}>
+            Inbound Plan &middot; $97/mo
           </div>
           <Link
             href="/dashboard/billing"
@@ -284,7 +265,9 @@ export default function DashboardLayout({ children }) {
         style={{
           padding: "40px 44px",
           overflowY: "auto",
-          color: "var(--text-bright)",
+          color: "var(--text-primary)",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {children}

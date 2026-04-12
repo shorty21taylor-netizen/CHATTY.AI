@@ -67,33 +67,15 @@ export default function AnalyticsPage() {
       {/* Header + time-range tabs */}
       <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.14em",
-            marginBottom: 16,
-          }}
-        >
+        <div className="t-eyebrow" style={{ marginBottom: 16 }}>
           Analytics
         </div>
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 40,
-            fontWeight: 600,
-            margin: "6px 0 4px",
-            letterSpacing: "-0.02em",
-            color: "var(--text-bright)",
-          }}
-        >
+        <h1 className="t-h1" style={{ margin: "8px 0 6px" }}>
           Performance Insights
         </h1>
-        <div style={{ color: "var(--text-muted)", fontSize: 15 }}>
+        <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
           What Chatty is producing for your business.
-        </div>
+        </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="tab-pill active">Last 30 days</button>
@@ -116,75 +98,28 @@ export default function AnalyticsPage() {
         }}
       >
         <div>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginBottom: 14,
-            }}
-          >
-            Missed Opportunity Cost · Last 30 Days
+          <div className="t-eyebrow" style={{ marginBottom: 14 }}>
+            Missed Opportunity Cost &middot; Last 30 Days
           </div>
-          <div
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 88,
-              fontWeight: 700,
-              color: "var(--text-bright)",
-              lineHeight: 1,
-              textShadow: "0 0 60px rgba(52,211,153,0.25)",
-              letterSpacing: "-0.03em",
-            }}
-          >
+          <div className="t-kpi-lg" style={{ textShadow: "0 0 60px rgba(52,211,153,0.2)" }}>
             ${missedCost.toLocaleString()}
           </div>
-          <div
-            style={{
-              color: "var(--text-muted)",
-              fontSize: 16,
-              marginTop: 12,
-            }}
-          >
+          <p className="t-body" style={{ color: "var(--text-muted)", marginTop: 12, marginBottom: 0 }}>
             What you&apos;d have lost without Chatty answering.
-          </div>
-          <div
-            style={{
-              marginTop: 16,
-              fontSize: 13,
-              color: "var(--text-muted)",
-              fontFamily: "monospace",
-              letterSpacing: "0.01em",
-            }}
-          >
-            {mock.callsAnswered} calls answered × $
-            {mock.avgDeal.toLocaleString()} avg deal × {Math.round(mock.closeRate * 100)}%
+          </p>
+          <div className="t-mono" style={{ marginTop: 16 }}>
+            {mock.callsAnswered} calls answered &times; $
+            {mock.avgDeal.toLocaleString()} avg deal &times; {Math.round(mock.closeRate * 100)}%
             close rate
           </div>
-          <div
-            style={{
-              marginTop: 12,
-              fontSize: 15,
-              fontWeight: 600,
-              color: "var(--emerald-bright)",
-            }}
-          >
+          <div className="t-body" style={{ marginTop: 12, fontWeight: 600, color: "var(--emerald-bright)" }}>
             That&apos;s a {roi}x ROI on your ${mock.planCost}/mo plan.
           </div>
         </div>
 
         {/* Mini bar chart */}
         <div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "var(--text-muted)",
-              marginBottom: 14,
-            }}
-          >
+          <div className="t-eyebrow" style={{ marginBottom: 14 }}>
             Missed cost recovered, by week
           </div>
           <div style={{ width: "100%", height: 160 }}>
@@ -240,23 +175,10 @@ export default function AnalyticsPage() {
 
       {/* Section B — Funnel */}
       <div className="glow-card" style={{ padding: 28, marginBottom: 22 }}>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 600,
-            color: "var(--text-bright)",
-            marginBottom: 6,
-          }}
-        >
-          Lead → Revenue Funnel
+        <div className="t-h2" style={{ marginBottom: 6 }}>
+          Lead &rarr; Revenue Funnel
         </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: "var(--text-muted)",
-            marginBottom: 24,
-          }}
-        >
+        <div className="t-body-sm" style={{ marginBottom: 24 }}>
           30-day conversion breakdown
         </div>
 
@@ -346,23 +268,10 @@ export default function AnalyticsPage() {
       >
         {/* Calls by Hour heatmap */}
         <div className="dark-card" style={{ padding: 24 }}>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: "var(--text-bright)",
-              marginBottom: 4,
-            }}
-          >
+          <div className="t-h2" style={{ marginBottom: 4 }}>
             Calls by Hour
           </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--text-muted)",
-              marginBottom: 20,
-            }}
-          >
+          <div className="t-body-sm" style={{ marginBottom: 20 }}>
             When your leads actually call (most are after-hours)
           </div>
           <div
@@ -423,34 +332,13 @@ export default function AnalyticsPage() {
 
         {/* Avg Call Duration */}
         <div className="dark-card" style={{ padding: 24 }}>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: "var(--text-bright)",
-              marginBottom: 4,
-            }}
-          >
+          <div className="t-h2" style={{ marginBottom: 4 }}>
             Avg Call Duration
           </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--text-muted)",
-              marginBottom: 14,
-            }}
-          >
-            Quality signal — longer = more qualified
+          <div className="t-body-sm" style={{ marginBottom: 14 }}>
+            Quality signal &mdash; longer = more qualified
           </div>
-          <div
-            style={{
-              fontSize: 48,
-              fontWeight: 700,
-              color: "var(--text-bright)",
-              lineHeight: 1,
-              marginBottom: 18,
-            }}
-          >
+          <div className="t-kpi" style={{ marginBottom: 18 }}>
             2m 47s
           </div>
 
@@ -559,36 +447,13 @@ export default function AnalyticsPage() {
 function RevCard({ label, value, delta }) {
   return (
     <div className="glow-card" style={{ padding: 24 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          marginBottom: 10,
-        }}
-      >
+      <div className="t-eyebrow" style={{ marginBottom: 10 }}>
         {label}
       </div>
-      <div
-        style={{
-          fontSize: 36,
-          fontWeight: 700,
-          color: "var(--emerald-bright)",
-          lineHeight: 1,
-        }}
-      >
+      <div className="t-kpi" style={{ color: "var(--emerald-bright)" }}>
         {value}
       </div>
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 13,
-          fontWeight: 600,
-          color: "#c9a961",
-        }}
-      >
+      <div className="t-body-sm" style={{ marginTop: 8, fontWeight: 600, color: "#c9a961" }}>
         {delta}
       </div>
     </div>
