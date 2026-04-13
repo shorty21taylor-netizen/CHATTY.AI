@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bot } from "lucide-react";
+import { Bot, Users } from "lucide-react";
 import { getAdminSession, clearAdminSession } from "@/lib/admin";
 import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
+  { href: "/crm", label: "CRM", lucide: Users, external: true },
   { href: "/dashboard/agents", label: "Agents", lucide: Bot, pulse: true },
   { href: "/dashboard/inbound", label: "Inbound Calls", icon: "↙" },
   { href: "/dashboard/outbound", label: "Outbound Calls", icon: "↗" },
@@ -185,7 +186,9 @@ export default function DashboardLayout({ children }) {
             const active =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
+                : item.href === "/crm"
+                  ? pathname === "/crm" || pathname.startsWith("/crm/")
+                  : pathname.startsWith(item.href);
             const LucideIcon = item.lucide;
             return (
               <Link
