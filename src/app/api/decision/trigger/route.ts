@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       limit: 10,
       windowMs: 3600_000,
     });
+
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Rate limit exceeded", retry_after: rl.resetAt.toISOString() },
@@ -36,9 +37,10 @@ export async function POST(req: Request) {
       {
         success: true,
         brief_id: result.briefId,
+        headline: result.brief.headline,
         duration_ms: result.totalDurationMs,
-        priority: result.pass3.priority,
-        recommendations_count: result.pass3.recommendations.length,
+        priority: result.brief.actions[0]?.priority || "medium",
+        recommendations_count: result.brief.actions.length,
       },
       { status: 200, headers: rateLimitHeaders(rl) }
     );
@@ -49,6 +51,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
     console.error("[Decision Trigger] Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
