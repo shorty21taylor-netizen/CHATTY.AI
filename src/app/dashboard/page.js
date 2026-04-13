@@ -301,17 +301,34 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* ROW 1 — KPI grid */}
+      {/* ROW 1 — Revenue hero */}
+      <motion.div variants={container} className="mb-4">
+        <RevenueHeroCard kpi={KPIS.find((k) => k.id === 'revenue')} />
+      </motion.div>
+
+      {/* ROW 2 — Inbound / Outbound / Pickup (3 cols) */}
       <motion.div
         variants={container}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"
       >
-        {KPIS.map((kpi) => (
+        {KPIS.filter((k) =>
+          ['inbound', 'outbound', 'pickup'].includes(k.id)
+        ).map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
         ))}
       </motion.div>
 
-      {/* ROW 3 — Agents + Activity */}
+      {/* ROW 3 — Answer Speed / Booked Calls (2 cols, wider) */}
+      <motion.div
+        variants={container}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+      >
+        {KPIS.filter((k) => ['speed', 'booked'].includes(k.id)).map((kpi) => (
+          <KpiCard key={kpi.id} kpi={kpi} />
+        ))}
+      </motion.div>
+
+      {/* ROW 4 — Agents + Activity */}
       <motion.div
         variants={container}
         style={{
@@ -328,104 +345,131 @@ export default function OverviewPage() {
 }
 
 // ---------------------------------------------------------------------------
-// KPI card
+// Revenue hero card (full width)
 // ---------------------------------------------------------------------------
 
-function KpiCard({ kpi }) {
+function RevenueHeroCard({ kpi }) {
+  if (!kpi) return null;
   const Icon = kpi.icon;
   const Arrow = kpi.delta >= 0 ? ArrowUpRight : ArrowDownRight;
-  const positiveColor = 'var(--emerald-bright)';
-  const negativeColor = '#fb7185';
-  const color = kpi.positive ? positiveColor : negativeColor;
-  const bg = kpi.positive
-    ? 'rgba(16,185,129,0.1)'
-    : 'rgba(251,113,133,0.1)';
-  const borderCol = kpi.positive
-    ? 'rgba(16,185,129,0.28)'
-    : 'rgba(251,113,133,0.3)';
   const data = kpi.series.map((y, i) => ({ i, y }));
 
   return (
     <motion.div
       variants={item}
-      className="dark-card"
-      style={{
-        padding: 18,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      }}
+      className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 py-8 px-6 sm:px-8 shadow-[inset_4px_0_0_#10b981] ring-1 ring-emerald-500/20"
     >
+      {/* Emerald glow backdrop */}
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <span
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: 8,
-              background: 'var(--emerald-tint)',
-              border: '1px solid rgba(16,185,129,0.25)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Icon size={13} style={{ color: 'var(--emerald-bright)' }} />
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent"
+      />
+
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-5">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/40">
+            <Icon size={26} className="text-emerald-400" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-400">
+              Revenue Generated
+            </div>
+            <div className="mt-1 text-5xl font-bold tracking-tight text-white tabular-nums sm:text-6xl">
+              {kpi.value}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+            <Arrow size={14} />
+            {kpi.deltaLabel}
           </span>
-          <span className="t-eyebrow">{kpi.label}</span>
-        </span>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            padding: '2px 8px',
-            borderRadius: 999,
-            fontSize: 10.5,
-            fontWeight: 700,
-            color,
-            background: bg,
-            border: `1px solid ${borderCol}`,
-          }}
-        >
-          <Arrow size={10} />
+          <div className="h-14 w-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data}
+                margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="home-kpi-revenue-hero"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.55} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="y"
+                  stroke="#10b981"
+                  strokeWidth={2.25}
+                  fill="url(#home-kpi-revenue-hero)"
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KPI card (Row 2 + Row 3)
+// ---------------------------------------------------------------------------
+
+function KpiCard({ kpi }) {
+  const Icon = kpi.icon;
+  const Arrow = kpi.delta >= 0 ? ArrowUpRight : ArrowDownRight;
+  const data = kpi.series.map((y, i) => ({ i, y }));
+
+  return (
+    <motion.div
+      variants={item}
+      className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+    >
+      {/* Top: icon circle + label + delta badge */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/30">
+            <Icon size={20} className="text-emerald-400" />
+          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
+            {kpi.label}
+          </span>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+          <Arrow size={11} />
           {Math.abs(kpi.delta)}%
         </span>
       </div>
 
-      <div
-        style={{
-          fontSize: 26,
-          fontWeight: 700,
-          color: 'var(--text-bright)',
-          fontVariantNumeric: 'tabular-nums',
-          letterSpacing: '-0.01em',
-          lineHeight: 1,
-        }}
-      >
+      {/* Number */}
+      <div className="text-3xl font-bold leading-none tracking-tight text-white tabular-nums">
         {kpi.value}
       </div>
 
-      <div style={{ height: 40 }}>
+      {/* Trend chart ("progress bar") */}
+      <div className="h-10">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
             margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
           >
             <defs>
-              <linearGradient id={`home-kpi-${kpi.id}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                id={`home-kpi-${kpi.id}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
