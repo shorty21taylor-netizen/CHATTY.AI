@@ -11,16 +11,14 @@ import {
 import {
   Bell,
   Zap,
-  Play,
-  Volume2,
-  Users,
-  Clock,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneCall,
+  CalendarCheck,
   DollarSign,
-  Target,
   ArrowUpRight,
   ArrowDownRight,
   Phone,
-  CalendarCheck,
   FileText,
   MessageSquare,
   CloudLightning,
@@ -35,109 +33,66 @@ import {
 
 const OPERATOR_NAME = 'Marcus';
 
-const BRIEF_PRIORITY = 'high';
-const BRIEF_ACTIONS = [
-  {
-    id: 1,
-    text: 'Callback sprint on 3 stale Google LSA leads (4h+ old)',
-    impact: '$12,400 opportunity',
-    tone: 'emerald',
-  },
-  {
-    id: 2,
-    text: 'Push Miller roof estimate from draft to sent before lunch',
-    impact: '$18,700 recoverable',
-    tone: 'emerald',
-  },
-  {
-    id: 3,
-    text: 'Reroute Thompson + Patel tear-offs around tomorrow\'s 2–4pm storm cell',
-    impact: 'Storm prep',
-    tone: 'amber',
-  },
-  {
-    id: 4,
-    text: 'Pause the underperforming Facebook "roof repair general" creative',
-    impact: '15% cost reduction',
-    tone: 'indigo',
-  },
-];
-
-const PRIORITY_META = {
-  high: {
-    label: 'HIGH PRIORITY',
-    bg: 'rgba(244,63,94,0.12)',
-    border: 'rgba(244,63,94,0.4)',
-    color: '#fb7185',
-  },
-  medium: {
-    label: 'MEDIUM PRIORITY',
-    bg: 'rgba(245,158,11,0.12)',
-    border: 'rgba(245,158,11,0.35)',
-    color: '#fbbf24',
-  },
-  low: {
-    label: 'LOW PRIORITY',
-    bg: 'rgba(16,185,129,0.12)',
-    border: 'rgba(16,185,129,0.3)',
-    color: '#10b981',
-  },
-};
-
-const IMPACT_TONE = {
-  emerald: {
-    bg: 'rgba(16,185,129,0.12)',
-    color: '#10b981',
-    border: 'rgba(16,185,129,0.28)',
-  },
-  amber: {
-    bg: 'rgba(245,158,11,0.12)',
-    color: '#fbbf24',
-    border: 'rgba(245,158,11,0.28)',
-  },
-  indigo: {
-    bg: 'rgba(99,102,241,0.12)',
-    color: '#818cf8',
-    border: 'rgba(99,102,241,0.28)',
-  },
-};
-
 const KPIS = [
   {
-    id: 'leads',
-    label: 'Total Leads Today',
-    icon: Users,
-    value: '34',
-    delta: 12,
+    id: 'inbound',
+    label: 'Inbound Calls',
+    icon: PhoneIncoming,
+    value: '47',
+    delta: 18,
+    deltaLabel: '+18%',
     positive: true,
-    series: [12, 18, 22, 19, 26, 28, 34],
+    series: [22, 28, 31, 35, 38, 42, 47],
   },
   {
-    id: 'response',
-    label: 'Response Time',
-    icon: Clock,
-    value: '8 min',
-    delta: -23,
+    id: 'outbound',
+    label: 'Outbound Calls',
+    icon: PhoneOutgoing,
+    value: '23',
+    delta: 6,
+    deltaLabel: '+6%',
+    positive: true,
+    series: [14, 16, 17, 19, 20, 22, 23],
+  },
+  {
+    id: 'pickup',
+    label: 'Avg Pickup Rate',
+    icon: PhoneCall,
+    value: '94.2%',
+    delta: 2.1,
+    deltaLabel: '+2.1%',
+    positive: true,
+    series: [90.4, 91.2, 92.0, 92.8, 93.1, 93.7, 94.2],
+  },
+  {
+    id: 'speed',
+    label: 'Answer Speed',
+    icon: Zap,
+    value: '0.8s',
+    delta: -12,
+    deltaLabel: '-12%',
     positive: true, // lower is better
-    series: [14, 13, 12, 10, 11, 9, 8],
+    series: [1.4, 1.3, 1.1, 1.0, 0.95, 0.85, 0.8],
   },
   {
-    id: 'pipeline',
-    label: 'Pipeline Value',
-    icon: DollarSign,
-    value: '$142,800',
-    delta: 8,
+    id: 'booked',
+    label: 'Booked Calls',
+    icon: CalendarCheck,
+    value: '31',
+    delta: 22,
+    deltaLabel: '+22%',
     positive: true,
-    series: [112, 118, 122, 128, 134, 138, 142],
+    series: [12, 16, 19, 22, 25, 28, 31],
   },
   {
-    id: 'close',
-    label: 'Close Rate',
-    icon: Target,
-    value: '31%',
-    delta: -2,
-    positive: false,
-    series: [34, 33, 33, 32, 32, 31, 31],
+    id: 'revenue',
+    label: 'Revenue Generated',
+    icon: DollarSign,
+    value: '$48,200',
+    delta: 15,
+    deltaLabel: '+15%',
+    positive: true,
+    series: [28, 32, 36, 39, 42, 45, 48],
   },
 ];
 
@@ -346,20 +301,10 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* ROW 1 — Today's Brief */}
-      <motion.div variants={item} style={{ marginBottom: 22 }}>
-        <TodayBriefCard date={todayDate} />
-      </motion.div>
-
-      {/* ROW 2 — KPI grid */}
+      {/* ROW 1 — KPI grid */}
       <motion.div
         variants={container}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
-          marginBottom: 22,
-        }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
       >
         {KPIS.map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
@@ -379,248 +324,6 @@ export default function OverviewPage() {
         <RecentActivityCard />
       </motion.div>
     </motion.div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Today's Brief card
-// ---------------------------------------------------------------------------
-
-function TodayBriefCard({ date }) {
-  const priority = PRIORITY_META[BRIEF_PRIORITY];
-  return (
-    <div
-      className="dark-card"
-      style={{
-        position: 'relative',
-        padding: '24px 28px',
-        paddingLeft: 30,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Gradient left border */}
-      <span
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          width: 4,
-          background:
-            'linear-gradient(180deg, #10b981 0%, #6366f1 100%)',
-          boxShadow: '0 0 18px rgba(16,185,129,0.25)',
-        }}
-      />
-
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 16,
-          marginBottom: 18,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              background: 'var(--emerald-tint)',
-              border: '1px solid rgba(16,185,129,0.3)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Zap size={16} style={{ color: 'var(--emerald-bright)' }} fill="currentColor" />
-          </span>
-          <div>
-            <div className="t-eyebrow" style={{ marginBottom: 2 }}>
-              Decision Engine · 6:00a
-            </div>
-            <div
-              className="t-h2"
-              style={{ margin: 0, letterSpacing: '-0.005em' }}
-            >
-              Today&apos;s Intelligence Brief
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 12,
-              color: 'var(--text-muted)',
-              fontWeight: 500,
-            }}
-          >
-            {date}
-          </span>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '3px 10px',
-              borderRadius: 999,
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: '0.1em',
-              background: priority.bg,
-              color: priority.color,
-              border: `1px solid ${priority.border}`,
-            }}
-          >
-            {priority.label}
-          </span>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {BRIEF_ACTIONS.map((a) => {
-          const tone = IMPACT_TONE[a.tone] || IMPACT_TONE.emerald;
-          return (
-            <div
-              key={a.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                padding: '12px 14px',
-                borderRadius: 12,
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <span
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: '50%',
-                  background:
-                    'linear-gradient(135deg, var(--emerald-bright), #6366f1)',
-                  color: '#ffffff',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                {a.id}
-              </span>
-              <div
-                style={{
-                  flex: 1,
-                  fontSize: 13.5,
-                  lineHeight: 1.45,
-                  color: 'var(--text-bright)',
-                  minWidth: 0,
-                }}
-              >
-                {a.text}
-              </div>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: tone.bg,
-                  color: tone.color,
-                  border: `1px solid ${tone.border}`,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {a.impact}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Voice note */}
-      <div
-        style={{
-          marginTop: 16,
-          padding: '12px 14px',
-          borderRadius: 12,
-          background:
-            'linear-gradient(90deg, rgba(16,185,129,0.06), rgba(99,102,241,0.06))',
-          border: '1px dashed rgba(16,185,129,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-        }}
-      >
-        <button
-          type="button"
-          aria-label="Play voice summary"
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: '50%',
-            background: 'var(--emerald-bright)',
-            border: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(16,185,129,0.4)',
-          }}
-        >
-          <Play size={13} fill="#ffffff" style={{ marginLeft: 2 }} />
-        </button>
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--text-bright)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <Volume2 size={13} style={{ color: 'var(--emerald-bright)' }} />
-            Listen to voice summary
-          </div>
-          <div
-            className="t-body-sm"
-            style={{ color: 'var(--text-muted)', marginTop: 2 }}
-          >
-            A 47-second walk-through of the four priorities above.
-          </div>
-        </div>
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: 'var(--text-muted)',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          0:47
-        </span>
-      </div>
-    </div>
   );
 }
 

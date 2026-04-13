@@ -11,6 +11,8 @@ import {
   BarChart3,
   MessageSquare,
   Users,
+  Mic,
+  GitBranch,
   CalendarCheck,
   FileText,
   Settings,
@@ -42,6 +44,8 @@ const NAV_GROUPS = [
     defaultOpen: true,
     items: [
       { href: '/dashboard/agents', label: 'Agents', icon: Bot },
+      { href: '/dashboard/crm', label: 'CRM', icon: Users },
+      { href: '/dashboard/voice', label: 'Voice Agents', icon: Mic },
       { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
       { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
     ],
@@ -51,6 +55,7 @@ const NAV_GROUPS = [
     label: 'Management',
     defaultOpen: true,
     items: [
+      { href: '/dashboard/pipeline', label: 'Pipeline', icon: GitBranch },
       { href: '/dashboard/contacts', label: 'Contacts', icon: Users },
       { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarCheck },
       { href: '/dashboard/proposals', label: 'Proposals', icon: FileText },
