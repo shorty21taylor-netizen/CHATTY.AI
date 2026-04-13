@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bot, Users, Crosshair } from "lucide-react";
+import { Bot, Users, Crosshair, MessageSquare } from "lucide-react";
 import { getAdminSession, clearAdminSession } from "@/lib/admin";
 import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
   { href: "/dashboard/brief", label: "Mission Control", lucide: Crosshair, pulse: true },
+  { href: "/dashboard/feedback", label: "Feedback", lucide: MessageSquare },
   { href: "/dashboard/crm", label: "CRM", lucide: Users },
   { href: "/dashboard/agents", label: "Agents", lucide: Bot, pulse: true },
   { href: "/dashboard/inbound", label: "Inbound Calls", icon: "↙" },
