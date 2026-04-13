@@ -9,17 +9,20 @@ import { textToSpeech } from "@/lib/elevenlabs/client";
  * Sends the Daily Brief via SMS + generates voice note via ElevenLabs TTS.
  */
 export const briefDeliver = inngest.createFunction(
-  { id: "brief-deliver", name: "Brief Delivery" },
-  { event: "brief/deliver" },
+  {
+    id: "brief-deliver",
+    name: "Brief Delivery",
+    triggers: [{ event: "brief/deliver" }],
+  },
   async ({ event, step }) => {
     const { orgId, briefId } = event.data;
 
-    const brief = await step.run("fetch-brief", async () => {
+    const brief = (await step.run("fetch-brief", async () => {
       return await queryOne(
         `SELECT * FROM decision_briefs WHERE id = $1 AND org_id = $2`,
         [briefId, orgId]
       );
-    });
+    })) as any;
 
     if (!brief) { throw new Error(`Brief ${briefId} not found`); }
 
@@ -34,8 +37,8 @@ export const briefDeliver = inngest.createFunction(
     const smsResult = await step.run("send-sms", async () => {
       const operatorPhone = "";
       if (!operatorPhone) return null;
-      const recs = brief.recommendations || [];
-      const smsText = [`Good morning! Here's your Daily Brief:`,"",...recs.map((r,i)=>`${i+1}. ${r.action}`),"","Reply Y if you acted on these!"].join("\n");
+      const recs: any[] = brief.recommendations || [];
+      const smsText = [`Good morning! Here's your Daily Brief:`,"",...recs.map((r: any, i: number)=>`${i+1}. ${r.action}`),"","Reply Y if you acted on these!"].join("\n");
       return await sendSms({ to: operatorPhone, body: smsText });
     });
 

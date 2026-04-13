@@ -1,36 +1,72 @@
-import { Pool } from "pg";
+import { Pool, type PoolClient, type QueryResultRow } from "pg";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required");
+let _pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (_pool) return _pool;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is required");
+  }
+  _pool = new Pool({
+    connectionString,
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? { rejectUnauthorized: false }
+        : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
+  _pool.on("error", (err) => {
+    console.error("[DB] Pool error:", err.message);
+  });
+  return _pool;
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+// Proxy so `pool.query(...)` / `pool.connect()` still works for existing callers.
+export const pool = new Proxy({} as Pool, {
+  get(_target, prop, receiver) {
+    const actual = getPool() as unknown as Record<PropertyKey, unknown>;
+    const value = actual[prop as PropertyKey];
+    return typeof value === "function" ? (value as Function).bind(actual) : value;
+  },
 });
 
-pool.on("error", (err) => { console.error("[DB] Pool error:", err.message); });
-
-export async function query(text, params) {
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: unknown[]
+): Promise<T[]> {
   const start = Date.now();
-  const result = await pool.query(text, params);
+  const result = await getPool().query<T>(text, params as unknown[] | undefined);
   const duration = Date.now() - start;
-  if (duration > 1000) console.warn(`[DB] Slow query (${duration}ms)`);
+  if (duration > 1000) {
+    console.warn(`[DB] Slow query (${duration}ms): ${text.slice(0, 120)}`);
+  }
   return result.rows;
 }
 
-export async function queryOne(text, params) {
-  const rows = await query(text, params);
+export async function queryOne<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: unknown[]
+): Promise<T | null> {
+  const rows = await query<T>(text, params);
   return rows[0] ?? null;
 }
 
-export async function transaction(callback) {
-  const client = await pool.connect();
+export async function transaction<T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> {
+  const client = await getPool().connect();
   try {
-    await client.query("BEBSˆŠNÂˆÛÛœİ™\İ[H]ØZ]Ø[˜XÚÊÛY[
-NÂˆ]ØZ]ÛY[œ]Y\JÓÓSRUŠNÂˆ™]\›ˆ™\İ[ÂˆHØ]Ú
-\œ›ÜŠHÂˆ]ØZ]ÛY[œ]Y\J”“ÓPÒÈŠNÂˆ›İÈ\œ›ÜÂˆHš[˜[HÈÛY[œ™[X\ÙJ
-NÈBŸB‚™^ÜÈÛÛNÂ™^ÜY˜][È]Y\K]Y\SÛ™K˜[œØXİ[Û‹ÛÛNÂ
+    await client.query("BEGIN");
+    const result = await callback(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}

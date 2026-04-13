@@ -1,4 +1,4 @@
-import { InnGest } from "inngest";
+import { Inngest } from "inngest";
 
 export const inngest = new Inngest({
   id: "chatty-ai",

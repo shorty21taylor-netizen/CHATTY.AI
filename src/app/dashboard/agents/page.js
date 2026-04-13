@@ -212,7 +212,7 @@ export default function AgentsPage() {
   );
 }
 
-export function VoiceNoteBadge() {
+function VoiceNoteBadge() {
   return (
     <span
       style={{

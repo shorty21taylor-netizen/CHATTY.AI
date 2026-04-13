@@ -2,8 +2,11 @@ import { inngest } from "../client";
 import { runDecisionEngine } from "@/lib/decision-engine";
 
 export const decisionRun = inngest.createFunction(
-  { id: "decision-run", name: "Decision Engine Run" },
-  { event: "decision/trigger" },
+  {
+    id: "decision-run",
+    name: "Decision Engine Run",
+    triggers: [{ event: "decision/trigger" }],
+  },
   async ({ event, step }) => {
     const { orgId, vertical, operatorName } = event.data;
     const result = await step.run("run-decision-engine", async () => {
@@ -15,13 +18,16 @@ export const decisionRun = inngest.createFunction(
 );
 
 export const dailyDecisionTrigger = inngest.createFunction(
-  { id: "daily-decision-trigger", name: "Daily Decision Trigger" },
-  { cron: "30 5 * * *" },
+  {
+    id: "daily-decision-trigger",
+    name: "Daily Decision Trigger",
+    triggers: [{ cron: "30 5 * * *" }],
+  },
   async ({ step }) => {
     const { query } = await import("@/lib/db");
-    const orgs = await step.run("get-orgs", async () => {
+    const orgs = (await step.run("get-orgs", async () => {
       return await query(`SELECT DISTINCT org_id FROM signal_sources WHERE is_active = true`);
-    });
+    })) as Array<{ org_id: string }>;
     for (const org of orgs) {
       await step.sendEvent(`trigger-${org.org_id}`, { name: "decision/trigger", data: { orgId: org.org_id } });
     }

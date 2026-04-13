@@ -5,8 +5,11 @@ import { query } from "@/lib/db";
 import { generateEmbedding, eventToEmbeddingText } from "@/lib/utils/embedding";
 
 export const signalSync = inngest.createFunction(
-  { id: "signal-sync", name: "Signal Sync" },
-  { cron: "*/30 * * * *" },
+  {
+    id: "signal-sync",
+    name: "Signal Sync",
+    triggers: [{ cron: "*/30 * * * *" }],
+  },
   async ({ step }) => {
     const orgs = await step.run("get-active-orgs", async () => {
       const rows = await query(`SELECT DISTINCT org_id FROM signal_sources WHERE is_active = true`);

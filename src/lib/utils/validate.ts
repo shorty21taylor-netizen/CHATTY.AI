@@ -8,7 +8,7 @@ export const signalIngestSchema = z.object({
     "gmail", "weather", "custom",
   ]),
   event_type: z.string().min(1).max(100),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   entity_type: z.string().optional(),
   entity_id: z.string().optional(),
 });
@@ -26,7 +26,7 @@ export const feedbackSchema = z.object({
   feedback_type: z.enum(["action_taken", "action_ignored", "outcome", "comment"]),
   feedback_text: z.string().max(2000).optional(),
   confidence_delta: z.number().min(-1).max(1).optional(),
-  outcome_data: z.record(z.any()).optional(),
+  outcome_data: z.record(z.string(), z.any()).optional(),
 });
 
 // Source Registration
@@ -36,8 +36,8 @@ export const sourceRegistrationSchema = z.object({
     "gmail", "weather", "custom",
   ]),
   name: z.string().min(1).max(200),
-  credentials: z.record(z.any()).optional(),
-  config: z.record(z.any()).optional(),
+  credentials: z.record(z.string(), z.any()).optional(),
+  config: z.record(z.string(), z.any()).optional(),
 });
 
 /**
