@@ -1,4 +1,4 @@
-import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
 
 let _pool: Pool | null = null;
 
@@ -26,32 +26,36 @@ function getPool(): Pool {
 
 // Proxy so `pool.query(...)` / `pool.connect()` still works for existing callers.
 export const pool = new Proxy({} as Pool, {
-  get(_target, prop, receiver) {
+  get(_target, prop) {
     const actual = getPool() as unknown as Record<PropertyKey, unknown>;
     const value = actual[prop as PropertyKey];
     return typeof value === "function" ? (value as Function).bind(actual) : value;
   },
 });
 
+/**
+ * Thin wrapper around pg.Pool.query that preserves the native QueryResult
+ * shape (so callers can use `.rows`, `.rowCount`, etc.).
+ */
 export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params?: unknown[]
-): Promise<T[]> {
+): Promise<QueryResult<T>> {
   const start = Date.now();
   const result = await getPool().query<T>(text, params as unknown[] | undefined);
   const duration = Date.now() - start;
   if (duration > 1000) {
     console.warn(`[DB] Slow query (${duration}ms): ${text.slice(0, 120)}`);
   }
-  return result.rows;
+  return result;
 }
 
 export async function queryOne<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params?: unknown[]
 ): Promise<T | null> {
-  const rows = await query<T>(text, params);
-  return rows[0] ?? null;
+  const result = await query<T>(text, params);
+  return result.rows[0] ?? null;
 }
 
 export async function transaction<T>(

@@ -25,20 +25,20 @@ export async function POST(req: Request) {
     const body = (params.Body || "").trim().toLowerCase();
 
     // Look up org by phone number (from operator's reply)
-    const briefs = await query(
+    const briefs = await query<{ id: string; org_id: string }>(
       `SELECT db.*, db.org_id FROM decision_briefs db
        WHERE db.delivered_at IS NOT NULL
        ORDER BY db.delivered_at DESC LIMIT 1`
     );
 
-    if (briefs.length === 0) {
+    if (briefs.rows.length === 0) {
       return new Response(
         `<Response><Message>Thanks! No active brief found.</Message></Response>`,
         { headers: { "Content-Type": "text/xml" } }
       );
     }
 
-    const brief = briefs[0];
+    const brief = briefs.rows[0];
 
     // Parse feedback from SMS reply
     let feedbackType = "comment";
