@@ -139,3 +139,73 @@ Format your response as valid JSON:
   },
   "voice_summary": "60-second script for TTS. Conversational, warm, like a trusted advisor giving a morning update."
 }`;
+
+// -----------------------------------------------------------------------------
+// Prompt builders
+// -----------------------------------------------------------------------------
+// Builders compose the system prompt with the per-run user message. They are
+// what each pass hands to the Anthropic SDK once the API key is wired in.
+// Passing the system prompt through the builder keeps every input visible to
+// callers and easier to inspect in decision_engine_trace. -----------------------------------------------------------------------------
+
+export interface Pass1PromptContext {
+  signalSummary: Record<string, unknown>;
+  recentEvents: Record<string, unknown>[];
+  orgVertical: string;
+  externalContext?: Record<string, unknown>;
+}
+
+export function buildPass1Prompt(context: Pass1PromptContext): string {
+  const {
+    signalSummary,
+    recentEvents,
+    orgVertical,
+    externalContext = {},
+  } = context;
+
+  const user = `Analyze the last 24 hours of CRM signals for a ${orgVertical} contractor.
+
+## Signal Summary
+${JSON.stringify(signalSummary, null, 2)}
+
+## Recent Events (top 20)
+${JSON.stringify(recentEvents.slice(0, 20), null, 2)}
+
+## External Context
+${JSON.stringify(externalContext, null, 2)}
+
+Return JSON only, matching the schema in the system prompt.`;
+
+  return `${PASS_1_SYSTEM}\n\n---\n\n${user}`;
+}
+
+export function buildPass2Prompt(
+  pass1Output: Record<string, unknown>,
+  previousBriefs: Record<string, unknown>[] = []
+): string {
+  const user = `Reason about the following pattern analysis and produce a strategic framework.
+
+## Pass 1 Output
+${JSON.stringify(pass1Output, null, 2)}
+
+## Previous Briefs (last ${previousBriefs.length})
+${JSON.stringify(previousBriefs.slice(0, 7), null, 2)}
+
+Return JSON only, matching the schema in the system prompt.`;
+
+  return `${PASS_2_SYSTEM}\n\n---\n\n${user}`;
+}
+
+export function buildPass3Prompt(
+  pass2Output: Record<string, unknown>,
+  orgName: string
+): string {
+  const user = `Write the Daily Brief for ${orgName}. It ships by SMS at 6am.
+
+## Strategic Analysis
+${JSON.stringify(pass2Output, null, 2)}
+
+Return JSON only, matching the schema in the system prompt.`;
+
+  return `${PASS_3_SYSTEM}\n\n---\n\n${user}`;
+}
