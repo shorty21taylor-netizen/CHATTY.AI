@@ -225,19 +225,19 @@ export default function CrmOverviewPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/crm/contacts">
+          <Link href="/dashboard/crm/contacts">
             <Button size="sm" variant="outline">
               <Plus size={14} />
               Add Contact
             </Button>
           </Link>
-          <Link href="/crm/leads">
+          <Link href="/dashboard/crm/leads">
             <Button size="sm" variant="outline">
               <Plus size={14} />
               New Lead
             </Button>
           </Link>
-          <Link href="/crm/leads">
+          <Link href="/dashboard/crm/leads">
             <Button size="sm">
               <Plus size={14} />
               Create Estimate
@@ -301,7 +301,7 @@ export default function CrmOverviewPage() {
             </div>
           </div>
           <Link
-            href="/crm/leads?overdue_only=true"
+            href="/dashboard/crm/leads?overdue_only=true"
             className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-amber-300"
           >
             Review leads <ArrowUpRight size={12} />

@@ -6,10 +6,10 @@ import { LayoutDashboard, Users, Target, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
-  { href: '/crm', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/crm/contacts', label: 'Contacts', icon: Users },
-  { href: '/crm/leads', label: 'Leads', icon: Target },
-  { href: '/crm/jobs', label: 'Jobs', icon: Briefcase },
+  { href: '/dashboard/crm', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/crm/contacts', label: 'Contacts', icon: Users },
+  { href: '/dashboard/crm/leads', label: 'Leads', icon: Target },
+  { href: '/dashboard/crm/jobs', label: 'Jobs', icon: Briefcase },
 ];
 
 export default function CrmNav() {

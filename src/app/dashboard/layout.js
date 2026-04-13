@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "◈" },
-  { href: "/crm", label: "CRM", lucide: Users, external: true },
+  { href: "/dashboard/crm", label: "CRM", lucide: Users },
   { href: "/dashboard/agents", label: "Agents", lucide: Bot, pulse: true },
   { href: "/dashboard/inbound", label: "Inbound Calls", icon: "↙" },
   { href: "/dashboard/outbound", label: "Outbound Calls", icon: "↗" },
@@ -186,9 +186,7 @@ export default function DashboardLayout({ children }) {
             const active =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
-                : item.href === "/crm"
-                  ? pathname === "/crm" || pathname.startsWith("/crm/")
-                  : pathname.startsWith(item.href);
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const LucideIcon = item.lucide;
             return (
               <Link
