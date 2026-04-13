@@ -2,236 +2,328 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone,
-  Zap,
   MessageSquare,
-  CheckCircle,
-  AlertCircle,
-  FileText,
-  Shield,
-  Repeat,
-  RotateCw,
-  Users,
-  Mic,
+  Mail,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpRight,
+  Circle,
+  Clock,
+  Gauge,
+  Smile,
 } from 'lucide-react';
-import { PILLARS, AGENTS, STATUS_META } from '@/lib/agents';
-import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
+import { VOICE_AGENTS, VOICE_AGENT_STATUS } from '@/lib/voiceAgents';
+import { VoiceConfigPanel } from '@/components/agent/VoiceConfigPanel';
 
-const ICONS = {
-  Phone,
-  Zap,
-  MessageSquare,
-  CheckCircle,
-  AlertCircle,
-  FileText,
-  Shield,
-  Repeat,
-  RotateCw,
-  Users,
+const TYPE_ICON = {
+  voice: Phone,
+  sms: MessageSquare,
+  email: Mail,
 };
 
 export default function AgentsPage() {
-  // Local enable state keyed by agent id (seeded from catalog status).
-  const initial = Object.fromEntries(AGENTS.map((a) => [a.id, a.status === 'active']));
-  const [enabled, setEnabled] = useState(initial);
+  const [expandedId, setExpandedId] = useState(null);
 
   return (
     <div>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div className="t-eyebrow">Agents</div>
+        <div className="t-eyebrow">Voice Agents</div>
         <h1 className="t-h1" style={{ margin: '8px 0 6px' }}>
-          Your AI sales team
+          Your AI phone team
         </h1>
-        <p className="t-body" style={{ color: 'var(--text-muted)', margin: 0 }}>
-          10 agents, one funnel. Toggle on what you need.
+        <p
+          className="t-body"
+          style={{ color: 'var(--text-muted)', margin: 0, maxWidth: 640 }}
+        >
+          Configure the voice, personality, and call-handling behavior for every
+          agent. ElevenLabs powers all live voice.
         </p>
       </div>
 
-      {PILLARS.map((p) => (
-        <section key={p.tag} style={{ marginBottom: 38 }}>
-          {/* Pillar heading row */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              marginBottom: 14,
-            }}
+      {/* Grid */}
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.08 } },
+        }}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 18,
+          marginBottom: 24,
+        }}
+      >
+        {VOICE_AGENTS.map((agent) => {
+          const expanded = expandedId === agent.id;
+          return (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              expanded={expanded}
+              onToggle={() =>
+                setExpandedId((id) => (id === agent.id ? null : agent.id))
+              }
+            />
+          );
+        })}
+      </motion.div>
+
+      {/* Inline expanded config panel — full-width under the grid */}
+      <AnimatePresence initial={false}>
+        {expandedId ? (
+          <motion.div
+            key={expandedId}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            style={{ marginBottom: 28 }}
           >
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '4px 12px',
-                borderRadius: 999,
-                background: 'var(--emerald-tint)',
-                border: '1px solid rgba(16,185,129,0.3)',
-                fontSize: 10.5,
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                color: 'var(--emerald-bright)',
-              }}
-            >
-              {p.tag}
-            </span>
-            <div className="t-body-sm">{p.description}</div>
-          </div>
-
-          <AnimatedGroup
-            preset="blur-slide"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}
-          >
-            {AGENTS.filter((a) => a.pillar === p.tag).map((a) => {
-              const Icon = ICONS[a.icon] || Phone;
-              const status = a.status;
-              const meta = STATUS_META[status];
-              const on = enabled[a.id];
-              return (
-                <div
-                  key={a.id}
-                  className={`dark-card ${a.featured ? 'glow-border' : ''}`}
-                  style={{ padding: 20, display: 'flex', flexDirection: 'column' }}
-                >
-                  {/* Top: icon + name */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        background: 'var(--emerald-tint)',
-                        border: '1px solid rgba(16,185,129,0.25)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon size={16} style={{ color: 'var(--emerald-bright)' }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="t-h3">{a.name}</div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="t-body-sm" style={{ margin: 0, marginBottom: 14, minHeight: 38 }}>
-                    {a.description}
-                  </p>
-
-                  {/* Voice note badge */}
-                  {a.voiceNotes ? (
-                    <div style={{ marginBottom: 12 }}>
-                      <VoiceNoteBadge />
-                    </div>
-                  ) : null}
-
-                  {/* Status row */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 10,
-                      paddingTop: 12,
-                      borderTop: '1px solid var(--border)',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={on}
-                      onClick={() => setEnabled((e) => ({ ...e, [a.id]: !e[a.id] }))}
-                      style={{
-                        width: 38,
-                        height: 22,
-                        borderRadius: 999,
-                        background: on ? 'var(--emerald-bright)' : 'var(--surface-3)',
-                        border: '1px solid ' + (on ? 'var(--emerald-bright)' : 'var(--border)'),
-                        position: 'relative',
-                        cursor: 'pointer',
-                        padding: 0,
-                        transition: 'background .15s',
-                      }}
-                    >
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: 2,
-                          left: on ? 18 : 2,
-                          width: 16,
-                          height: 16,
-                          borderRadius: '50%',
-                          background: '#ffffff',
-                          transition: 'left .15s',
-                        }}
-                      />
-                    </button>
-
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '3px 10px',
-                        borderRadius: 999,
-                        fontSize: 10.5,
-                        fontWeight: 700,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        background: meta.bg,
-                        color: meta.color,
-                        border: '1px solid ' + meta.border,
-                      }}
-                    >
-                      {meta.label}
-                    </span>
-                  </div>
-
-                  {/* Configure link */}
-                  <Link
-                    href={`/dashboard/agents/${a.id}`}
-                    style={{
-                      marginTop: 12,
-                      color: 'var(--emerald-bright)',
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    Configure {'\u2192'}
-                  </Link>
-                </div>
-              );
-            })}
-          </AnimatedGroup>
-        </section>
-      ))}
+            <VoiceConfigPanel
+              defaultOpen
+              agentName={
+                VOICE_AGENTS.find((a) => a.id === expandedId)?.name ||
+                'Voice Agent'
+              }
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
 
-function VoiceNoteBadge() {
+function AgentCard({ agent, expanded, onToggle }) {
+  const Icon = TYPE_ICON[agent.type] || Phone;
+  const status = VOICE_AGENT_STATUS[agent.status] || VOICE_AGENT_STATUS.draft;
+
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 12 },
+        show: { opacity: 1, y: 0 },
+      }}
+      className="dark-card"
+      style={{
+        padding: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        borderColor: expanded ? 'var(--emerald-bright)' : undefined,
+        boxShadow: expanded ? '0 0 0 1px var(--emerald-glow)' : undefined,
+        transition: 'border-color .15s, box-shadow .15s',
+      }}
+    >
+      {/* Top row: icon + name + status */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            background: 'var(--emerald-tint)',
+            border: '1px solid rgba(16,185,129,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={18} style={{ color: 'var(--emerald-bright)' }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="t-h3" style={{ marginBottom: 4 }}>
+            {agent.name}
+          </div>
+          <StatusBadge status={status} />
+        </div>
+      </div>
+
+      {/* Description */}
+      <p
+        className="t-body-sm"
+        style={{
+          margin: 0,
+          marginBottom: 14,
+          color: 'var(--text-muted)',
+          minHeight: 40,
+        }}
+      >
+        {agent.description}
+      </p>
+
+      {/* Last active */}
+      <div
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          marginBottom: 16,
+          fontSize: 11.5,
+          color: 'var(--text-subtle)',
+        }}
+      >
+        <Clock size={11} />
+        <span>Last active {agent.lastActive}</span>
+      </div>
+
+      {/* Quick stats */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 8,
+          padding: '12px 0',
+          borderTop: '1px solid var(--border)',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 14,
+        }}
+      >
+        <Stat
+          label="Calls"
+          value={agent.stats.callsHandled}
+          icon={Phone}
+        />
+        <Stat
+          label="Avg"
+          value={agent.stats.avgDuration}
+          icon={Gauge}
+        />
+        <Stat
+          label="CSAT"
+          value={`${agent.stats.satisfaction}%`}
+          icon={Smile}
+        />
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{
+            flex: 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            padding: '9px 12px',
+            borderRadius: 10,
+            border: expanded
+              ? '1px solid var(--emerald-bright)'
+              : '1px solid var(--border)',
+            background: expanded ? 'var(--emerald-tint)' : 'transparent',
+            color: expanded ? 'var(--emerald-bright)' : 'var(--text-bright)',
+            fontWeight: 600,
+            fontSize: 12.5,
+            cursor: 'pointer',
+            transition: 'all .15s',
+          }}
+        >
+          Configure
+          {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </button>
+        <Link
+          href={`/dashboard/agents/${agent.id}`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '9px 12px',
+            borderRadius: 10,
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            fontSize: 12.5,
+            fontWeight: 600,
+            textDecoration: 'none',
+            transition: 'all .15s',
+          }}
+        >
+          Open <ArrowUpRight size={12} />
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+function StatusBadge({ status }) {
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         gap: 5,
-        padding: '3px 9px',
+        padding: '2px 8px',
         borderRadius: 999,
-        background: 'var(--emerald-tint)',
-        border: '1px solid rgba(16,185,129,0.3)',
-        color: 'var(--emerald-bright)',
         fontSize: 10,
         fontWeight: 700,
-        letterSpacing: '0.05em',
+        letterSpacing: '0.08em',
         textTransform: 'uppercase',
+        background: status.bg,
+        color: status.color,
+        border: `1px solid ${status.border}`,
       }}
     >
-      <Mic size={10} />
-      Voice Notes Enabled
+      {status.dot ? (
+        <motion.span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: status.color,
+            display: 'inline-block',
+          }}
+          animate={{ opacity: [1, 0.35, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+        />
+      ) : (
+        <Circle size={6} style={{ color: status.color }} />
+      )}
+      {status.label}
     </span>
+  );
+}
+
+function Stat({ label, value, icon: Icon }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          color: 'var(--text-subtle)',
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          marginBottom: 3,
+        }}
+      >
+        <Icon size={10} />
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: 'var(--text-bright)',
+        }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }
