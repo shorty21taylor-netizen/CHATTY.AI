@@ -1,80 +1,53 @@
 'use client';
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   MessageCircle,
-  MessageSquare,
   Zap,
-  ClipboardList,
   FileText,
-  CalendarCheck,
+  MessageSquare,
+  FileCheck,
+  Calendar,
   Shield,
   Star,
   RotateCcw,
   Send,
-  Repeat,
-  Sparkles,
+  Users,
   Plus,
-  ArrowUpRight,
-  Activity,
-  Clock,
-  Wifi,
+  ArrowRight,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Agent data
 // ---------------------------------------------------------------------------
 
-const TELEGRAM_EA = {
-  id: 'telegram-ea',
-  name: 'Telegram Executive Assistant',
-  description:
-    'Your personal AI business advisor on Telegram. Ask anything about your business — revenue, pipeline, agents, what happened today. It knows everything.',
-  stats: [
-    { label: 'Messages Today', value: '12', icon: MessageCircle },
-    { label: 'Avg Response', value: '<2s', icon: Clock },
-    { label: 'Uptime', value: '99.9%', icon: Wifi },
-  ],
-};
-
 const PILLARS = [
   {
     id: 'capture',
-    label: 'Capture',
-    tagline: 'Lead generation & intake — turn every signal into a conversation.',
-    accent: {
-      color: '#10b981',
-      bright: 'var(--emerald-bright)',
-      tint: 'rgba(16,185,129,0.12)',
-      border: 'rgba(16,185,129,0.35)',
-      glow: 'rgba(16,185,129,0.25)',
-    },
+    label: 'CAPTURE',
+    accent: 'emerald',
     agents: [
       {
         id: 'instant-lead-response',
         name: 'Instant Lead Response',
         icon: Zap,
         status: 'active',
-        description:
-          'Responds to every incoming lead within 60 seconds, 24/7. Qualifies intent, captures info, routes to calendar.',
+        description: 'Responds to new leads in under 5 seconds via SMS',
         stats: [
-          { label: 'Leads Today', value: '8' },
-          { label: 'Avg Response', value: '47s' },
+          { label: 'Avg Response', value: '4.2s' },
+          { label: 'Leads Handled', value: '847' },
           { label: 'Conversion', value: '34%' },
         ],
       },
       {
         id: 'form-bot',
         name: 'Form Bot',
-        icon: ClipboardList,
+        icon: FileText,
         status: 'active',
-        description:
-          'Autonomous form submission and lead capture across all web properties.',
+        description: 'Captures and qualifies web form submissions instantly',
         stats: [
-          { label: 'Forms Processed', value: '23' },
-          { label: 'Capture Rate', value: '91%' },
-          { label: 'Errors', value: '0' },
+          { label: 'Forms Processed', value: '1,203' },
+          { label: 'Qualified', value: '67%' },
+          { label: 'Response Time', value: '1.1s' },
         ],
       },
       {
@@ -82,52 +55,42 @@ const PILLARS = [
         name: 'Social DM Agent',
         icon: MessageSquare,
         status: 'active',
-        description:
-          'Handles direct messages on Instagram and Facebook. Engages prospects, answers questions, books consultations.',
+        description: 'Monitors and replies to Facebook/Instagram DMs',
         stats: [
-          { label: 'DMs Handled', value: '15' },
-          { label: 'Response Rate', value: '98%' },
-          { label: 'Bookings', value: '4' },
+          { label: 'DMs Handled', value: '312' },
+          { label: 'Reply Rate', value: '98%' },
+          { label: 'Avg Time', value: '8s' },
         ],
       },
     ],
   },
   {
     id: 'convert',
-    label: 'Convert',
-    tagline: 'Sales progression & closing — move deals from interested to signed.',
-    accent: {
-      color: '#6366f1',
-      bright: '#818cf8',
-      tint: 'rgba(99,102,241,0.12)',
-      border: 'rgba(99,102,241,0.38)',
-      glow: 'rgba(99,102,241,0.25)',
-    },
+    label: 'CONVERT',
+    accent: 'indigo',
     agents: [
       {
-        id: 'quote-followup',
+        id: 'quote-follow-up',
         name: 'Quote Follow-Up',
-        icon: FileText,
+        icon: FileCheck,
         status: 'active',
-        description:
-          'Automatically follows up on every quote sent. Nudges at optimal intervals based on engagement signals.',
+        description: 'Follows up on sent quotes until they close or decline',
         stats: [
-          { label: 'Active Follow-ups', value: '12' },
-          { label: 'Reply Rate', value: '42%' },
-          { label: 'Closed', value: '3' },
+          { label: 'Quotes Tracked', value: '156' },
+          { label: 'Follow-ups Sent', value: '423' },
+          { label: 'Close Rate', value: '41%' },
         ],
       },
       {
         id: 'appointment-setter',
         name: 'Appointment Setter',
-        icon: CalendarCheck,
+        icon: Calendar,
         status: 'active',
-        description:
-          'Books inspections, estimates, and consultations directly into your calendar. Handles rescheduling.',
+        description: 'Books inspections and consultations automatically',
         stats: [
-          { label: 'Booked Today', value: '6' },
+          { label: 'Booked Today', value: '8' },
+          { label: 'This Week', value: '31' },
           { label: 'Show Rate', value: '89%' },
-          { label: 'No-shows', value: '1' },
         ],
       },
       {
@@ -135,12 +98,11 @@ const PILLARS = [
         name: 'Objection Handler',
         icon: Shield,
         status: 'active',
-        description:
-          'Addresses pricing concerns, competitor comparisons, and timing objections with proven scripts.',
+        description: 'Handles common objections with proven responses',
         stats: [
-          { label: 'Objections Handled', value: '9' },
-          { label: 'Win Rate', value: '67%' },
-          { label: 'Escalated', value: '2' },
+          { label: 'Objections Resolved', value: '234' },
+          { label: 'Win Rate', value: '62%' },
+          { label: 'Avg Touches', value: '2.3' },
         ],
       },
       {
@@ -148,11 +110,10 @@ const PILLARS = [
         name: 'Review Request',
         icon: Star,
         status: 'active',
-        description:
-          'Requests and collects 5-star reviews after completed jobs. Follows up until review is posted.',
+        description: 'Asks happy customers for Google/Yelp reviews',
         stats: [
-          { label: 'Requests Sent', value: '5' },
-          { label: 'Reviews Collected', value: '3' },
+          { label: 'Requests Sent', value: '189' },
+          { label: 'Reviews Received', value: '94' },
           { label: 'Avg Rating', value: '4.8' },
         ],
       },
@@ -160,71 +121,77 @@ const PILLARS = [
   },
   {
     id: 'reclaim',
-    label: 'Reclaim',
-    tagline: 'Recovery & re-engagement — resurrect pipeline left for dead.',
-    accent: {
-      color: '#f59e0b',
-      bright: '#fbbf24',
-      tint: 'rgba(245,158,11,0.12)',
-      border: 'rgba(245,158,11,0.38)',
-      glow: 'rgba(245,158,11,0.25)',
-    },
+    label: 'RECLAIM',
+    accent: 'amber',
     agents: [
       {
         id: 'dead-lead-reactivation',
         name: 'Dead Lead Reactivation',
         icon: RotateCcw,
         status: 'active',
-        description:
-          'Reactivates leads older than 60+ days with personalized re-engagement sequences.',
+        description: 'Re-engages cold leads with personalized outreach',
         stats: [
-          { label: 'Reactivated', value: '4' },
-          { label: 'Pipeline Added', value: '$12,400' },
-          { label: 'Response Rate', value: '18%' },
+          { label: 'Leads Revived', value: '67' },
+          { label: 'Reactivation Rate', value: '12%' },
+          { label: 'Revenue', value: '$34K' },
         ],
       },
       {
-        id: 'ghosted-bid-followup',
+        id: 'ghosted-bid-follow-up',
         name: 'Ghosted Bid Follow-Up',
         icon: Send,
         status: 'active',
-        description:
-          'Automatic follow-up on quotes that received no response. Uses escalating urgency.',
+        description: 'Follows up on proposals that went silent',
         stats: [
-          { label: 'Active Bids', value: '7' },
-          { label: 'Responses', value: '2' },
-          { label: 'Recovered', value: '$8,200' },
+          { label: 'Bids Tracked', value: '89' },
+          { label: 'Responses', value: '31' },
+          { label: 'Recovered', value: '$128K' },
         ],
       },
       {
         id: 'past-customer-reengagement',
         name: 'Past Customer Re-engagement',
-        icon: Repeat,
-        status: 'paused',
-        description:
-          'Re-engages previous customers for repeat business, referrals, and seasonal maintenance.',
+        icon: Users,
+        status: 'active',
+        description: 'Reaches out to past customers for repeat business',
         stats: [
-          { label: 'Contacted', value: '11' },
-          { label: 'Repeat Jobs', value: '2' },
-          { label: 'Referrals', value: '1' },
+          { label: 'Contacted', value: '234' },
+          { label: 'Rebooked', value: '18%' },
+          { label: 'Revenue', value: '$67K' },
         ],
       },
     ],
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Animation variants
-// ---------------------------------------------------------------------------
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' } },
+// Tailwind does not allow fully dynamic class names, so we map accent
+// keys to the concrete classes we need. Every class below is referenced
+// literally here, which keeps Tailwind's JIT happy.
+const ACCENT = {
+  emerald: {
+    text: 'text-emerald-400',
+    bgSoft: 'bg-emerald-500/10',
+    border: 'border-emerald-500/30',
+    leftBorder: 'border-l-emerald-500',
+    icon: 'text-emerald-400',
+    iconBg: 'bg-emerald-500/10',
+  },
+  indigo: {
+    text: 'text-indigo-400',
+    bgSoft: 'bg-indigo-500/10',
+    border: 'border-indigo-500/30',
+    leftBorder: 'border-l-indigo-500',
+    icon: 'text-indigo-400',
+    iconBg: 'bg-indigo-500/10',
+  },
+  amber: {
+    text: 'text-amber-400',
+    bgSoft: 'bg-amber-500/10',
+    border: 'border-amber-500/30',
+    leftBorder: 'border-l-amber-500',
+    icon: 'text-amber-400',
+    iconBg: 'bg-amber-500/10',
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -232,274 +199,101 @@ const item = {
 // ---------------------------------------------------------------------------
 
 export default function AgentsPage() {
-  const totalAgents =
-    1 + PILLARS.reduce((sum, p) => sum + p.agents.length, 0);
-  const activeAgents =
-    1 +
-    PILLARS.reduce(
-      (sum, p) => sum + p.agents.filter((a) => a.status === 'active').length,
-      0
-    );
-
   return (
-    <motion.div initial="hidden" animate="show" variants={container}>
-      {/* Header */}
-      <motion.div variants={item} style={{ marginBottom: 28 }}>
-        <div
-          className="t-eyebrow"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-        >
-          <Sparkles size={11} style={{ color: 'var(--emerald-bright)' }} />
-          AI workforce · {activeAgents}/{totalAgents} active
+    <div className="min-h-full -mx-11 -my-10 bg-zinc-950 px-6 py-10 sm:px-10 text-zinc-100">
+      <div className="mx-auto max-w-6xl space-y-8">
+        {/* Page header */}
+        <header className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            AI Agents
+          </h1>
+          <p className="text-sm text-zinc-400 sm:text-base">
+            Your autonomous workforce — 10 agents, 3 pillars, full funnel coverage
+          </p>
+        </header>
+
+        {/* Telegram EA Hero */}
+        <TelegramHero />
+
+        {/* Pillars */}
+        <div className="space-y-10">
+          {PILLARS.map((pillar) => (
+            <PillarSection key={pillar.id} pillar={pillar} />
+          ))}
         </div>
-        <h1
-          className="t-h1"
-          style={{ margin: '8px 0 6px', letterSpacing: '-0.01em' }}
-        >
-          Your AI Agents
-        </h1>
-        <p
-          className="t-body"
-          style={{ color: 'var(--text-muted)', margin: 0, maxWidth: 680 }}
-        >
-          Eleven specialized agents organized across three pillars —{' '}
-          <strong style={{ color: '#10b981' }}>Capture</strong>,{' '}
-          <strong style={{ color: '#818cf8' }}>Convert</strong>, and{' '}
-          <strong style={{ color: '#fbbf24' }}>Reclaim</strong> — plus your
-          Telegram executive assistant working in the background 24/7.
-        </p>
-      </motion.div>
 
-      {/* Telegram EA hero */}
-      <motion.div variants={item}>
-        <TelegramHeroCard agent={TELEGRAM_EA} />
-      </motion.div>
-
-      {/* Pillars */}
-      {PILLARS.map((pillar) => (
-        <PillarSection key={pillar.id} pillar={pillar} />
-      ))}
-
-      {/* Create Custom Agent CTA */}
-      <motion.div
-        variants={item}
-        style={{
-          marginTop: 32,
-          marginBottom: 8,
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <button
-          type="button"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '12px 22px',
-            borderRadius: 10,
-            background: 'transparent',
-            color: 'var(--emerald-bright)',
-            fontWeight: 700,
-            fontSize: 13,
-            border: '1.5px solid var(--emerald-bright)',
-            cursor: 'pointer',
-            transition: 'all .15s',
-          }}
-        >
-          <Plus size={14} />
-          Create Custom Agent
-        </button>
-      </motion.div>
-    </motion.div>
+        {/* Create Custom Agent */}
+        <div className="flex justify-center pt-4">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-lg border border-dashed border-zinc-700 bg-zinc-800 px-6 py-3 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800/70 hover:text-white"
+          >
+            <Plus size={16} />
+            Create Custom Agent
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Telegram EA hero
+// Telegram EA hero card
 // ---------------------------------------------------------------------------
 
-function TelegramHeroCard({ agent }) {
+function TelegramHero() {
   return (
-    <div
-      style={{
-        position: 'relative',
-        padding: 2,
-        borderRadius: 18,
-        background:
-          'linear-gradient(135deg, rgba(16,185,129,0.7), rgba(99,102,241,0.7), rgba(251,191,36,0.6))',
-        marginBottom: 36,
-        boxShadow:
-          '0 20px 50px -20px rgba(16,185,129,0.25), 0 0 0 1px rgba(255,255,255,0.03) inset',
-      }}
-    >
-      <div
-        className="dark-card"
-        style={{
-          padding: '24px 28px',
-          borderRadius: 16,
-          background:
-            'linear-gradient(180deg, var(--surface-1) 0%, rgba(16,185,129,0.04) 100%)',
-          display: 'flex',
-          gap: 24,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          border: 'none',
-        }}
-      >
-        {/* Icon tile */}
-        <div
-          style={{
-            width: 72,
-            height: 72,
-            borderRadius: 18,
-            background:
-              'linear-gradient(135deg, #10b981 0%, #6366f1 100%)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow:
-              '0 10px 30px -8px rgba(16,185,129,0.55), 0 0 0 1px rgba(255,255,255,0.06) inset',
-            flexShrink: 0,
-          }}
-        >
-          <MessageCircle
-            size={30}
-            style={{ color: '#ffffff' }}
-            fill="#ffffff"
-          />
-        </div>
+    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-500/60 to-indigo-500 p-[1.5px]">
+      <div className="rounded-2xl bg-zinc-900 p-6 sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left: icon + text */}
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-500 shadow-lg shadow-emerald-500/20">
+              <MessageCircle size={26} className="text-white" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-bold text-white sm:text-2xl">
+                  Your Executive Assistant
+                </h2>
+                <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+                  Premium
+                </span>
+              </div>
+              <p className="text-sm text-zinc-400 sm:text-base">
+                Message on Telegram anytime — ask anything about your business today
+              </p>
+            </div>
+          </div>
 
-        {/* Body */}
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 10,
-              marginBottom: 4,
-            }}
-          >
-            <span
-              className="t-eyebrow"
-              style={{
-                color: '#fbbf24',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-              }}
+          {/* Right: stats + CTA */}
+          <div className="flex flex-col gap-4 lg:items-end">
+            <div className="flex flex-wrap gap-2">
+              <HeroStat label="Messages Today" value="12" />
+              <HeroStat label="Avg Response" value="<2s" />
+              <HeroStat label="Uptime" value="99.9%" />
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400"
             >
-              <Star size={10} fill="#fbbf24" /> Featured · Premium
-            </span>
-            <ActiveBadge label="Active" dot />
+              Message on Telegram
+              <ArrowRight size={16} />
+            </button>
           </div>
-          <h2
-            className="t-h1"
-            style={{
-              margin: '4px 0 8px',
-              fontSize: 24,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {agent.name}
-          </h2>
-          <p
-            className="t-body"
-            style={{
-              color: 'var(--text-muted)',
-              margin: 0,
-              maxWidth: 540,
-              lineHeight: 1.5,
-            }}
-          >
-            {agent.description}
-          </p>
-        </div>
-
-        {/* Stats + CTA */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 14,
-            alignItems: 'stretch',
-            minWidth: 220,
-          }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 10,
-            }}
-          >
-            {agent.stats.map((s) => {
-              const Icon = s.icon;
-              return (
-                <div
-                  key={s.label}
-                  style={{
-                    padding: '10px 8px',
-                    borderRadius: 10,
-                    background: 'var(--surface-2)',
-                    border: '1px solid var(--border)',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 3,
-                      color: 'var(--text-subtle)',
-                      fontSize: 9,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      marginBottom: 3,
-                    }}
-                  >
-                    <Icon size={9} />
-                    {s.label}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 800,
-                      color: 'var(--text-bright)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {s.value}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              padding: '12px 18px',
-              borderRadius: 10,
-              background: 'var(--emerald-bright)',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: 13,
-              border: '1px solid var(--emerald-bright)',
-              cursor: 'pointer',
-              boxShadow: '0 6px 18px rgba(16,185,129,0.4)',
-            }}
-          >
-            <MessageCircle size={14} fill="#ffffff" />
-            Message on Telegram
-            <ArrowUpRight size={13} />
-          </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HeroStat({ label, value }) {
+  return (
+    <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-800/60 px-3 py-1.5">
+      <span className="text-[11px] font-medium text-zinc-400">{label}:</span>
+      <span className="text-[13px] font-bold text-white tabular-nums">
+        {value}
+      </span>
     </div>
   );
 }
@@ -509,107 +303,29 @@ function TelegramHeroCard({ agent }) {
 // ---------------------------------------------------------------------------
 
 function PillarSection({ pillar }) {
+  const accent = ACCENT[pillar.accent];
+
   return (
-    <motion.section
-      variants={item}
-      style={{ marginBottom: 28 }}
-      aria-labelledby={`pillar-${pillar.id}`}
-    >
-      {/* Section header */}
+    <section className="space-y-4">
+      {/* Pillar header: colored left border + pillar name in that color */}
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 14,
-          padding: '14px 18px',
-          marginBottom: 14,
-          borderRadius: 10,
-          background: pillar.accent.tint,
-          borderLeft: `3px solid ${pillar.accent.bright}`,
-          border: `1px solid ${pillar.accent.border}`,
-          borderLeftWidth: 3,
-        }}
+        className={`border-l-4 ${accent.leftBorder} pl-4`}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 9,
-            background: `${pillar.accent.color}22`,
-            border: `1px solid ${pillar.accent.border}`,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
+        <h2
+          className={`text-sm font-bold uppercase tracking-[0.2em] ${accent.text}`}
         >
-          <Activity size={15} style={{ color: pillar.accent.bright }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h2
-            id={`pillar-${pillar.id}`}
-            style={{
-              margin: 0,
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: pillar.accent.bright,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            Pillar {pillarNumber(pillar.id)} · {pillar.label}
-            <span
-              style={{
-                fontSize: 10.5,
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                color: 'var(--text-subtle)',
-                textTransform: 'uppercase',
-              }}
-            >
-              {pillar.agents.length} agents
-            </span>
-          </h2>
-          <p
-            className="t-body-sm"
-            style={{
-              margin: '4px 0 0',
-              color: 'var(--text-muted)',
-            }}
-          >
-            {pillar.tagline}
-          </p>
-        </div>
+          {pillar.label}
+        </h2>
       </div>
 
-      {/* Agent grid */}
-      <div className="agents-pillar-grid">
-        {pillar.agents.map((a) => (
-          <AgentCard key={a.id} agent={a} accent={pillar.accent} />
+      {/* 2-column grid of agent cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {pillar.agents.map((agent) => (
+          <AgentCard key={agent.id} agent={agent} accent={accent} />
         ))}
       </div>
-
-      <style jsx>{`
-        .agents-pillar-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 14px;
-        }
-        @media (max-width: 760px) {
-          .agents-pillar-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-    </motion.section>
+    </section>
   );
-}
-
-function pillarNumber(id) {
-  return id === 'capture' ? '1' : id === 'convert' ? '2' : '3';
 }
 
 // ---------------------------------------------------------------------------
@@ -618,191 +334,60 @@ function pillarNumber(id) {
 
 function AgentCard({ agent, accent }) {
   const Icon = agent.icon;
-  const active = agent.status === 'active';
+  const isActive = agent.status === 'active';
 
   return (
-    <motion.div
-      variants={item}
-      className="dark-card"
-      style={{
-        padding: 18,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-        transition: 'transform .15s, border-color .15s',
-      }}
-    >
-      {/* Top row: icon + name + status */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            background: accent.tint,
-            border: `1px solid ${accent.border}`,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon size={18} style={{ color: accent.bright }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+    <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700">
+      {/* Top row: icon + name + status badge */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div
-            className="t-h3"
-            style={{
-              margin: 0,
-              marginBottom: 4,
-              fontSize: 15,
-              letterSpacing: '-0.005em',
-            }}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${accent.iconBg} ring-1 ring-inset ${accent.border}`}
           >
-            {agent.name}
+            <Icon size={18} className={accent.icon} />
           </div>
-          {active ? (
-            <ActiveBadge label="Active" dot />
-          ) : (
-            <PausedBadge />
-          )}
+          <h3 className="truncate text-[15px] font-semibold text-white">
+            {agent.name}
+          </h3>
         </div>
+        {isActive ? <ActiveBadge /> : <PausedBadge />}
       </div>
 
       {/* Description */}
-      <p
-        className="t-body-sm"
-        style={{
-          margin: 0,
-          color: 'var(--text-muted)',
-          lineHeight: 1.5,
-          minHeight: 60,
-        }}
-      >
-        {agent.description}
-      </p>
+      <p className="text-sm text-zinc-400">{agent.description}</p>
 
       {/* Stat pills */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 6,
-          paddingTop: 12,
-          borderTop: '1px solid var(--border)',
-        }}
-      >
+      <div className="flex flex-wrap gap-1.5 pt-1">
         {agent.stats.map((s) => (
           <StatPill key={s.label} label={s.label} value={s.value} />
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function StatPill({ label, value }) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '5px 10px',
-        borderRadius: 999,
-        background: 'var(--surface-2)',
-        border: '1px solid var(--border)',
-        fontSize: 11,
-      }}
-    >
-      <span
-        style={{
-          color: 'var(--text-subtle)',
-          fontWeight: 600,
-          letterSpacing: '0.02em',
-        }}
-      >
-        {label}
-      </span>
-      <span
-        style={{
-          color: 'var(--text-bright)',
-          fontWeight: 700,
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
-        {value}
-      </span>
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-[11px]">
+      <span className="text-zinc-400">{label}:</span>
+      <span className="font-semibold text-white tabular-nums">{value}</span>
     </span>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Status badges
-// ---------------------------------------------------------------------------
-
-function ActiveBadge({ label = 'Active', dot = true }) {
+function ActiveBadge() {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 5,
-        padding: '2px 8px',
-        borderRadius: 999,
-        fontSize: 10,
-        fontWeight: 800,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        background: 'var(--emerald-tint)',
-        color: 'var(--emerald-bright)',
-        border: '1px solid rgba(16,185,129,0.3)',
-      }}
-    >
-      {dot ? (
-        <motion.span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            background: 'var(--emerald-bright)',
-            display: 'inline-block',
-          }}
-          animate={{ opacity: [1, 0.35, 1] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-        />
-      ) : null}
-      {label}
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      Active
     </span>
   );
 }
 
 function PausedBadge() {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 5,
-        padding: '2px 8px',
-        borderRadius: 999,
-        fontSize: 10,
-        fontWeight: 800,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        background: 'var(--surface-2)',
-        color: 'var(--text-muted)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: 'var(--text-subtle)',
-          display: 'inline-block',
-        }}
-      />
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 ring-1 ring-inset ring-zinc-700">
+      <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
       Paused
     </span>
   );
