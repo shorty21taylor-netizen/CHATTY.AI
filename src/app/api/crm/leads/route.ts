@@ -11,6 +11,7 @@ import {
   createLead,
   getContactById,
 } from "@/lib/db/queries";
+import { emitLeadCreated } from "@/lib/signals/adapters/internal-crm";
 import type {
   LeadListFilter,
   LeadStatus,
@@ -105,6 +106,11 @@ export async function POST(req: Request) {
       ...data,
       appointment_date: data.appointment_date ? new Date(data.appointment_date) : undefined,
     });
+
+    // Fire-and-forget signal emission.
+    emitLeadCreated(orgId, lead).catch((err) =>
+      console.error("[emitLeadCreated]", err)
+    );
 
     return NextResponse.json(
       { lead },

@@ -7,6 +7,7 @@ import {
 } from "@/lib/utils/validate";
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
 import { listContacts, createContact } from "@/lib/db/queries";
+import { emitContactCreated } from "@/lib/signals/adapters/internal-crm";
 import type {
   ContactListFilter,
   ContactStatus,
@@ -85,6 +86,11 @@ export async function POST(req: Request) {
     const data = validateBody(contactCreateSchema, body);
 
     const contact = await createContact(orgId, data);
+
+    // Fire-and-forget: emit signal so Decision Engine can reason over new contact.
+    emitContactCreated(orgId, contact).catch((err) =>
+      console.error("[emitContactCreated]", err)
+    );
 
     return NextResponse.json(
       { contact },
