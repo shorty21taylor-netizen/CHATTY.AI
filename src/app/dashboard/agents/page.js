@@ -169,27 +169,27 @@ const PILLARS = [
 // literally here, which keeps Tailwind's JIT happy.
 const ACCENT = {
   emerald: {
-    text: 'text-emerald-400',
+    text: 'text-emerald-600',
     bgSoft: 'bg-emerald-500/10',
     border: 'border-emerald-500/30',
     leftBorder: 'border-l-emerald-500',
-    icon: 'text-emerald-400',
+    icon: 'text-emerald-600',
     iconBg: 'bg-emerald-500/10',
   },
   indigo: {
-    text: 'text-indigo-400',
+    text: 'text-indigo-600',
     bgSoft: 'bg-indigo-500/10',
     border: 'border-indigo-500/30',
     leftBorder: 'border-l-indigo-500',
-    icon: 'text-indigo-400',
+    icon: 'text-indigo-600',
     iconBg: 'bg-indigo-500/10',
   },
   amber: {
-    text: 'text-amber-400',
+    text: 'text-amber-600',
     bgSoft: 'bg-amber-500/10',
     border: 'border-amber-500/30',
     leftBorder: 'border-l-amber-500',
-    icon: 'text-amber-400',
+    icon: 'text-amber-600',
     iconBg: 'bg-amber-500/10',
   },
 };
@@ -200,14 +200,14 @@ const ACCENT = {
 
 export default function AgentsPage() {
   return (
-    <div className="min-h-full -mx-11 -my-10 bg-zinc-950 px-6 py-10 sm:px-10 text-zinc-100">
+    <div className="text-zinc-900">
       <div className="mx-auto max-w-6xl space-y-8">
         {/* Page header */}
         <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
             AI Agents
           </h1>
-          <p className="text-sm text-zinc-400 sm:text-base">
+          <p className="text-sm text-zinc-500 sm:text-base">
             Your autonomous workforce — 10 agents, 3 pillars, full funnel coverage
           </p>
         </header>
@@ -226,7 +226,7 @@ export default function AgentsPage() {
         <div className="flex justify-center pt-4">
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-lg border border-dashed border-zinc-700 bg-zinc-800 px-6 py-3 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800/70 hover:text-white"
+            className="inline-flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-600 transition hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-900"
           >
             <Plus size={16} />
             Create Custom Agent
@@ -243,8 +243,8 @@ export default function AgentsPage() {
 
 function TelegramHero() {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-500/60 to-indigo-500 p-[1.5px]">
-      <div className="rounded-2xl bg-zinc-900 p-6 sm:p-8">
+    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-500/60 to-indigo-500 p-[1.5px] shadow-sm">
+      <div className="rounded-2xl bg-white p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           {/* Left: icon + text */}
           <div className="flex items-start gap-4">
@@ -253,14 +253,14 @@ function TelegramHero() {
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold text-white sm:text-2xl">
+                <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">
                   Your Executive Assistant
                 </h2>
-                <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+                <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
                   Premium
                 </span>
               </div>
-              <p className="text-sm text-zinc-400 sm:text-base">
+              <p className="text-sm text-zinc-500 sm:text-base">
                 Message on Telegram anytime — ask anything about your business today
               </p>
             </div>
@@ -275,7 +275,7 @@ function TelegramHero() {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
             >
               Message on Telegram
               <ArrowRight size={16} />
@@ -289,9 +289,9 @@ function TelegramHero() {
 
 function HeroStat({ label, value }) {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-800/60 px-3 py-1.5">
-      <span className="text-[11px] font-medium text-zinc-400">{label}:</span>
-      <span className="text-[13px] font-bold text-white tabular-nums">
+    <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5">
+      <span className="text-[11px] font-medium text-zinc-500">{label}:</span>
+      <span className="text-[13px] font-bold text-zinc-900 tabular-nums">
         {value}
       </span>
     </div>
@@ -337,7 +337,7 @@ function AgentCard({ agent, accent }) {
   const isActive = agent.status === 'active';
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-700">
+    <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300">
       {/* Top row: icon + name + status badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
@@ -346,7 +346,7 @@ function AgentCard({ agent, accent }) {
           >
             <Icon size={18} className={accent.icon} />
           </div>
-          <h3 className="truncate text-[15px] font-semibold text-white">
+          <h3 className="truncate text-[15px] font-semibold text-zinc-900">
             {agent.name}
           </h3>
         </div>
@@ -354,7 +354,7 @@ function AgentCard({ agent, accent }) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-zinc-400">{agent.description}</p>
+      <p className="text-sm text-zinc-500">{agent.description}</p>
 
       {/* Stat pills */}
       <div className="flex flex-wrap gap-1.5 pt-1">
@@ -368,17 +368,17 @@ function AgentCard({ agent, accent }) {
 
 function StatPill({ label, value }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-[11px]">
-      <span className="text-zinc-400">{label}:</span>
-      <span className="font-semibold text-white tabular-nums">{value}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px]">
+      <span className="text-zinc-500">{label}:</span>
+      <span className="font-semibold text-zinc-900 tabular-nums">{value}</span>
     </span>
   );
 }
 
 function ActiveBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
       Active
     </span>
   );
@@ -386,8 +386,8 @@ function ActiveBadge() {
 
 function PausedBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 ring-1 ring-inset ring-zinc-700">
-      <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 ring-1 ring-inset ring-zinc-200">
+      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
       Paused
     </span>
   );
