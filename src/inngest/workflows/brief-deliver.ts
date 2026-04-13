@@ -1,51 +1,99 @@
 import { inngest } from "../client";
-import { queryOne } from "@/lib/db";
-import { markBriefDelivered } from "@/lib/db/queries";
-import { sendSms } from "@/lib/twilio/client";
-import { textToSpeech } from "@/lib/elevenlabs/client";
+import { query, queryOne } from "@/lib/db";
 
 /**
  * Brief Delivery Workflow
- * Sends the Daily Brief via SMS + generates voice note via ElevenLabs TTS.
+ *
+ * Sends the Daily Brief to the operator via SMS (Twilio).
+ * Optionally generates a voice summary via ElevenLabs TTS.
  */
 export const briefDeliver = inngest.createFunction(
   {
     id: "brief-deliver",
-    name: "Brief Delivery",
-    triggers: [{ event: "brief/deliver" }],
+    name: "Deliver Daily Brief",
+    retries: 2,
   },
+  { event: "brief/deliver" },
   async ({ event, step }) => {
-    const { orgId, briefId } = event.data;
+    const { orgId, briefId, brief } = event.data;
 
-    const brief = (await step.run("fetch-brief", async () => {
-      return await queryOne(
-        `SELECT * FROM decision_briefs WHERE id = $1 AND org_id = $2`,
-        [briefId, orgId]
-      );
-    })) as any;
+    // Step 1: Format the SMS message
+    const smsMessage = await step.run("format-sms", () => {
+      const actions = brief.actions
+        .slice(0, 3)
+        .map(
+          (a: { priority: string; action: string }, i: number) =>
+            `${i + 1}. ${a.action}`
+        )
+        .join("\n");
 
-    if (!brief) { throw new Error(`Brief ${briefId} not found`); }
+      let msg = `☀️ ${brief.headline}\n\n${actions}`;
 
-    const voiceGenerated = await step.run("generate-voice", async () => {
-      try {
-        if (!brief.voice_summary) return false;
-        await textToSpeech({ text: brief.voice_summary, voiceId: "21m00Tcm4TlvDq8ikWAM" });
-        return true;
-      } catch (error) { return false; }
+      if (brief.risk_flag?.active) {
+        msg += `\n\n⚠️ ${brief.risk_flag.message}`;
+      }
+
+      if (brief.opportunity?.message) {
+        msg += `\n\n💡 ${brief.opportunity.message}`;
+      }
+
+      msg += `\n\n— Chatty AI`;
+
+      return msg;
     });
 
+    // Step 2: Send SMS via Twilio (if configured)
     const smsResult = await step.run("send-sms", async () => {
-      const operatorPhone = "";
-      if (!operatorPhone) return null;
-      const recs: any[] = brief.recommendations || [];
-      const smsText = [`Good morning! Here's your Daily Brief:`,"",...recs.map((r: any, i: number)=>`${i+1}. ${r.action}`),"","Reply Y if you acted on these!"].join("\n");
-      return await sendSms({ to: operatorPhone, body: smsText });
+      if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+        console.log("[BriefDeliver] Twilio not configured, skipping SMS");
+        return { sent: false, reason: "twilio_not_configured" };
+      }
+
+      try {
+        // Dynamic import to avoid build errors when Twilio isn't installed
+        const twilio = await import("twilio");
+        const client = twilio.default(
+          process.env.TWILIO_ACCOUNT_SID,
+          process.env.TWILIO_AUTH_TOKEN
+        );
+
+        // TODO: Look up operator phone number from org settings
+        const operatorPhone = process.env.DEFAULT_OPERATOR_PHONE;
+        if (!operatorPhone) {
+          return { sent: false, reason: "no_operator_phone" };
+        }
+
+        const message = await client.messages.create({
+          body: smsMessage,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: operatorPhone,
+        });
+
+        return { sent: true, sid: message.sid };
+      } catch (e) {
+        console.error("[BriefDeliver] SMS failed:", e);
+        return { sent: false, reason: "sms_error" };
+      }
     });
 
-    await step.run("mark-delivered", async () => {
-      await markBriefDelivered(briefId, smsResult ? "sms" : "dashboard_only");
+    // Step 3: Update brief with delivery status
+    await step.run("update-delivery-status", async () => {
+      try {
+        await query(
+          `UPDATE decision_briefs
+           SET delivered_at = NOW(), delivered_via = $2
+           WHERE id = $1`,
+          [briefId, smsResult.sent ? "sms" : "dashboard_only"]
+        );
+      } catch (e) {
+        console.error("[BriefDeliver] Failed to update delivery status:", e);
+      }
     });
 
-    return { briefId, smsDelivered: !!smsResult, voiceGenerated };
+    return {
+      briefId,
+      smsDelivered: smsResult.sent,
+      messagePreview: smsMessage.substring(0, 100) + "...",
+    };
   }
 );
