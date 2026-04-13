@@ -8,6 +8,7 @@ import {
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
 import { query } from "@/lib/db";
 import { createInteraction, getContactById } from "@/lib/db/queries";
+import { emitInteractionLogged } from "@/lib/signals/adapters/internal-crm";
 import type {
   Interaction,
   InteractionType,
@@ -103,6 +104,11 @@ export async function POST(req: Request) {
       ...data,
       occurred_at: data.occurred_at ? new Date(data.occurred_at) : undefined,
     });
+
+    // Fire-and-forget signal emission.
+    emitInteractionLogged(orgId, interaction).catch((err) =>
+      console.error("[emitInteractionLogged]", err)
+    );
 
     return NextResponse.json(
       { interaction },

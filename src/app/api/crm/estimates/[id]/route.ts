@@ -10,6 +10,10 @@ import {
   updateEstimate,
   updateEstimateStatus,
 } from "@/lib/db/queries";
+import {
+  emitEstimateSent,
+  emitEstimateAccepted,
+} from "@/lib/signals/adapters/internal-crm";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -54,6 +58,18 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     const keysChanged = Object.keys(data);
     if (keysChanged.length === 1 && keysChanged[0] === "status" && data.status) {
       const estimate = await updateEstimateStatus(orgId, id, data.status);
+
+      // Fire-and-forget signal emissions for material status transitions.
+      if (data.status === "sent" && existing.status !== "sent") {
+        emitEstimateSent(orgId, estimate).catch((err) =>
+          console.error("[emitEstimateSent]", err)
+        );
+      } else if (data.status === "accepted" && existing.status !== "accepted") {
+        emitEstimateAccepted(orgId, estimate).catch((err) =>
+          console.error("[emitEstimateAccepted]", err)
+        );
+      }
+
       return NextResponse.json({ estimate });
     }
 

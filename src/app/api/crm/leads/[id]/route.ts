@@ -13,6 +13,7 @@ import {
   getInteractionsByLead,
   createInteraction,
 } from "@/lib/db/queries";
+import { emitLeadStatusChanged } from "@/lib/signals/adapters/internal-crm";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -91,6 +92,11 @@ export async function PATCH(req: Request, { params }: RouteContext) {
         outcome: data.status,
         created_by: data.assigned_to ?? null,
       });
+
+      // Fire-and-forget signal emission for Decision Engine.
+      emitLeadStatusChanged(orgId, updated, existing.status, data.status).catch(
+        (err) => console.error("[emitLeadStatusChanged]", err)
+      );
 
       return NextResponse.json({ lead: updated });
     }
