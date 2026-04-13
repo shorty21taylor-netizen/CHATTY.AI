@@ -357,7 +357,7 @@ function RevenueHeroCard({ kpi }) {
   return (
     <motion.div
       variants={item}
-      className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 py-8 px-6 sm:px-8 shadow-[inset_4px_0_0_#10b981] ring-1 ring-emerald-500/20"
+      className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white py-8 px-6 sm:px-8 shadow-sm shadow-[inset_4px_0_0_#10b981] ring-1 ring-emerald-500/20"
     >
       {/* Emerald glow backdrop */}
       <div
@@ -368,20 +368,20 @@ function RevenueHeroCard({ kpi }) {
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-5">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/40">
-            <Icon size={26} className="text-emerald-400" />
+            <Icon size={26} className="text-emerald-600" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-400">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600">
               Revenue Generated
             </div>
-            <div className="mt-1 text-5xl font-bold tracking-tight text-white tabular-nums sm:text-6xl">
+            <div className="mt-1 text-5xl font-bold tracking-tight text-zinc-900 tabular-nums sm:text-6xl">
               {kpi.value}
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-start gap-3 sm:items-end">
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
             <Arrow size={14} />
             {kpi.deltaLabel}
           </span>
@@ -432,26 +432,26 @@ function KpiCard({ kpi }) {
   return (
     <motion.div
       variants={item}
-      className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+      className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
     >
       {/* Top: icon circle + label + delta badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/30">
-            <Icon size={20} className="text-emerald-400" />
+            <Icon size={20} className="text-emerald-600" />
           </div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
             {kpi.label}
           </span>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-400 ring-1 ring-inset ring-emerald-500/30">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
           <Arrow size={11} />
           {Math.abs(kpi.delta)}%
         </span>
       </div>
 
       {/* Number */}
-      <div className="text-3xl font-bold leading-none tracking-tight text-white tabular-nums">
+      <div className="text-3xl font-bold leading-none tracking-tight text-zinc-900 tabular-nums">
         {kpi.value}
       </div>
 
