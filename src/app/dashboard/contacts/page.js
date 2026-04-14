@@ -3,451 +3,519 @@
 import { useMemo, useState } from 'react';
 import {
   Users,
+  UserPlus,
+  TrendingUp,
+  UserCheck,
   Search,
   Plus,
-  ChevronDown,
-  UserPlus,
-  UserCheck,
   Crown,
-  TrendingUp,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Mock data
+// Type + status color config — theme-aware. The hex values are semantic
+// indicator colors that read well on both light and dark surfaces when
+// rendered via color-mix at 14% opacity inside <Pill>.
 // ---------------------------------------------------------------------------
 
-const STATS = [
-  { id: 'total', label: 'Total Contacts', value: '247', icon: Users },
-  { id: 'new', label: 'New This Week', value: '18', icon: UserPlus },
-  { id: 'customers', label: 'Customers', value: '89', icon: UserCheck },
-  { id: 'leads', label: 'Leads', value: '158', icon: TrendingUp },
+const TYPE_CONFIG = {
+  lead: { label: 'LEAD', color: 'var(--emerald-bright)' },
+  customer: { label: 'CUSTOMER', color: '#8b5cf6' },
+  past_customer: { label: 'PAST CUSTOMER', color: 'var(--text-muted)' },
+  vip: { label: 'VIP', color: '#f59e0b' },
+};
+
+const STATUS_CONFIG = {
+  active: { label: 'ACTIVE', color: 'var(--emerald-bright)' },
+  won: { label: 'WON', color: 'var(--emerald-bright)' },
+  nurturing: { label: 'NURTURING', color: '#3b82f6' },
+  cold: { label: 'COLD', color: 'var(--text-muted)' },
+  lost: { label: 'LOST', color: 'var(--negative)' },
+};
+
+// Deterministic avatar color palette — these stay vibrant on every theme.
+const AVATAR_COLORS = [
+  '#ef4444',
+  '#f59e0b',
+  '#10b981',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#14b8a6',
+  '#f97316',
+  '#06b6d4',
+  '#a855f7',
 ];
 
-const FILTERS = ['All', 'Leads', 'Customers', 'Past Customers', 'VIP'];
-const SORTS = ['Newest', 'Oldest', 'Name A-Z', 'Last Activity'];
+function avatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
-const CONTACTS = [
+function initials(name) {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
+const MOCK_CONTACTS = [
   {
     id: 1,
     name: 'Marcus Miller',
     phone: '(555) 234-5678',
     email: 'marcus@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Google Ads',
-    activity: '2h ago',
-    status: 'Active',
-    avatarColor: 'bg-emerald-500',
+    lastActivity: '2h ago',
+    status: 'active',
   },
   {
     id: 2,
     name: 'Sarah Chen',
     phone: '(555) 345-6789',
     email: 'sarah.chen@email.com',
-    type: 'Customer',
+    type: 'customer',
     source: 'Referral',
-    activity: 'Yesterday',
-    status: 'Won',
-    avatarColor: 'bg-indigo-500',
+    lastActivity: 'Yesterday',
+    status: 'won',
   },
   {
     id: 3,
     name: 'James Rodriguez',
     phone: '(555) 456-7890',
     email: 'james.r@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Facebook',
-    activity: '3h ago',
-    status: 'Nurturing',
-    avatarColor: 'bg-amber-500',
+    lastActivity: '3h ago',
+    status: 'nurturing',
   },
   {
     id: 4,
     name: 'Patricia Williams',
     phone: '(555) 567-8901',
     email: 'p.williams@email.com',
-    type: 'VIP',
+    type: 'vip',
     source: 'Inbound Call',
-    activity: '1 day ago',
-    status: 'Active',
-    avatarColor: 'bg-pink-500',
+    lastActivity: '1 day ago',
+    status: 'active',
+    isVip: true,
   },
   {
     id: 5,
     name: 'Robert Thompson',
     phone: '(555) 678-9012',
     email: 'rob.t@email.com',
-    type: 'Customer',
+    type: 'customer',
     source: 'Website Form',
-    activity: '3 days ago',
-    status: 'Won',
-    avatarColor: 'bg-cyan-500',
+    lastActivity: '3 days ago',
+    status: 'won',
   },
   {
     id: 6,
     name: 'Jennifer Davis',
     phone: '(555) 789-0123',
     email: 'jen.davis@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Google Ads',
-    activity: '5h ago',
-    status: 'Active',
-    avatarColor: 'bg-violet-500',
+    lastActivity: '5h ago',
+    status: 'active',
   },
   {
     id: 7,
     name: 'Michael Brown',
     phone: '(555) 890-1234',
     email: 'm.brown@email.com',
-    type: 'Past Customer',
+    type: 'past_customer',
     source: 'Referral',
-    activity: '2 weeks ago',
-    status: 'Cold',
-    avatarColor: 'bg-zinc-500',
+    lastActivity: '2 weeks ago',
+    status: 'cold',
   },
   {
     id: 8,
     name: 'Lisa Anderson',
     phone: '(555) 901-2345',
     email: 'lisa.a@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Facebook',
-    activity: '1h ago',
-    status: 'Nurturing',
-    avatarColor: 'bg-rose-500',
+    lastActivity: '1h ago',
+    status: 'nurturing',
   },
   {
     id: 9,
     name: 'David Wilson',
     phone: '(555) 012-3456',
     email: 'd.wilson@email.com',
-    type: 'Customer',
+    type: 'customer',
     source: 'Google Ads',
-    activity: 'Yesterday',
-    status: 'Won',
-    avatarColor: 'bg-teal-500',
+    lastActivity: 'Yesterday',
+    status: 'won',
   },
   {
     id: 10,
     name: 'Amy Martinez',
     phone: '(555) 123-4567',
     email: 'amy.m@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Website Form',
-    activity: '4 days ago',
-    status: 'Lost',
-    avatarColor: 'bg-orange-500',
+    lastActivity: '4 days ago',
+    status: 'lost',
   },
   {
     id: 11,
     name: 'Kevin Lee',
     phone: '(555) 234-5679',
     email: 'kevin.lee@email.com',
-    type: 'VIP',
+    type: 'vip',
     source: 'Inbound Call',
-    activity: 'Today',
-    status: 'Active',
-    avatarColor: 'bg-fuchsia-500',
+    lastActivity: 'Today',
+    status: 'active',
+    isVip: true,
   },
   {
     id: 12,
     name: 'Rachel Green',
     phone: '(555) 345-6780',
     email: 'rachel.g@email.com',
-    type: 'Lead',
+    type: 'lead',
     source: 'Referral',
-    activity: '6h ago',
-    status: 'Nurturing',
-    avatarColor: 'bg-lime-500',
+    lastActivity: '6h ago',
+    status: 'nurturing',
   },
 ];
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const TYPE_BADGE = {
-  Lead: 'bg-indigo-500/15 text-indigo-400 ring-indigo-500/30',
-  Customer: 'bg-emerald-500/15 text-emerald-400 ring-emerald-500/30',
-  'Past Customer': 'bg-zinc-700/50 text-zinc-300 ring-zinc-600',
-  VIP: 'bg-amber-500/15 text-amber-400 ring-amber-500/30',
-};
-
-const STATUS_BADGE = {
-  Active: 'bg-emerald-500/15 text-emerald-400 ring-emerald-500/30',
-  Nurturing: 'bg-yellow-500/15 text-yellow-400 ring-yellow-500/30',
-  Won: 'bg-emerald-500/15 text-emerald-400 ring-emerald-500/30',
-  Lost: 'bg-red-500/15 text-red-400 ring-red-500/30',
-  Cold: 'bg-zinc-700/50 text-zinc-400 ring-zinc-600',
-};
-
-function initials(name) {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function ContactsPage() {
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('Newest');
+  const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
 
   const filtered = useMemo(() => {
-    let list = CONTACTS;
-    if (activeFilter !== 'All') {
-      if (activeFilter === 'VIP') list = list.filter((c) => c.type === 'VIP');
-      else if (activeFilter === 'Leads')
-        list = list.filter((c) => c.type === 'Lead');
-      else if (activeFilter === 'Customers')
-        list = list.filter((c) => c.type === 'Customer');
-      else if (activeFilter === 'Past Customers')
-        list = list.filter((c) => c.type === 'Past Customer');
+    let list = MOCK_CONTACTS.filter((c) => {
+      if (filter === 'leads' && c.type !== 'lead') return false;
+      if (filter === 'customers' && c.type !== 'customer') return false;
+      if (filter === 'past' && c.type !== 'past_customer') return false;
+      if (filter === 'vip' && c.type !== 'vip') return false;
+      if (query) {
+        const q = query.toLowerCase();
+        if (
+          !(
+            c.name.toLowerCase().includes(q) ||
+            c.email.toLowerCase().includes(q) ||
+            c.phone.includes(query)
+          )
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (sortBy === 'oldest') list = [...list].reverse();
+    else if (sortBy === 'name') {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.phone.includes(q)
-      );
-    }
+
     return list;
-  }, [activeFilter, search]);
+  }, [filter, query, sortBy]);
 
   return (
-    <div className="min-h-full -mx-11 -my-10 bg-zinc-950 px-6 py-10 sm:px-10 text-zinc-100">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/30">
-                <Users size={20} className="text-emerald-400" />
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Contacts
-              </h1>
-            </div>
-            <p className="text-sm text-zinc-400 sm:text-base">
-              Your customer database — every lead, customer, and prospect in one place
-            </p>
-          </div>
-          <button
-            type="button"
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400"
-          >
-            <Plus size={16} />
-            Add Contact
-          </button>
-        </header>
-
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {STATS.map((s) => (
-            <StatCard key={s.id} stat={s} />
-          ))}
-        </div>
-
-        {/* Search + filter bar */}
-        <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search */}
-          <div className="relative flex-1 sm:max-w-xs">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-            />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, phone..."
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 py-2 pl-9 pr-3 text-sm text-white placeholder:text-zinc-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
-            />
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setActiveFilter(f)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                  activeFilter === f
-                    ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-inset ring-emerald-500/30'
-                    : 'bg-zinc-800 text-zinc-400 ring-1 ring-inset ring-zinc-700 hover:text-white'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort */}
-          <SortDropdown value={sort} onChange={setSort} />
-        </div>
-
-        {/* Table */}
-        <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/50 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                  <th className="px-5 py-3">Name</th>
-                  <th className="px-5 py-3">Phone</th>
-                  <th className="px-5 py-3">Email</th>
-                  <th className="px-5 py-3">Type</th>
-                  <th className="px-5 py-3">Source</th>
-                  <th className="px-5 py-3">Last Activity</th>
-                  <th className="px-5 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="cursor-pointer border-b border-zinc-800/60 transition last:border-0 hover:bg-zinc-800/50"
-                  >
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${c.avatarColor}`}
-                        >
-                          {initials(c.name)}
-                        </span>
-                        <span className="font-medium text-white">{c.name}</span>
-                        {c.type === 'VIP' ? (
-                          <Crown size={12} className="text-amber-400" />
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-zinc-300 tabular-nums">
-                      {c.phone}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-zinc-400">
-                      {c.email}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge className={TYPE_BADGE[c.type]}>{c.type}</Badge>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-zinc-400">
-                      {c.source}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-zinc-400">
-                      {c.activity}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge className={STATUS_BADGE[c.status]}>{c.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-5 py-12 text-center text-sm text-zinc-500"
-                    >
-                      No contacts match your filter.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer count */}
-          <div className="flex items-center justify-between border-t border-zinc-800 px-5 py-3 text-xs text-zinc-500">
-            <span>
-              Showing{' '}
-              <span className="font-semibold text-zinc-300">
-                {filtered.length}
-              </span>{' '}
-              of{' '}
-              <span className="font-semibold text-zinc-300">
-                {CONTACTS.length}
-              </span>{' '}
-              contacts
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Components
-// ---------------------------------------------------------------------------
-
-function StatCard({ stat }) {
-  const Icon = stat.icon;
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/30">
-        <Icon size={18} className="text-emerald-400" />
-      </div>
-      <div className="min-w-0">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-          {stat.label}
-        </div>
-        <div className="text-xl font-bold text-white tabular-nums">
-          {stat.value}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SortDropdown({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        onBlur={() => setTimeout(() => setOpen(false), 120)}
-        className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:text-white"
+    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 16,
+        }}
       >
-        Sort: <span className="text-white">{value}</span>
-        <ChevronDown size={14} className={open ? 'rotate-180 transition' : 'transition'} />
-      </button>
-      {open ? (
-        <div className="absolute right-0 top-full z-10 mt-1 w-40 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl">
-          {SORTS.map((s) => (
+        <div>
+          <div
+            className="t-eyebrow"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          >
+            <Users size={12} style={{ color: 'var(--emerald-bright)' }} />
+            Contacts
+          </div>
+          <h1 className="t-h1" style={{ margin: '6px 0 4px' }}>
+            Contacts
+          </h1>
+          <p className="t-body-sm" style={{ margin: 0 }}>
+            Your customer database — every lead, customer, and prospect in one place.
+          </p>
+        </div>
+        <button type="button" className="btn-primary">
+          <Plus size={16} />
+          Add Contact
+        </button>
+      </div>
+
+      {/* KPI row — 4 cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 16,
+          marginTop: 28,
+        }}
+      >
+        <KpiCard icon={<Users size={13} />} label="Total Contacts" value="247" />
+        <KpiCard
+          icon={<UserPlus size={13} />}
+          label="New This Week"
+          value="18"
+          accent
+        />
+        <KpiCard icon={<UserCheck size={13} />} label="Customers" value="89" />
+        <KpiCard icon={<TrendingUp size={13} />} label="Leads" value="158" />
+      </div>
+
+      {/* Filter row */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+          marginTop: 28,
+          marginBottom: 20,
+        }}
+      >
+        <div style={{ position: 'relative', flex: '0 0 320px', minWidth: 240 }}>
+          <Search
+            size={14}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)',
+              pointerEvents: 'none',
+            }}
+          />
+          <input
+            placeholder="Search by name, email, phone..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ paddingLeft: 34, width: '100%' }}
+          />
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            flex: 1,
+          }}
+        >
+          {[
+            { k: 'all', l: 'All' },
+            { k: 'leads', l: 'Leads' },
+            { k: 'customers', l: 'Customers' },
+            { k: 'past', l: 'Past Customers' },
+            { k: 'vip', l: 'VIP' },
+          ].map((f) => (
             <button
-              key={s}
+              key={f.k}
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onChange(s);
-                setOpen(false);
-              }}
-              className={`flex w-full items-center px-3 py-2 text-left text-xs transition ${
-                value === s
-                  ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'text-zinc-300 hover:bg-zinc-800'
-              }`}
+              onClick={() => setFilter(f.k)}
+              className={filter === f.k ? 'filter-pill-active' : 'filter-pill'}
             >
-              {s}
+              {f.l}
             </button>
           ))}
         </div>
-      ) : null}
+
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span className="t-body-sm">Sort:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{ width: 'auto', paddingRight: 28 }}
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Last Activity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.id} style={{ cursor: 'pointer' }}>
+                  <td>
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          background: avatarColor(c.name),
+                          color: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {initials(c.name)}
+                      </div>
+                      <span
+                        style={{
+                          color: 'var(--text-bright)',
+                          fontWeight: 500,
+                        }}
+                      >
+                        {c.name}
+                      </span>
+                      {c.isVip ? (
+                        <Crown size={13} style={{ color: '#f59e0b' }} />
+                      ) : null}
+                    </div>
+                  </td>
+                  <td style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {c.phone}
+                  </td>
+                  <td>{c.email}</td>
+                  <td>
+                    <Pill color={TYPE_CONFIG[c.type].color}>
+                      {TYPE_CONFIG[c.type].label}
+                    </Pill>
+                  </td>
+                  <td>{c.source}</td>
+                  <td>{c.lastActivity}</td>
+                  <td>
+                    <Pill color={STATUS_CONFIG[c.status].color}>
+                      {STATUS_CONFIG[c.status].label}
+                    </Pill>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    style={{
+                      textAlign: 'center',
+                      color: 'var(--text-muted)',
+                      fontSize: 13,
+                      padding: '40px 16px',
+                    }}
+                  >
+                    No contacts match your filter.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <div
+          style={{
+            padding: '14px 20px',
+            borderTop: '1px solid var(--border)',
+            textAlign: 'center',
+          }}
+        >
+          <span className="t-body-sm">
+            Showing {filtered.length} of {MOCK_CONTACTS.length} contacts
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Badge({ children, className }) {
+// ---------------------------------------------------------------------------
+// KPI card
+// ---------------------------------------------------------------------------
+
+function KpiCard({ icon, label, value, accent }) {
+  return (
+    <div
+      className="dark-card"
+      style={{
+        padding: 20,
+        borderLeft: accent ? '3px solid var(--emerald-bright)' : undefined,
+      }}
+    >
+      <div
+        className="t-eyebrow"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+        }}
+      >
+        {icon}
+        {label}
+      </div>
+      <div
+        className="t-kpi"
+        style={{
+          marginTop: 8,
+          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Pill
+// ---------------------------------------------------------------------------
+
+function Pill({ color, children }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset ${className}`}
+      style={{
+        display: 'inline-block',
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: '0.1em',
+        padding: '3px 10px',
+        borderRadius: 999,
+        background: `color-mix(in srgb, ${color} 14%, transparent)`,
+        color,
+        whiteSpace: 'nowrap',
+      }}
     >
       {children}
     </span>
