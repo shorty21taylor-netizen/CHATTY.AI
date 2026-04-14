@@ -450,7 +450,16 @@ function RevenueHeroCard({ kpi }) {
             <Icon size={26} className="text-emerald-600" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600">
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'var(--emerald-hover)',
+                marginBottom: 8,
+              }}
+            >
               Revenue Generated
             </div>
             <div className="mt-1 text-5xl font-bold tracking-tight text-zinc-900 tabular-nums sm:text-6xl">
