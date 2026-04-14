@@ -2,30 +2,29 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import {
-  AreaChart,
-  Area,
-  ResponsiveContainer,
-} from 'recharts';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
   Bell,
   Zap,
-  PhoneIncoming,
-  PhoneOutgoing,
-  PhoneCall,
-  CalendarCheck,
-  DollarSign,
-  ArrowUpRight,
-  ArrowDownRight,
-  Phone,
+  RotateCcw,
+  Calendar,
   FileText,
   MessageSquare,
-  CloudLightning,
-  Voicemail,
-  UserPlus,
-  Activity,
+  Phone,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  DollarSign,
 } from 'lucide-react';
+
+// Recharts wrapped in dynamic import (client-only) for the activity chart
+const ActivityChart = dynamic(() => import('@/components/ActivityChart'), {
+  ssr: false,
+});
 
 // ---------------------------------------------------------------------------
 // Mock data
@@ -33,136 +32,22 @@ import {
 
 const OPERATOR_NAME = 'Marcus';
 
-const KPIS = [
-  {
-    id: 'inbound',
-    label: 'Inbound Calls',
-    icon: PhoneIncoming,
-    value: '47',
-    delta: 18,
-    deltaLabel: '+18%',
-    positive: true,
-    series: [22, 28, 31, 35, 38, 42, 47],
-  },
-  {
-    id: 'outbound',
-    label: 'Outbound Calls',
-    icon: PhoneOutgoing,
-    value: '23',
-    delta: 6,
-    deltaLabel: '+6%',
-    positive: true,
-    series: [14, 16, 17, 19, 20, 22, 23],
-  },
-  {
-    id: 'pickup',
-    label: 'Avg Pickup Rate',
-    icon: PhoneCall,
-    value: '94.2%',
-    delta: 2.1,
-    deltaLabel: '+2.1%',
-    positive: true,
-    series: [90.4, 91.2, 92.0, 92.8, 93.1, 93.7, 94.2],
-  },
-  {
-    id: 'speed',
-    label: 'Answer Speed',
-    icon: Zap,
-    value: '0.8s',
-    delta: -12,
-    deltaLabel: '-12%',
-    positive: true, // lower is better
-    series: [1.4, 1.3, 1.1, 1.0, 0.95, 0.85, 0.8],
-  },
-  {
-    id: 'booked',
-    label: 'Booked Calls',
-    icon: CalendarCheck,
-    value: '31',
-    delta: 22,
-    deltaLabel: '+22%',
-    positive: true,
-    series: [12, 16, 19, 22, 25, 28, 31],
-  },
-  {
-    id: 'revenue',
-    label: 'Revenue Generated',
-    icon: DollarSign,
-    value: '$48,200',
-    delta: 15,
-    deltaLabel: '+15%',
-    positive: true,
-    series: [28, 32, 36, 39, 42, 45, 48],
-  },
-];
+const REVENUE_KPI = {
+  id: 'revenue',
+  label: 'Revenue Generated',
+  icon: DollarSign,
+  value: '$48,200',
+  delta: 15,
+  deltaLabel: '+15%',
+  positive: true,
+  series: [28, 32, 36, 39, 42, 45, 48],
+};
 
-const ACTIVE_AGENTS = [
-  {
-    id: 'inbound-sales',
-    name: 'Inbound Sales Agent',
-    status: 'active',
-    callsToday: 12,
-    history: [2, 3, 1, 2, 4],
-  },
-  {
-    id: 'appointment-setter',
-    name: 'Appointment Setter',
-    status: 'active',
-    callsToday: 8,
-    history: [1, 2, 2, 1, 2],
-  },
-  {
-    id: 'after-hours',
-    name: 'After-Hours Responder',
-    status: 'idle',
-    callsToday: 0,
-    history: [0, 0, 0, 0, 0],
-  },
-];
-
-const RECENT_ACTIVITY = [
-  {
-    id: 1,
-    icon: UserPlus,
-    color: '#10b981',
-    text: 'New lead from Google Ads · Marcus Miller (storm-damage roof)',
-    ts: '2m ago',
-  },
-  {
-    id: 2,
-    icon: Voicemail,
-    color: '#818cf8',
-    text: 'Voicemail transcribed · "Call me back about the HVAC quote"',
-    ts: '15m ago',
-  },
-  {
-    id: 3,
-    icon: CalendarCheck,
-    color: '#10b981',
-    text: 'Appointment confirmed · Patel inspection · Thu 10:30a',
-    ts: '42m ago',
-  },
-  {
-    id: 4,
-    icon: FileText,
-    color: '#fbbf24',
-    text: 'Proposal sent · Thompson re-roof · $22,400',
-    ts: '1h ago',
-  },
-  {
-    id: 5,
-    icon: MessageSquare,
-    color: '#818cf8',
-    text: 'SMS follow-up delivered to 4 stale leads',
-    ts: '2h ago',
-  },
-  {
-    id: 6,
-    icon: CloudLightning,
-    color: '#fb7185',
-    text: 'Weather alert received · Severe storm tomorrow 2–4pm',
-    ts: '3h ago',
-  },
+const QUALITY_KPIS = [
+  { id: 'answer-rate', label: 'Answer Rate', value: '94.2%', delta: '+2.1%' },
+  { id: 'time-to-answer', label: 'Time to Answer', value: '0.8s', delta: '-12%' },
+  { id: 'qualification', label: 'Qualification Rate', value: '67%', delta: '+4%' },
+  { id: 'booking', label: 'Booking Rate', value: '38%', delta: '+6%' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -234,7 +119,7 @@ export default function OverviewPage() {
             className="t-body"
             style={{ color: 'var(--text-muted)', margin: 0 }}
           >
-            Here&apos;s what Chatty thinks matters most today.
+            Here&apos;s what your AI sales team did overnight.
           </p>
         </div>
 
@@ -301,51 +186,245 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* ROW 1 — Revenue hero */}
-      <motion.div variants={container} className="mb-4">
-        <RevenueHeroCard kpi={KPIS.find((k) => k.id === 'revenue')} />
+      {/* Revenue Hero (kept as-is) */}
+      <motion.div variants={container}>
+        <RevenueHeroCard kpi={REVENUE_KPI} />
       </motion.div>
 
-      {/* ROW 2 — Inbound / Outbound / Pickup (3 cols) */}
-      <motion.div
-        variants={container}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4"
-      >
-        {KPIS.filter((k) =>
-          ['inbound', 'outbound', 'pickup'].includes(k.id)
-        ).map((kpi) => (
-          <KpiCard key={kpi.id} kpi={kpi} />
-        ))}
+      {/* SECTION 1 — Core Sellers: what Chatty did today */}
+      <motion.div variants={item} style={{ marginTop: 40 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}
+        >
+          <div className="t-eyebrow">WHAT CHATTY DID TODAY</div>
+          <span className="t-body-sm">Updated live · All agents active</span>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 16,
+          }}
+          className="core-sellers-grid"
+        >
+          <SellerCard
+            icon={<Zap size={18} />}
+            iconBg="rgba(16,185,129,0.12)"
+            iconColor="var(--emerald-bright)"
+            agent="SPEED-TO-LEAD"
+            value="47"
+            label="leads contacted in under 60 seconds"
+            delta="+12 vs yesterday"
+            deltaPositive
+            footer="Avg response: 38s"
+          />
+          <SellerCard
+            icon={<RotateCcw size={18} />}
+            iconBg="rgba(139,92,246,0.12)"
+            iconColor="#8b5cf6"
+            agent="DEAD LEAD REACTIVATION"
+            value="23"
+            label="cold leads reawakened"
+            delta="6 replied · 2 booked"
+            deltaPositive
+            footer="$38,400 pipeline unlocked"
+          />
+          <SellerCard
+            icon={<Calendar size={18} />}
+            iconBg="rgba(59,130,246,0.12)"
+            iconColor="#3b82f6"
+            agent="BOOKED CALLS"
+            value="18"
+            label="appointments on the calendar"
+            delta="+4 vs yesterday"
+            deltaPositive
+            footer="Next: Mike R. at 2:30pm"
+          />
+          <SellerCard
+            icon={<FileText size={18} />}
+            iconBg="rgba(245,158,11,0.12)"
+            iconColor="#f59e0b"
+            agent="QUOTES SENT + FOLLOWED UP"
+            value="12"
+            label="quotes sent · 34 follow-ups fired"
+            delta="5 viewed today"
+            deltaPositive
+            footer="3 ready to close"
+          />
+          <SellerCard
+            icon={<MessageSquare size={18} />}
+            iconBg="rgba(236,72,153,0.12)"
+            iconColor="#ec4899"
+            agent="FOLLOW-UP TEXTS"
+            value="142"
+            label="texts sent across all agents"
+            delta="28% reply rate"
+            deltaPositive
+            footer="Top: Estimate Follow-Up"
+          />
+        </div>
       </motion.div>
 
-      {/* ROW 3 — Answer Speed / Booked Calls (2 cols, wider) */}
+      {/* SECTION 2 — Activity chart */}
       <motion.div
-        variants={container}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        variants={item}
+        className="dark-card"
+        style={{ padding: 24, marginTop: 24 }}
       >
-        {KPIS.filter((k) => ['speed', 'booked'].includes(k.id)).map((kpi) => (
-          <KpiCard key={kpi.id} kpi={kpi} />
-        ))}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}
+        >
+          <div>
+            <h2 className="t-h2" style={{ margin: 0 }}>
+              Agent activity this week
+            </h2>
+            <p className="t-body-sm" style={{ margin: '4px 0 0' }}>
+              What every agent is producing, day over day.
+            </p>
+          </div>
+        </div>
+        <ActivityChart />
       </motion.div>
 
-      {/* ROW 4 — Agents + Activity */}
+      {/* SECTION 3 — Live Agent Status */}
       <motion.div
-        variants={container}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1.4fr 1fr',
-          gap: 18,
-        }}
+        variants={item}
+        className="dark-card"
+        style={{ padding: 24, marginTop: 24 }}
       >
-        <ActiveAgentsCard />
-        <RecentActivityCard />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}
+        >
+          <div>
+            <h2 className="t-h2" style={{ margin: 0 }}>
+              Your sales team
+            </h2>
+            <p className="t-body-sm" style={{ margin: '4px 0 0' }}>
+              6 of 10 agents active · All systems operational
+            </p>
+          </div>
+          <Link
+            href="/dashboard/agents"
+            style={{
+              color: 'var(--emerald-bright)',
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: 'none',
+            }}
+          >
+            Manage agents →
+          </Link>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 12,
+          }}
+          className="agent-status-grid"
+        >
+          <AgentRow
+            name="Speed-to-Lead"
+            lastAction="Contacted 3 leads, 4 min ago"
+            icon={<Zap size={14} />}
+            iconColor="var(--emerald-bright)"
+          />
+          <AgentRow
+            name="Inbound Qualifier"
+            lastAction="Answered 1 call, 12 min ago"
+            icon={<Phone size={14} />}
+            iconColor="var(--emerald-bright)"
+          />
+          <AgentRow
+            name="SMS Concierge"
+            lastAction="Replied to Mike R., 2 min ago"
+            icon={<MessageSquare size={14} />}
+            iconColor="var(--emerald-bright)"
+          />
+          <AgentRow
+            name="Estimate Follow-Up"
+            lastAction="Sent 12 follow-ups today"
+            icon={<FileText size={14} />}
+            iconColor="#f59e0b"
+          />
+          <AgentRow
+            name="No-Show Rescue"
+            lastAction="Rescued 2 no-shows today"
+            icon={<Clock size={14} />}
+            iconColor="#3b82f6"
+          />
+          <AgentRow
+            name="Dead Lead Reactivation"
+            lastAction="Reawakened 23 leads, 6 replied"
+            icon={<RotateCcw size={14} />}
+            iconColor="#8b5cf6"
+          />
+        </div>
       </motion.div>
+
+      {/* SECTION 4 — Quality Strip */}
+      <motion.div variants={item} style={{ marginTop: 32 }}>
+        <div className="t-eyebrow" style={{ marginBottom: 12 }}>
+          AGENT QUALITY
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 16,
+          }}
+          className="quality-strip-grid"
+        >
+          {QUALITY_KPIS.map((k) => (
+            <QualityKpi key={k.id} label={k.label} value={k.value} delta={k.delta} />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Responsive fallbacks */}
+      <style jsx>{`
+        @media (max-width: 1100px) {
+          :global(.core-sellers-grid) {
+            grid-template-columns: repeat(3, 1fr) !important;
+          }
+          :global(.agent-status-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          :global(.quality-strip-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 700px) {
+          :global(.core-sellers-grid),
+          :global(.agent-status-grid),
+          :global(.quality-strip-grid) {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </motion.div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Revenue hero card (full width)
+// Revenue hero card (unchanged — kept per spec)
 // ---------------------------------------------------------------------------
 
 function RevenueHeroCard({ kpi }) {
@@ -421,362 +500,219 @@ function RevenueHeroCard({ kpi }) {
 }
 
 // ---------------------------------------------------------------------------
-// KPI card (Row 2 + Row 3)
+// SellerCard — Core Sellers row
 // ---------------------------------------------------------------------------
 
-function KpiCard({ kpi }) {
-  const Icon = kpi.icon;
-  const Arrow = kpi.delta >= 0 ? ArrowUpRight : ArrowDownRight;
-  const data = kpi.series.map((y, i) => ({ i, y }));
-
+function SellerCard({
+  icon,
+  iconBg,
+  iconColor,
+  agent,
+  value,
+  label,
+  delta,
+  deltaPositive,
+  footer,
+}) {
   return (
-    <motion.div
-      variants={item}
-      className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
-    >
-      {/* Top: icon circle + label + delta badge */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/30">
-            <Icon size={20} className="text-emerald-600" />
-          </div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            {kpi.label}
-          </span>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
-          <Arrow size={11} />
-          {Math.abs(kpi.delta)}%
-        </span>
-      </div>
-
-      {/* Number */}
-      <div className="text-3xl font-bold leading-none tracking-tight text-zinc-900 tabular-nums">
-        {kpi.value}
-      </div>
-
-      {/* Trend chart ("progress bar") */}
-      <div className="h-10">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
-          >
-            <defs>
-              <linearGradient
-                id={`home-kpi-${kpi.id}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <Area
-              type="monotone"
-              dataKey="y"
-              stroke="#10b981"
-              strokeWidth={1.75}
-              fill={`url(#home-kpi-${kpi.id})`}
-              dot={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </motion.div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Active Agents card
-// ---------------------------------------------------------------------------
-
-function ActiveAgentsCard() {
-  const maxCalls = Math.max(...ACTIVE_AGENTS.map((a) => a.callsToday), 1);
-
-  return (
-    <motion.div
-      variants={item}
+    <div
       className="dark-card"
-      style={{ padding: 0, overflow: 'hidden' }}
+      style={{
+        padding: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        minHeight: 180,
+      }}
     >
       <div
         style={{
-          padding: '18px 22px',
-          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 8,
         }}
       >
-        <div>
-          <div
-            className="t-eyebrow"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            <Phone size={11} style={{ color: 'var(--emerald-bright)' }} />
-            Voice agents
-          </div>
-          <h2 className="t-h2" style={{ margin: '4px 0 0' }}>
-            Active agents
-          </h2>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: iconBg,
+            color: iconColor,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {icon}
         </div>
-        <div className="t-body-sm" style={{ color: 'var(--text-muted)' }}>
-          Today
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            color: 'var(--text-muted)',
+            textAlign: 'right',
+            lineHeight: 1.2,
+          }}
+        >
+          {agent}
+        </span>
+      </div>
+      <div>
+        <div className="t-kpi" style={{ fontSize: 40, lineHeight: 1 }}>
+          {value}
+        </div>
+        <div className="t-body-sm" style={{ marginTop: 6 }}>
+          {label}
         </div>
       </div>
-
-      <div style={{ padding: 10 }}>
-        {ACTIVE_AGENTS.map((a) => {
-          const active = a.status === 'active';
-          const pct = Math.round((a.callsToday / maxCalls) * 100);
-          return (
-            <div
-              key={a.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                padding: '14px 12px',
-                borderRadius: 10,
-              }}
-            >
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  flex: '0 0 230px',
-                  minWidth: 0,
-                }}
-              >
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: active ? '#10b981' : '#6b7280',
-                    boxShadow: active
-                      ? '0 0 8px rgba(16,185,129,0.55)'
-                      : 'none',
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: 'var(--text-bright)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {a.name}
-                </span>
-              </span>
-
-              <span
-                style={{
-                  display: 'inline-flex',
-                  padding: '2px 8px',
-                  borderRadius: 999,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: active ? 'var(--emerald-bright)' : 'var(--text-muted)',
-                  background: active
-                    ? 'var(--emerald-tint)'
-                    : 'var(--surface-2)',
-                  border: active
-                    ? '1px solid rgba(16,185,129,0.28)'
-                    : '1px solid var(--border)',
-                }}
-              >
-                {active ? 'Active' : 'Idle'}
-              </span>
-
-              {/* Volume bar */}
-              <div
-                style={{
-                  flex: 1,
-                  height: 6,
-                  background: 'var(--surface-2)',
-                  borderRadius: 999,
-                  overflow: 'hidden',
-                  minWidth: 60,
-                }}
-              >
-                <div
-                  style={{
-                    width: `${pct}%`,
-                    height: '100%',
-                    background:
-                      'linear-gradient(90deg, #10b981, #6366f1)',
-                    borderRadius: 999,
-                  }}
-                />
-              </div>
-
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--text-bright)',
-                  fontVariantNumeric: 'tabular-nums',
-                  width: 72,
-                  textAlign: 'right',
-                }}
-              >
-                {a.callsToday}{' '}
-                <span
-                  style={{
-                    fontWeight: 500,
-                    color: 'var(--text-subtle)',
-                    fontSize: 11,
-                  }}
-                >
-                  calls
-                </span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
       <div
         style={{
-          padding: '12px 22px',
+          marginTop: 'auto',
+          paddingTop: 10,
           borderTop: '1px solid var(--border)',
-          display: 'flex',
-          justifyContent: 'flex-end',
         }}
       >
-        <Link
-          href="/dashboard/agents"
+        <div
           style={{
-            color: 'var(--emerald-bright)',
-            fontSize: 12.5,
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-flex',
+            fontSize: 12,
+            fontWeight: 600,
+            color: deltaPositive ? 'var(--emerald-bright)' : 'var(--negative)',
+            display: 'flex',
             alignItems: 'center',
             gap: 4,
           }}
         >
-          Manage Agents →
-        </Link>
+          <TrendingUp size={12} /> {delta}
+        </div>
+        <div className="t-body-sm" style={{ marginTop: 2, fontSize: 11 }}>
+          {footer}
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Recent Activity card
+// AgentRow — Live Agent Status
 // ---------------------------------------------------------------------------
 
-function RecentActivityCard() {
+function AgentRow({ name, lastAction, icon, iconColor }) {
   return (
-    <motion.div
-      variants={item}
-      className="dark-card"
-      style={{ padding: 0, overflow: 'hidden' }}
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: 12,
+        borderRadius: 8,
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+      }}
     >
       <div
         style={{
-          padding: '18px 22px',
-          borderBottom: '1px solid var(--border)',
+          width: 28,
+          height: 28,
+          borderRadius: 8,
+          background: `color-mix(in srgb, ${iconColor} 14%, transparent)`,
+          color: iconColor,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
+          flexShrink: 0,
         }}
       >
-        <div>
-          <div
-            className="t-eyebrow"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--text-bright)',
+            }}
           >
-            <Activity size={11} style={{ color: '#818cf8' }} />
-            Live feed
-          </div>
-          <h2 className="t-h2" style={{ margin: '4px 0 0' }}>
-            Recent activity
-          </h2>
+            {name}
+          </span>
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: 'var(--emerald-bright)',
+              boxShadow: '0 0 6px var(--emerald-glow)',
+            }}
+          />
         </div>
-        <motion.span
+        <div
           style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            background: '#10b981',
-            boxShadow: '0 0 8px rgba(16,185,129,0.6)',
-            display: 'inline-block',
+            fontSize: 11,
+            color: 'var(--text-muted)',
+            marginTop: 2,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
-          animate={{ opacity: [1, 0.3, 1] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-        />
+        >
+          {lastAction}
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <div style={{ maxHeight: 360, overflowY: 'auto' }}>
-        {RECENT_ACTIVITY.map((row, i) => {
-          const Icon = row.icon;
-          return (
-            <div
-              key={row.id}
-              style={{
-                display: 'flex',
-                gap: 12,
-                alignItems: 'flex-start',
-                padding: '12px 20px',
-                borderBottom:
-                  i === RECENT_ACTIVITY.length - 1
-                    ? 'none'
-                    : '1px solid var(--border)',
-              }}
-            >
-              <span
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 8,
-                  background: `${row.color}22`,
-                  border: `1px solid ${row.color}44`,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Icon size={13} style={{ color: row.color }} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 12.5,
-                    color: 'var(--text-bright)',
-                    lineHeight: 1.45,
-                    marginBottom: 2,
-                  }}
-                >
-                  {row.text}
-                </div>
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    color: 'var(--text-subtle)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {row.ts}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+// ---------------------------------------------------------------------------
+// QualityKpi — compact bottom strip
+// ---------------------------------------------------------------------------
+
+function QualityKpi({ label, value, delta }) {
+  const positive = !delta || !delta.startsWith('-') || label === 'Time to Answer';
+  return (
+    <div className="dark-card" style={{ padding: 18 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <CheckCircle size={11} style={{ color: 'var(--emerald-bright)' }} />
+        {label}
       </div>
-    </motion.div>
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 26,
+          fontWeight: 700,
+          color: 'var(--text-bright)',
+          fontVariantNumeric: 'tabular-nums',
+          lineHeight: 1,
+        }}
+      >
+        {value}
+      </div>
+      {delta ? (
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            color: positive ? 'var(--emerald-bright)' : 'var(--negative)',
+          }}
+        >
+          {delta} vs last week
+        </div>
+      ) : null}
+    </div>
   );
 }
