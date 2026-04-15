@@ -1,401 +1,688 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useMemo, useState } from 'react';
+import {
+  Calendar,
+  Plus,
+  Clock,
+  MapPin,
+  Edit2,
+  RefreshCw,
+  Sparkles,
+  Phone,
+  Home,
+  FileSearch,
+  CheckCircle2,
+  Users,
+} from 'lucide-react';
 
-const STORAGE_KEY = "chatty_appointments";
+// ---------------------------------------------------------------------------
+// Status + source config (theme-agnostic indicator colors via color-mix)
+// ---------------------------------------------------------------------------
 
-const DEFAULT_ROWS = [
-  {
-    id: 1,
-    name: "Mike Reynolds",
-    date: "Today, 2:30 PM",
-    type: "Cleaning consultation",
-    source: "Inbound",
-    status: "open",
-    dealValue: 0,
-    closedAt: null,
-    showingValueInput: false,
-  },
-  {
-    id: 2,
-    name: "Sarah Chen",
-    date: "Today, 3:45 PM",
-    type: "New patient exam",
-    source: "Inbound",
-    status: "open",
-    dealValue: 0,
-    closedAt: null,
-    showingValueInput: false,
-  },
-  {
-    id: 3,
-    name: "Jordan Lee",
-    date: "Tomorrow, 9:00 AM",
-    type: "Crown fitting",
-    source: "Outbound",
-    status: "closed",
-    dealValue: 3200,
-    closedAt: Date.now(),
-    showingValueInput: false,
-  },
-  {
-    id: 4,
-    name: "Priya Nair",
-    date: "Tomorrow, 11:15 AM",
-    type: "Cleaning consultation",
-    source: "Inbound",
-    status: "open",
-    dealValue: 0,
-    closedAt: null,
-    showingValueInput: false,
-  },
-  {
-    id: 5,
-    name: "Devon Hart",
-    date: "Wed, 2:00 PM",
-    type: "Follow-up",
-    source: "Outbound",
-    status: "open",
-    dealValue: 0,
-    closedAt: null,
-    showingValueInput: false,
-  },
+const STATUS_CONFIG = {
+  confirmed: { label: 'CONFIRMED', color: 'var(--emerald-bright)' },
+  pending: { label: 'PENDING', color: '#f59e0b' },
+  rescheduled: { label: 'RESCHEDULED', color: '#3b82f6' },
+};
+
+const SOURCE_CONFIG = {
+  ai: { label: 'AI AGENT', color: 'var(--emerald-bright)' },
+  manual: { label: 'MANUAL', color: 'var(--text-muted)' },
+  referral: { label: 'REFERRAL', color: '#8b5cf6' },
+};
+
+const SERVICE_ICONS = {
+  estimate: FileSearch,
+  site_visit: Home,
+  sales_call: Phone,
+};
+
+// ---------------------------------------------------------------------------
+// Mock appointments — 12 total across Today / Tomorrow / This Week
+// ---------------------------------------------------------------------------
+
+const APPOINTMENTS = [
+  // Today (4)
+  { id: 1, group: 'today', time: '10:00 AM', name: 'Thompson Residence', service: 'Roof Inspection Estimate', serviceType: 'estimate', address: '1847 Oak Grove Dr', status: 'confirmed', source: 'ai' },
+  { id: 2, group: 'today', time: '11:30 AM', name: 'Patel Home', service: 'HVAC System Site Visit', serviceType: 'site_visit', address: '2412 Birchwood Ln', status: 'confirmed', source: 'ai' },
+  { id: 3, group: 'today', time: '2:30 PM', name: 'Williams Property', service: 'Solar Consultation', serviceType: 'sales_call', address: '8821 Sunset Blvd', status: 'pending', source: 'manual' },
+  { id: 4, group: 'today', time: '4:00 PM', name: 'Chen Residence', service: 'Kitchen Remodel Estimate', serviceType: 'estimate', address: '5523 Maple Ave', status: 'rescheduled', source: 'ai' },
+  // Tomorrow (4)
+  { id: 5, group: 'tomorrow', time: '9:00 AM', name: 'Rodriguez Home', service: 'Gutter Replacement Site Visit', serviceType: 'site_visit', address: '214 Cedar Park Rd', status: 'confirmed', source: 'ai' },
+  { id: 6, group: 'tomorrow', time: '10:30 AM', name: 'Davis Property', service: 'Full Exterior Estimate', serviceType: 'estimate', address: '8877 Pinecrest Way', status: 'confirmed', source: 'referral' },
+  { id: 7, group: 'tomorrow', time: '1:00 PM', name: 'Anderson Residence', service: 'HVAC Maintenance Call', serviceType: 'sales_call', address: '1204 Elm Street', status: 'confirmed', source: 'ai' },
+  { id: 8, group: 'tomorrow', time: '3:30 PM', name: 'Miller Home', service: 'Storm Damage Estimate', serviceType: 'estimate', address: '7660 Willow Creek', status: 'pending', source: 'manual' },
+  // This Week (4)
+  { id: 9, group: 'week', day: 'Thu', time: '9:30 AM', name: 'Martinez Property', service: 'Solar Panel Site Visit', serviceType: 'site_visit', address: '3301 Oakridge Dr', status: 'confirmed', source: 'ai' },
+  { id: 10, group: 'week', day: 'Thu', time: '2:00 PM', name: 'Brown Residence', service: 'Roof Replacement Sales Call', serviceType: 'sales_call', address: '5519 Meadow Ln', status: 'confirmed', source: 'ai' },
+  { id: 11, group: 'week', day: 'Fri', time: '11:00 AM', name: 'Lee Property', service: 'HVAC Install Estimate', serviceType: 'estimate', address: '2287 Highland Ct', status: 'confirmed', source: 'referral' },
+  { id: 12, group: 'week', day: 'Sat', time: '10:00 AM', name: 'Green Residence', service: 'Solar Consultation', serviceType: 'sales_call', address: '1104 Birchwood Pl', status: 'rescheduled', source: 'ai' },
 ];
 
-function loadRows() {
-  if (typeof window === "undefined") return DEFAULT_ROWS;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return parsed.map((r) => ({ ...r, showingValueInput: false }));
-    }
-  } catch {}
-  return DEFAULT_ROWS;
-}
+const BOOKED_BY_AI = [
+  { agent: 'Appointment Setter', count: 14, icon: Calendar },
+  { agent: 'Instant Lead Response', count: 8, icon: Sparkles },
+  { agent: 'Social DM Agent', count: 4, icon: Users },
+];
 
-function saveRows(rows) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(
-      rows.map(({ showingValueInput, ...rest }) => rest)
-    )
-  );
-}
+const CALENDAR_DAYS = [
+  { label: 'Mon', count: 4, isToday: true },
+  { label: 'Tue', count: 4 },
+  { label: 'Wed', count: 3 },
+  { label: 'Thu', count: 2 },
+  { label: 'Fri', count: 1 },
+  { label: 'Sat', count: 1 },
+  { label: 'Sun', count: 0 },
+];
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default function AppointmentsPage() {
-  const [rows, setRows] = useState(DEFAULT_ROWS);
-  const [mounted, setMounted] = useState(false);
+  const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    setRows(loadRows());
-    setMounted(true);
-  }, []);
+  const filtered = useMemo(() => {
+    if (filter === 'all') return APPOINTMENTS;
+    if (filter === 'today') return APPOINTMENTS.filter((a) => a.group === 'today');
+    if (filter === 'week') return APPOINTMENTS;
+    if (filter === 'estimates') return APPOINTMENTS.filter((a) => a.serviceType === 'estimate');
+    if (filter === 'site_visits') return APPOINTMENTS.filter((a) => a.serviceType === 'site_visit');
+    if (filter === 'sales_calls') return APPOINTMENTS.filter((a) => a.serviceType === 'sales_call');
+    return APPOINTMENTS;
+  }, [filter]);
 
-  useEffect(() => {
-    if (mounted) saveRows(rows);
-  }, [rows, mounted]);
-
-  function showValueInput(id) {
-    setRows((r) =>
-      r.map((row) =>
-        row.id === id ? { ...row, showingValueInput: true } : row
-      )
-    );
-  }
-
-  function cancelValueInput(id) {
-    setRows((r) =>
-      r.map((row) =>
-        row.id === id ? { ...row, showingValueInput: false } : row
-      )
-    );
-  }
-
-  function confirmClose(id, value) {
-    setRows((r) =>
-      r.map((row) =>
-        row.id === id
-          ? {
-              ...row,
-              status: "closed",
-              dealValue: Number(value) || 0,
-              closedAt: Date.now(),
-              showingValueInput: false,
-            }
-          : row
-      )
-    );
-  }
-
-  function markLost(id) {
-    setRows((r) =>
-      r.map((row) =>
-        row.id === id
-          ? {
-              ...row,
-              status: "lost",
-              dealValue: 0,
-              closedAt: null,
-              showingValueInput: false,
-            }
-          : row
-      )
-    );
-  }
-
-  function editDeal(id) {
-    setRows((r) =>
-      r.map((row) =>
-        row.id === id ? { ...row, showingValueInput: true } : row
-      )
-    );
-  }
+  const today = filtered.filter((a) => a.group === 'today');
+  const tomorrow = filtered.filter((a) => a.group === 'tomorrow');
+  const week = filtered.filter((a) => a.group === 'week');
 
   return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <div className="t-eyebrow">Appointments</div>
-        <h1 className="t-h1" style={{ margin: "8px 0 6px" }}>
-          Booked appointments
-        </h1>
-        <p className="t-body" style={{ color: "var(--text-muted)", margin: 0 }}>
-          Everything Chatty put on your calendar. Mark closed with deal value to
-          track revenue.
-        </p>
-      </div>
-
+    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      {/* Header */}
       <div
-        className="dark-card"
-        style={{ padding: 8, display: "flex", flexDirection: "column" }}
-      >
-        {rows.map((row) => (
-          <div
-            key={row.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 120px 1fr",
-              alignItems: "center",
-              padding: "18px 20px",
-              borderBottom: "1px solid var(--border)",
-              gap: 14,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: "var(--text-bright)",
-                }}
-              >
-                {row.name}
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "var(--text-muted)",
-                  marginTop: 2,
-                }}
-              >
-                {row.type}
-              </div>
-            </div>
-            <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
-              {row.date}
-            </div>
-            <div>
-              <SourcePill source={row.source} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <ActionCell
-                row={row}
-                onShowInput={() => showValueInput(row.id)}
-                onCancel={() => cancelValueInput(row.id)}
-                onConfirm={(val) => confirmClose(row.id, val)}
-                onLost={() => markLost(row.id)}
-                onEdit={() => editDeal(row.id)}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ActionCell({ row, onShowInput, onCancel, onConfirm, onLost, onEdit }) {
-  const [inputVal, setInputVal] = useState("");
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    if (row.showingValueInput && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [row.showingValueInput]);
-
-  if (row.status === "lost") {
-    return (
-      <span
         style={{
-          display: "inline-block",
-          padding: "4px 12px",
-          borderRadius: 999,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.04em",
-          textTransform: "uppercase",
-          background: "rgba(248,113,113,0.12)",
-          color: "#f87171",
-          border: "1px solid rgba(248,113,113,0.3)",
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 16,
         }}
       >
-        Lost
-      </span>
-    );
-  }
-
-  if (row.status === "closed" && !row.showingValueInput) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "4px 12px",
-            borderRadius: 999,
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            background: "var(--emerald-tint)",
-            color: "var(--emerald-bright)",
-            border: "1px solid rgba(16,185,129,0.3)",
-          }}
-        >
-          ✓ Closed · ${row.dealValue.toLocaleString()}
-        </span>
-        <button
-          onClick={onEdit}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            fontSize: 14,
-            padding: 4,
-          }}
-          title="Edit deal value"
-        >
-          ✎
-        </button>
-      </div>
-    );
-  }
-
-  if (row.showingValueInput) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            background: "var(--surface-2)",
-            border: "1px solid var(--border)",
-            borderRadius: 8,
-            padding: "0 10px",
-          }}
-        >
-          <span
-            style={{
-              color: "var(--text-muted)",
-              fontSize: 14,
-              marginRight: 2,
-            }}
+        <div>
+          <div
+            className="t-eyebrow"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            $
-          </span>
-          <input
-            ref={inputRef}
-            type="number"
-            placeholder="Deal value"
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") onConfirm(inputVal);
-              if (e.key === "Escape") onCancel();
-            }}
-            style={{
-              width: 100,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "var(--text-bright)",
-              fontSize: 14,
-              padding: "8px 0",
-            }}
-          />
+            <Calendar size={12} style={{ color: 'var(--emerald-bright)' }} />
+            Appointments
+          </div>
+          <h1 className="t-h1" style={{ margin: '6px 0 4px' }}>
+            Appointments
+          </h1>
+          <p className="t-body-sm" style={{ margin: 0 }}>
+            Every scheduled call, estimate, and site visit in one place.
+          </p>
         </div>
-        <button
-          onClick={() => onConfirm(inputVal)}
-          className="cta-primary"
-          style={{ padding: "6px 14px", fontSize: 12 }}
-        >
-          Confirm
-        </button>
-        <button
-          onClick={onCancel}
-          className="cta-ghost"
-          style={{ padding: "6px 12px", fontSize: 12 }}
-        >
-          Cancel
+        <button type="button" className="btn-primary">
+          <Plus size={16} />
+          Book Appointment
         </button>
       </div>
-    );
-  }
 
-  // status === 'open', not showing input
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <button
-        onClick={onShowInput}
-        className="cta-primary"
-        style={{ padding: "6px 14px", fontSize: 12 }}
+      {/* Stats row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 16,
+          marginTop: 28,
+        }}
+        className="appts-stats-grid"
       >
-        Mark Closed →
-      </button>
-      <button
-        onClick={onLost}
-        className="cta-ghost"
-        style={{ padding: "6px 12px", fontSize: 12 }}
+        <StatCard icon={<Clock size={13} />} label="Today" value="8" />
+        <StatCard icon={<Calendar size={13} />} label="This Week" value="34" />
+        <StatCard
+          icon={<Sparkles size={13} />}
+          label="Booked by AI"
+          value="26"
+          accent
+        />
+        <StatCard
+          icon={<CheckCircle2 size={13} />}
+          label="Show Rate"
+          value="87%"
+        />
+      </div>
+
+      {/* Filter pills */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          flexWrap: 'wrap',
+          marginTop: 28,
+          marginBottom: 20,
+        }}
       >
-        Lost
-      </button>
+        {[
+          { k: 'all', l: 'All' },
+          { k: 'today', l: 'Today' },
+          { k: 'week', l: 'This Week' },
+          { k: 'estimates', l: 'Estimates' },
+          { k: 'site_visits', l: 'Site Visits' },
+          { k: 'sales_calls', l: 'Sales Calls' },
+        ].map((f) => (
+          <button
+            key={f.k}
+            type="button"
+            onClick={() => setFilter(f.k)}
+            className={filter === f.k ? 'filter-pill-active' : 'filter-pill'}
+          >
+            {f.l}
+          </button>
+        ))}
+      </div>
+
+      {/* Two-pane layout */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: 20,
+        }}
+        className="appts-split"
+      >
+        {/* LEFT: grouped list */}
+        <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
+          {today.length > 0 ? (
+            <AppointmentGroup label="Today" items={today} />
+          ) : null}
+          {tomorrow.length > 0 ? (
+            <AppointmentGroup label="Tomorrow" items={tomorrow} />
+          ) : null}
+          {week.length > 0 ? (
+            <AppointmentGroup label="This Week" items={week} last />
+          ) : null}
+          {filtered.length === 0 ? (
+            <div
+              style={{
+                padding: '40px 20px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                fontSize: 13,
+              }}
+            >
+              No appointments match your filter.
+            </div>
+          ) : null}
+        </div>
+
+        {/* RIGHT: calendar + Booked by AI */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <CalendarWidget />
+          <BookedByAiCard />
+        </div>
+      </div>
+
+      {/* Responsive */}
+      <style jsx>{`
+        @media (max-width: 1000px) {
+          :global(.appts-split) {
+            grid-template-columns: 1fr !important;
+          }
+          :global(.appts-stats-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-function SourcePill({ source }) {
-  const isInbound = source === "Inbound";
+// ---------------------------------------------------------------------------
+// Stat card
+// ---------------------------------------------------------------------------
+
+function StatCard({ icon, label, value, accent }) {
+  return (
+    <div
+      className="dark-card"
+      style={{
+        padding: 20,
+        borderLeft: accent ? '3px solid var(--emerald-bright)' : undefined,
+      }}
+    >
+      <div
+        className="t-eyebrow"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+        }}
+      >
+        {icon}
+        {label}
+      </div>
+      <div
+        className="t-kpi"
+        style={{
+          marginTop: 8,
+          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Appointment group + row
+// ---------------------------------------------------------------------------
+
+function AppointmentGroup({ label, items, last }) {
+  return (
+    <div style={{ borderBottom: last ? 'none' : '1px solid var(--border)' }}>
+      <div
+        style={{
+          padding: '14px 20px',
+          background: 'var(--surface-2)',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--text-bright)',
+          }}
+        >
+          {label}
+          <span
+            style={{
+              marginLeft: 8,
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+            }}
+          >
+            {items.length}
+          </span>
+        </span>
+      </div>
+      {items.map((a, i) => (
+        <AppointmentRow key={a.id} a={a} last={i === items.length - 1} />
+      ))}
+    </div>
+  );
+}
+
+function AppointmentRow({ a, last }) {
+  const ServiceIcon = SERVICE_ICONS[a.serviceType] || Calendar;
+  const status = STATUS_CONFIG[a.status];
+  const source = SOURCE_CONFIG[a.source];
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '96px 1fr auto',
+        alignItems: 'center',
+        gap: 16,
+        padding: '16px 20px',
+        borderBottom: last ? 'none' : '1px solid var(--border)',
+      }}
+    >
+      {/* Time */}
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: 'var(--text-bright)',
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1.1,
+          }}
+        >
+          {a.time}
+        </div>
+        {a.day ? (
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              color: 'var(--text-muted)',
+              marginTop: 2,
+              textTransform: 'uppercase',
+            }}
+          >
+            {a.day}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Body */}
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 2,
+          }}
+        >
+          <ServiceIcon size={14} style={{ color: 'var(--text-muted)' }} />
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'var(--text-bright)',
+            }}
+          >
+            {a.name}
+          </span>
+        </div>
+        <div className="t-body-sm" style={{ marginBottom: 6 }}>
+          {a.service}
+        </div>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: 'var(--text-muted)',
+          }}
+        >
+          <MapPin size={12} />
+          {a.address}
+        </div>
+      </div>
+
+      {/* Badges + actions */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 8,
+        }}
+      >
+        <div style={{ display: 'inline-flex', gap: 6 }}>
+          <Pill color={status.color}>{status.label}</Pill>
+          <Pill color={source.color}>{source.label}</Pill>
+        </div>
+        <div style={{ display: 'inline-flex', gap: 6 }}>
+          <IconButton title="Edit">
+            <Edit2 size={13} />
+          </IconButton>
+          <IconButton title="Reschedule">
+            <RefreshCw size={13} />
+          </IconButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Pill({ color, children }) {
   return (
     <span
       style={{
-        display: "inline-block",
-        padding: "3px 10px",
-        borderRadius: 999,
-        fontSize: 11,
+        display: 'inline-block',
+        fontSize: 10,
         fontWeight: 700,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        background: isInbound ? "var(--emerald-tint)" : "var(--surface-2)",
-        color: isInbound ? "var(--emerald-bright)" : "var(--text-muted)",
-        border: isInbound
-          ? "1px solid rgba(16,185,129,0.3)"
-          : "1px solid var(--border)",
+        letterSpacing: '0.1em',
+        padding: '3px 10px',
+        borderRadius: 999,
+        background: `color-mix(in srgb, ${color} 14%, transparent)`,
+        color,
+        whiteSpace: 'nowrap',
       }}
     >
-      {source}
+      {children}
     </span>
+  );
+}
+
+function IconButton({ children, title }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+        color: 'var(--text-muted)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Calendar widget
+// ---------------------------------------------------------------------------
+
+function CalendarWidget() {
+  const max = Math.max(...CALENDAR_DAYS.map((d) => d.count), 1);
+  return (
+    <div className="dark-card" style={{ padding: 20 }}>
+      <div
+        className="t-eyebrow"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+      >
+        <Calendar size={11} style={{ color: 'var(--emerald-bright)' }} />
+        This Week
+      </div>
+      <h3
+        className="t-h3"
+        style={{ margin: '4px 0 16px', color: 'var(--text-bright)' }}
+      >
+        At a glance
+      </h3>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: 6,
+        }}
+      >
+        {CALENDAR_DAYS.map((d) => {
+          const isToday = d.isToday;
+          return (
+            <div
+              key={d.label}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+                padding: '10px 4px',
+                borderRadius: 8,
+                background: isToday ? 'var(--emerald-tint)' : 'transparent',
+                border: isToday
+                  ? '1px solid rgba(16,185,129,0.3)'
+                  : '1px solid transparent',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  color: isToday ? 'var(--emerald-bright)' : 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {d.label}
+              </span>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 2,
+                  minHeight: 6,
+                  alignItems: 'center',
+                }}
+              >
+                {Array.from({ length: Math.min(d.count, 4) }).map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: '50%',
+                      background: 'var(--emerald-bright)',
+                      opacity: 0.5 + (d.count / max) * 0.5,
+                    }}
+                  />
+                ))}
+              </div>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: isToday ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {d.count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Booked by AI summary
+// ---------------------------------------------------------------------------
+
+function BookedByAiCard() {
+  const total = BOOKED_BY_AI.reduce((s, a) => s + a.count, 0);
+  return (
+    <div className="dark-card" style={{ padding: 20 }}>
+      <div
+        className="t-eyebrow"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          color: 'var(--emerald-bright)',
+        }}
+      >
+        <Sparkles size={11} />
+        Booked by AI
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 8,
+          marginTop: 6,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 32,
+            fontWeight: 700,
+            color: 'var(--emerald-bright)',
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {total}
+        </span>
+        <span className="t-body-sm">appointments this week</span>
+      </div>
+
+      <div
+        style={{
+          marginTop: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
+        {BOOKED_BY_AI.map((a) => {
+          const Icon = a.icon;
+          const pct = Math.round((a.count / total) * 100);
+          return (
+            <div
+              key={a.agent}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: 10,
+                borderRadius: 8,
+                background: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background:
+                    'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
+                  color: 'var(--emerald-bright)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon size={14} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--text-bright)',
+                  }}
+                >
+                  {a.agent}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-muted)',
+                    marginTop: 2,
+                  }}
+                >
+                  {pct}% of bookings
+                </div>
+              </div>
+              <span
+                style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: 'var(--text-bright)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {a.count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

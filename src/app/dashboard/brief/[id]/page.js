@@ -1,488 +1,825 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Play,
+  Phone,
   Pause,
+  CheckCircle2,
+  Send,
+  DollarSign,
+  TrendingUp,
+  Users,
+  Eye,
+  Cloud,
+  Star,
+  AlertCircle,
   Brain,
   Layers3,
   FileText,
   ChevronDown,
-  Zap,
-  CheckCircle2,
-  SkipForward,
-  Sparkles,
+  ChevronUp,
 } from 'lucide-react';
 
+// ---------------------------------------------------------------------------
+// Mock brief (single record — param id is accepted but unused for now)
+// ---------------------------------------------------------------------------
+
+const BRIEF = {
+  id: 'b_042',
+  date: 'Wednesday, April 15',
+  time: '6:00 AM',
+  priority: 'high',
+  operatorName: 'Anthony',
+  actions: [
+    {
+      rank: '01',
+      icon: Phone,
+      headline: 'Call Patricia Williams about the $34,200 solar proposal',
+      why: 'She viewed the proposal 5 times in the last 48h — that is the single strongest intent signal in today\'s pipeline. Two competitor quotes are landing this week; delay costs the deal.',
+      impact: '+$34,200 likely close',
+      cta: 'Call Patricia',
+      ctaColor: 'var(--emerald-bright)',
+    },
+    {
+      rank: '02',
+      icon: Pause,
+      headline: 'Pause the "Solar Summer" Google Ads campaign',
+      why: 'CPL rose 67% this week while conversions fell 23% — the campaign is burning $200/day and cannibalizing higher-ROI channels.',
+      impact: '$1,400/wk saved, reallocate to Facebook',
+      cta: 'Approve campaign pause',
+      ctaColor: '#f59e0b',
+    },
+    {
+      rank: '03',
+      icon: Send,
+      headline: 'Follow up on 4 ghosted bids from last month',
+      why: 'The Ghosted Bid Follow-Up Agent flagged warm signals — competitor quotes expiring this week across all four. Window is short.',
+      impact: '+$48K pipeline reactivation',
+      cta: 'Send follow-up',
+      ctaColor: '#8b5cf6',
+    },
+  ],
+  signals: [
+    { label: 'New Leads', value: '14', delta: '+22% vs avg', positive: true, icon: Users, color: 'var(--emerald-bright)' },
+    { label: 'Calls Answered by AI', value: '31', delta: 'Speed-to-lead 38s avg', positive: true, icon: Phone, color: '#3b82f6' },
+    { label: 'Proposals Viewed', value: '8', delta: '3 viewed 3+ times', positive: true, icon: Eye, color: '#8b5cf6' },
+    { label: 'Ad Spend', value: '$340', delta: '↓12% vs yesterday', positive: true, icon: DollarSign, color: '#f59e0b' },
+    { label: 'Weather', value: 'Clear', delta: 'Prime roofing conditions', positive: true, icon: Cloud, color: '#06b6d4' },
+    { label: 'Review Requests Sent', value: '6', delta: '4 completed · 4.8★ avg', positive: true, icon: Star, color: '#ec4899' },
+  ],
+  trace: [
+    {
+      pass: 1,
+      title: 'Signal Analysis',
+      subtitle: 'What Claude noticed in the last 24h',
+      confidence: 91,
+      icon: Brain,
+      bullets: [
+        'Patricia Williams re-opened the $34,200 solar proposal 5 times between 7pm and 11pm last night — unusually dense engagement',
+        '"Solar Summer" Google Ads CPL jumped from $42 to $70 while conversion rate dropped from 6.2% to 4.8% week-over-week',
+        '4 dormant proposals from March crossed 30-day aging threshold; 3 show matching competitor activity in the local market',
+        'Weather API shows clear skies through Saturday — first full dry window in 11 days for roofing crews',
+      ],
+    },
+    {
+      pass: 2,
+      title: 'Pattern Recognition',
+      subtitle: 'What it means relative to baseline',
+      confidence: 87,
+      icon: Layers3,
+      bullets: [
+        'Viewer frequency on Williams proposal (5x/48h) is 4.2σ above baseline engagement — correlates with 71% close rate historically',
+        'Ad spend ROI inversion typically precedes a 3–4 week slump if not intervened; pausing now preserves ~$5,600/mo',
+        'Ghosted bids with competitor-expiry overlap reactivate at 23% vs 8% baseline — these 4 are high-leverage',
+        'Weather + low booked-visits ratio = operator should backfill Thu/Fri with reactivated leads rather than new ones',
+      ],
+    },
+    {
+      pass: 3,
+      title: 'Brief Generation',
+      subtitle: 'Why these 3 rose to the top',
+      confidence: 93,
+      icon: FileText,
+      bullets: [
+        'Ranked by expected-dollar-impact × time-decay: the Williams call decays fastest (competitor quotes land this week)',
+        'The ad pause is second because it is high-leverage but not time-sensitive today — every hour of delay costs $8',
+        'Ghosted bid follow-up is third because it is a batch action that agent can execute in ~15 minutes of operator attention',
+        'Omitted: 2 smaller lead-response queue items — they are within Instant Lead Response agent\'s autonomous scope',
+      ],
+    },
+  ],
+};
+
 const PRIORITY_STYLES = {
-  high: {
-    label: 'HIGH PRIORITY',
-    color: '#fb7185',
-    bg: 'rgba(244,63,94,0.12)',
-    border: 'rgba(244,63,94,0.45)',
-  },
-  medium: {
-    label: 'MEDIUM PRIORITY',
-    color: '#fbbf24',
-    bg: 'rgba(245,158,11,0.12)',
-    border: 'rgba(245,158,11,0.4)',
-  },
-  low: {
-    label: 'LOW PRIORITY',
-    color: '#818cf8',
-    bg: 'rgba(99,102,241,0.12)',
-    border: 'rgba(99,102,241,0.4)',
-  },
+  high: { label: 'HIGH PRIORITY', color: '#f59e0b' },
+  medium: { label: 'MEDIUM PRIORITY', color: '#3b82f6' },
+  low: { label: 'LOW PRIORITY', color: 'var(--text-muted)' },
 };
 
-const MOCK_TRACE = {
-  pass_1: {
-    confidence: 0.87,
-    findings: [
-      'Lead velocity is +28% WoW, driven by Google LSA inbound calls.',
-      'Two estimates older than 72h in "quoted" status — unusual for this operator.',
-      'NWS issued a severe thunderstorm watch overlapping 2 scheduled roof tear-offs.',
-      'Facebook storm-season ad CPL dropped 22% vs last 7 days.',
-    ],
-    anomalies: [
-      'Response time on inbound leads is averaging 47m — 3x the operator\'s baseline.',
-    ],
-  },
-  pass_2: {
-    confidence: 0.81,
-    hypotheses: [
-      'Primary bottleneck is speed-to-lead, not top-of-funnel demand.',
-      'Stalled quoted estimates correlate with missed follow-up reminders.',
-      'Weather is a compounding revenue risk this week.',
-    ],
-    framework: [
-      'Rank actions on ROI × urgency × effort.',
-      'Bias toward reversible, same-day actions on hot leads.',
-      'Use weather data to pre-empt reschedule cost.',
-    ],
-  },
-  pass_3: {
-    confidence: 0.9,
-    recommendations: [
-      {
-        id: 'r1',
-        title: 'Call back 3 inbound leads within the hour',
-        why: 'Response time drives 35% of conversion variance for this org.',
-        impact: '+$12.4k expected pipeline',
-        status: 'acted',
-      },
-      {
-        id: 'r2',
-        title: 'Push the Miller roof estimate from draft to sent',
-        why: 'Stalled 5 days; customer actively shopping on HomeAdvisor.',
-        impact: 'Recover $18.7k job at ~45% margin',
-        status: 'pending',
-      },
-      {
-        id: 'r3',
-        title: 'Reroute tomorrow\'s outdoor jobs 2–4pm',
-        why: 'Severe storm cell crossing the southern service zone.',
-        impact: 'Avoid ~$4k rework',
-        status: 'pending',
-      },
-      {
-        id: 'r4',
-        title: 'Enable the storm-season Facebook creative',
-        why: 'CPL −22% and weather tailwinds persist 4–6 days.',
-        impact: '~8 qualified leads at <$48 CPL',
-        status: 'skipped',
-      },
-    ],
-  },
-};
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
-const PASS_META = [
-  {
-    id: 'pass_1',
-    title: 'Pass 1 · Signal Analysis',
-    icon: Layers3,
-    description:
-      'Claude reads the full 24h window of signals and surfaces patterns, anomalies, and risks.',
-  },
-  {
-    id: 'pass_2',
-    title: 'Pass 2 · Pattern Recognition',
-    icon: Brain,
-    description:
-      'Claude reasons about what the patterns mean vs. the operator\'s baseline and builds a decision framework.',
-  },
-  {
-    id: 'pass_3',
-    title: 'Pass 3 · Brief Generation',
-    icon: FileText,
-    description:
-      'Claude drafts the ranked action list and voice summary that ships as your Daily Brief.',
-  },
-];
+export default function BriefDetailPage({ params }) {
+  use(params); // consume promise in Next 15
 
-const STATUS_STYLES = {
-  acted: {
-    label: 'Acted on',
-    icon: CheckCircle2,
-    color: 'var(--emerald-bright)',
-    bg: 'rgba(16,185,129,0.12)',
-    border: 'rgba(16,185,129,0.4)',
-  },
-  skipped: {
-    label: 'Skipped',
-    icon: SkipForward,
-    color: '#9ca3af',
-    bg: 'rgba(255,255,255,0.04)',
-    border: 'var(--border-strong)',
-  },
-  pending: {
-    label: 'Pending',
-    icon: Sparkles,
-    color: '#fbbf24',
-    bg: 'rgba(245,158,11,0.1)',
-    border: 'rgba(245,158,11,0.35)',
-  },
-};
+  const [traceOpen, setTraceOpen] = useState(true);
+  const [feedbackReaction, setFeedbackReaction] = useState(null);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
-function PassCard({ meta, data, defaultOpen }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const Icon = meta.icon;
-  const pct = Math.round((data?.confidence ?? 0) * 100);
+  const priority = PRIORITY_STYLES[BRIEF.priority];
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="rounded-2xl border"
+    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      {/* Back link */}
+      <Link
+        href="/dashboard/brief"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          color: 'var(--text-muted)',
+          fontSize: 13,
+          textDecoration: 'none',
+          marginBottom: 16,
+        }}
+      >
+        <ArrowLeft size={14} />
+        Back to briefs
+      </Link>
+
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div
+            className="t-eyebrow"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          >
+            <FileText size={12} style={{ color: 'var(--emerald-bright)' }} />
+            Daily Brief
+          </div>
+          <h1 className="t-h1" style={{ margin: '6px 0 6px' }}>
+            Daily Brief
+          </h1>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span className="t-body-sm" style={{ color: 'var(--text-bright)' }}>
+              {BRIEF.date} · {BRIEF.time}
+            </span>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                padding: '4px 10px',
+                borderRadius: 999,
+                background: `color-mix(in srgb, ${priority.color} 14%, transparent)`,
+                color: priority.color,
+              }}
+            >
+              <AlertCircle size={11} />
+              {priority.label}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setPlaying((p) => !p)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 16px',
+            borderRadius: 10,
+            background: 'var(--surface-1)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-bright)',
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: 'pointer',
+          }}
+        >
+          {playing ? <Pause size={14} /> : <Play size={14} />}
+          {playing ? 'Pause voice summary' : 'Play voice summary'}
+        </button>
+      </div>
+
+      {/* Hero quote */}
+      <div
+        className="dark-card"
+        style={{
+          padding: '28px 32px',
+          marginTop: 24,
+          borderLeft: '4px solid var(--emerald-bright)',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 24,
+            fontWeight: 500,
+            lineHeight: 1.35,
+            color: 'var(--text-bright)',
+            letterSpacing: '-0.005em',
+          }}
+        >
+          <span
+            style={{
+              color: 'var(--emerald-bright)',
+              fontSize: 36,
+              lineHeight: 0,
+              verticalAlign: '-0.25em',
+              marginRight: 4,
+            }}
+          >
+            &ldquo;
+          </span>
+          Good morning {BRIEF.operatorName}. Here&apos;s what matters today:
+        </div>
+      </div>
+
+      {/* SECTION 1 — Top 3 Actions */}
+      <div style={{ marginTop: 36 }}>
+        <div
+          className="t-eyebrow"
+          style={{ marginBottom: 16, color: 'var(--emerald-bright)' }}
+        >
+          TOP 3 ACTIONS TODAY
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 14,
+          }}
+        >
+          {BRIEF.actions.map((a) => (
+            <ActionCard key={a.rank} a={a} />
+          ))}
+        </div>
+      </div>
+
+      {/* SECTION 2 — Signal Summary */}
+      <div style={{ marginTop: 40 }}>
+        <div className="t-eyebrow" style={{ marginBottom: 16 }}>
+          SIGNAL SUMMARY
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 14,
+          }}
+          className="signal-grid"
+        >
+          {BRIEF.signals.map((s) => (
+            <SignalTile key={s.label} s={s} />
+          ))}
+        </div>
+      </div>
+
+      {/* SECTION 3 — Decision Engine Trace */}
+      <div style={{ marginTop: 40 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}
+        >
+          <div className="t-eyebrow">DECISION ENGINE TRACE</div>
+          <button
+            type="button"
+            onClick={() => setTraceOpen((o) => !o)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--emerald-bright)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {traceOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {traceOpen ? 'Collapse' : 'Expand'}
+          </button>
+        </div>
+
+        {traceOpen ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 14,
+            }}
+          >
+            {BRIEF.trace.map((t) => (
+              <TracePass key={t.pass} t={t} />
+            ))}
+          </div>
+        ) : (
+          <div
+            className="dark-card"
+            style={{
+              padding: 16,
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: 13,
+            }}
+          >
+            3 passes · hidden
+          </div>
+        )}
+      </div>
+
+      {/* Footer — feedback */}
+      <div
+        className="dark-card"
+        style={{ padding: 24, marginTop: 40, marginBottom: 40 }}
+      >
+        <h3 className="t-h3" style={{ margin: 0 }}>
+          How useful was this brief?
+        </h3>
+        <p className="t-body-sm" style={{ marginTop: 4 }}>
+          Your feedback shapes tomorrow&apos;s priorities — the decision engine
+          learns from every reaction.
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            marginTop: 16,
+            flexWrap: 'wrap',
+          }}
+        >
+          {[
+            { k: 'love', emoji: '😍', label: 'Nailed it' },
+            { k: 'useful', emoji: '👍', label: 'Useful' },
+            { k: 'ok', emoji: '😐', label: 'Okay' },
+            { k: 'off', emoji: '👎', label: 'Off base' },
+            { k: 'bad', emoji: '🤦', label: 'Missed it' },
+          ].map((r) => {
+            const active = feedbackReaction === r.k;
+            return (
+              <button
+                key={r.k}
+                type="button"
+                onClick={() => setFeedbackReaction(r.k)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  background: active
+                    ? 'var(--emerald-tint)'
+                    : 'var(--surface-2)',
+                  border: active
+                    ? '1px solid rgba(16,185,129,0.4)'
+                    : '1px solid var(--border)',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  color: active ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                  fontWeight: 500,
+                }}
+              >
+                <span style={{ fontSize: 16, lineHeight: 1 }}>{r.emoji}</span>
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <textarea
+          placeholder="What could be sharper? (optional)"
+          value={feedbackText}
+          onChange={(e) => setFeedbackText(e.target.value)}
+          style={{
+            marginTop: 14,
+            width: '100%',
+            minHeight: 80,
+            resize: 'vertical',
+            padding: 12,
+            borderRadius: 10,
+            border: '1px solid var(--border)',
+            background: 'var(--input-bg)',
+            color: 'var(--text-bright)',
+            fontSize: 13,
+            fontFamily: 'inherit',
+          }}
+        />
+
+        <div
+          style={{
+            marginTop: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <span className="t-body-sm" style={{ color: 'var(--text-subtle)' }}>
+            {feedbackSubmitted
+              ? 'Thanks — feedback logged.'
+              : 'Feedback is private to your org.'}
+          </span>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={!feedbackReaction && !feedbackText.trim()}
+            onClick={() => {
+              setFeedbackSubmitted(true);
+            }}
+            style={{
+              opacity:
+                feedbackReaction || feedbackText.trim() ? 1 : 0.5,
+            }}
+          >
+            <CheckCircle2 size={14} />
+            Submit Feedback
+          </button>
+        </div>
+      </div>
+
+      {/* Responsive */}
+      <style jsx>{`
+        @media (max-width: 900px) {
+          :global(.signal-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 600px) {
+          :global(.signal-grid) {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Action card (Top 3)
+// ---------------------------------------------------------------------------
+
+function ActionCard({ a }) {
+  const Icon = a.icon;
+  return (
+    <div
+      className="dark-card"
       style={{
-        background: 'var(--surface-1)',
-        borderColor: 'var(--border)',
+        padding: 22,
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        gap: 18,
+        alignItems: 'flex-start',
       }}
     >
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-3 p-5 text-left"
-        aria-expanded={open}
+      {/* Rank */}
+      <div
+        style={{
+          fontSize: 40,
+          fontWeight: 800,
+          color: 'var(--border-strong, var(--border))',
+          lineHeight: 1,
+          fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.02em',
+          minWidth: 48,
+        }}
       >
-        <div className="flex items-center gap-3">
+        {a.rank}
+      </div>
+
+      {/* Body */}
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 6,
+          }}
+        >
           <div
-            className="flex h-9 w-9 items-center justify-center rounded-lg border"
             style={{
-              background: 'rgba(16,185,129,0.1)',
-              borderColor: 'rgba(16,185,129,0.3)',
+              width: 24,
+              height: 24,
+              borderRadius: 8,
+              background: `color-mix(in srgb, ${a.ctaColor} 14%, transparent)`,
+              color: a.ctaColor,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon size={13} />
+          </div>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'var(--text-muted)',
+            }}
+          >
+            Recommended Action
+          </span>
+        </div>
+        <div
+          style={{
+            fontSize: 17,
+            fontWeight: 700,
+            color: 'var(--text-bright)',
+            lineHeight: 1.3,
+          }}
+        >
+          {a.headline}
+        </div>
+        <p
+          className="t-body-sm"
+          style={{ marginTop: 8, marginBottom: 10, lineHeight: 1.5 }}
+        >
+          <span
+            style={{
+              fontWeight: 700,
+              color: 'var(--text-bright)',
+              marginRight: 4,
+            }}
+          >
+            Why:
+          </span>
+          {a.why}
+        </p>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 10px',
+            borderRadius: 999,
+            background: 'var(--emerald-tint)',
+            color: 'var(--emerald-bright)',
+            fontSize: 12,
+            fontWeight: 700,
+          }}
+        >
+          <TrendingUp size={12} />
+          {a.impact}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div>
+        <button
+          type="button"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '10px 16px',
+            borderRadius: 10,
+            background: a.ctaColor,
+            color: '#ffffff',
+            border: 'none',
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {a.cta}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Signal tile
+// ---------------------------------------------------------------------------
+
+function SignalTile({ s }) {
+  const Icon = s.icon;
+  return (
+    <div className="dark-card" style={{ padding: 18 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 8,
+        }}
+      >
+        <span
+          className="t-eyebrow"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        >
+          {s.label}
+        </span>
+        <div
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 8,
+            background: `color-mix(in srgb, ${s.color} 14%, transparent)`,
+            color: s.color,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon size={13} />
+        </div>
+      </div>
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          color: 'var(--text-bright)',
+          fontVariantNumeric: 'tabular-nums',
+          lineHeight: 1,
+        }}
+      >
+        {s.value}
+      </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 11,
+          fontWeight: 600,
+          color: s.positive ? 'var(--emerald-bright)' : 'var(--negative)',
+        }}
+      >
+        {s.delta}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Trace pass card
+// ---------------------------------------------------------------------------
+
+function TracePass({ t }) {
+  const Icon = t.icon;
+  return (
+    <div className="dark-card" style={{ padding: 22 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            minWidth: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background:
+                'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
               color: 'var(--emerald-bright)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
             <Icon size={16} />
           </div>
-          <div>
-            <div className="text-sm font-semibold text-[var(--text-bright)]">
-              {meta.title}
-            </div>
-            <div className="text-xs text-[var(--text-muted)]">
-              {meta.description}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span
-            className="rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tabular-nums"
-            style={{
-              background: 'rgba(16,185,129,0.1)',
-              borderColor: 'rgba(16,185,129,0.3)',
-              color: 'var(--emerald-bright)',
-            }}
-          >
-            {pct}% confidence
-          </span>
-          <ChevronDown
-            size={16}
-            className="text-[var(--text-muted)] transition-transform"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          />
-        </div>
-      </button>
-
-      {open ? (
-        <div className="border-t px-5 pb-5 pt-4" style={{ borderColor: 'var(--border)' }}>
-          {meta.id === 'pass_1' ? (
-            <div className="space-y-4">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                  Findings
-                </div>
-                <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-bright)]">
-                  {data.findings.map((f, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="mt-1.5 inline-block h-1 w-1 flex-none rounded-full bg-[var(--emerald-bright)]" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {data.anomalies?.length ? (
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                    Anomalies
-                  </div>
-                  <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-bright)]">
-                    {data.anomalies.map((f, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="mt-1.5 inline-block h-1 w-1 flex-none rounded-full bg-[#fb7185]" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {meta.id === 'pass_2' ? (
-            <div className="space-y-4">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                  Hypotheses
-                </div>
-                <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-bright)]">
-                  {data.hypotheses.map((h, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="mt-1.5 inline-block h-1 w-1 flex-none rounded-full bg-[#818cf8]" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-                  Decision framework
-                </div>
-                <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-muted)]">
-                  {data.framework.map((h, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="mt-1.5 inline-block h-1 w-1 flex-none rounded-full bg-[var(--border-strong)]" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : null}
-
-          {meta.id === 'pass_3' ? (
-            <ul className="space-y-2">
-              {data.recommendations.map((rec) => {
-                const style =
-                  STATUS_STYLES[rec.status] ?? STATUS_STYLES.pending;
-                const StatusIcon = style.icon;
-                return (
-                  <li
-                    key={rec.id}
-                    className="rounded-xl border p-3"
-                    style={{
-                      background: 'var(--surface-2)',
-                      borderColor: 'var(--border)',
-                    }}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-[var(--text-bright)]">
-                          {rec.title}
-                        </div>
-                        <div className="mt-1 text-xs text-[var(--text-muted)]">
-                          {rec.why}
-                        </div>
-                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.08)] px-2 py-1 text-xs font-semibold text-[var(--emerald-bright)]">
-                          <Zap size={12} />
-                          {rec.impact}
-                        </div>
-                      </div>
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-semibold"
-                        style={{
-                          color: style.color,
-                          background: style.bg,
-                          borderColor: style.border,
-                        }}
-                      >
-                        <StatusIcon size={11} />
-                        {style.label}
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
-    </motion.section>
-  );
-}
-
-export default function BriefDetailPage({ params }) {
-  const { id } = use(params);
-  const [brief, setBrief] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch(`/api/brief/${id}`);
-        if (!res.ok) {
-          if (!cancelled) setError(`Brief not available (${res.status})`);
-          return;
-        }
-        const data = await res.json();
-        if (!cancelled) setBrief(data.brief ?? null);
-      } catch (err) {
-        if (!cancelled) setError(err.message ?? 'Failed to load brief');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  const priority = brief?.priority ?? 'medium';
-  const priorityStyle = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.medium;
-  const trace =
-    (brief?.decision_engine_trace &&
-      Object.keys(brief.decision_engine_trace).length > 0 &&
-      brief.decision_engine_trace) ||
-    MOCK_TRACE;
-  const briefDate = brief?.brief_date
-    ? new Date(brief.brief_date).toLocaleDateString(undefined, {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : 'Daily Brief';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
-      <Link
-        href="/dashboard/brief"
-        className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--emerald-bright)]"
-      >
-        <ArrowLeft size={14} />
-        Back to Mission Control
-      </Link>
-
-      <header className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border p-6"
-        style={{ background: 'var(--surface-1)', borderColor: 'var(--border)' }}>
-        <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-            Daily Brief
-          </div>
-          <h1
-            className="mt-1 text-2xl font-semibold tracking-tight text-[var(--text-bright)] sm:text-3xl"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
-            {briefDate}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-wider"
+          <div style={{ minWidth: 0 }}>
+            <div
               style={{
-                background: priorityStyle.bg,
-                borderColor: priorityStyle.border,
-                color: priorityStyle.color,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
               }}
             >
-              <span
-                className="inline-block h-1.5 w-1.5 rounded-full"
-                style={{ background: priorityStyle.color }}
-              />
-              {priorityStyle.label}
-            </span>
-            {brief?.delivered_at ? (
-              <span className="text-xs text-[var(--text-muted)]">
-                Delivered {new Date(brief.delivered_at).toLocaleString()}
-                {brief.delivered_via ? ` · ${brief.delivered_via}` : ''}
-              </span>
-            ) : (
-              <span className="text-xs text-[var(--text-muted)]">
-                {loading ? 'Loading…' : 'Not yet delivered'}
-              </span>
-            )}
-          </div>
-          {error ? (
-            <div className="mt-2 text-xs text-amber-400">
-              {error} — showing mock trace.
+              Pass {t.pass}
             </div>
-          ) : null}
+            <h3
+              className="t-h3"
+              style={{ margin: '2px 0 0', color: 'var(--text-bright)' }}
+            >
+              {t.title}
+            </h3>
+            <div className="t-body-sm" style={{ marginTop: 2 }}>
+              {t.subtitle}
+            </div>
+          </div>
         </div>
-
-        <button
-          onClick={() => setPlaying((p) => !p)}
-          className="group flex items-center gap-3 rounded-xl border px-4 py-2 text-left transition-all hover:border-[var(--emerald-bright)]"
+        <div
           style={{
-            background: 'var(--surface-2)',
-            borderColor: 'var(--border)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 6,
+            flexShrink: 0,
           }}
         >
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-white"
             style={{
-              background:
-                'linear-gradient(135deg, var(--emerald-bright), #059669)',
-              boxShadow: '0 0 14px rgba(16,185,129,0.4)',
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
             }}
           >
-            {playing ? <Pause size={16} /> : <Play size={16} fill="white" />}
+            Confidence
           </div>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-              Voice summary
-            </div>
-            <div className="text-sm font-semibold text-[var(--text-bright)]">
-              Play full brief
-            </div>
+          <div
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: 'var(--emerald-bright)',
+              fontVariantNumeric: 'tabular-nums',
+              lineHeight: 1,
+            }}
+          >
+            {t.confidence}%
           </div>
-        </button>
-      </header>
-
-      {brief?.voice_summary ? (
-        <section
-          className="rounded-2xl border p-6"
-          style={{ background: 'var(--surface-1)', borderColor: 'var(--border)' }}
-        >
-          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-            Voice summary transcript
-          </div>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--text-bright)]">
-            {brief.voice_summary}
-          </p>
-        </section>
-      ) : null}
-
-      <div className="space-y-4">
-        {PASS_META.map((meta, i) => (
-          <PassCard
-            key={meta.id}
-            meta={meta}
-            data={trace[meta.id] ?? MOCK_TRACE[meta.id]}
-            defaultOpen={i === 0}
-          />
-        ))}
+        </div>
       </div>
-    </motion.div>
+
+      <ul
+        style={{
+          margin: '8px 0 0',
+          padding: 0,
+          listStyle: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}
+      >
+        {t.bullets.map((b, i) => (
+          <li
+            key={i}
+            style={{
+              display: 'flex',
+              gap: 10,
+              alignItems: 'flex-start',
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: 'var(--text-bright)',
+            }}
+          >
+            <span
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: '50%',
+                background: 'var(--emerald-bright)',
+                marginTop: 9,
+                flexShrink: 0,
+              }}
+            />
+            {b}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
