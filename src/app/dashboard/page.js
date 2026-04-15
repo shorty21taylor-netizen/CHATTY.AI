@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
@@ -111,15 +111,19 @@ export default function OverviewPage() {
           </div>
           <h1
             className="t-h1"
-            style={{ margin: '8px 0 4px', letterSpacing: '-0.01em' }}
+            style={{
+              margin: '8px 0 4px',
+              letterSpacing: '-0.01em',
+              fontFamily: "'Playfair Display', Georgia, serif",
+            }}
           >
-            Good morning, {OPERATOR_NAME}.
+            Today
           </h1>
           <p
             className="t-body"
             style={{ color: 'var(--text-muted)', margin: 0 }}
           >
-            Here&apos;s what your AI sales team did overnight.
+            Good morning, {OPERATOR_NAME}. Here&apos;s what your AI sales team did overnight.
           </p>
         </div>
 
@@ -214,6 +218,7 @@ export default function OverviewPage() {
           className="core-sellers-grid"
         >
           <SellerCard
+            href="/dashboard/speed-to-lead"
             icon={<Zap size={18} />}
             iconBg="rgba(16,185,129,0.12)"
             iconColor="var(--emerald-bright)"
@@ -225,6 +230,7 @@ export default function OverviewPage() {
             footer="Avg response: 38s"
           />
           <SellerCard
+            href="/dashboard/follow-ups"
             icon={<RotateCcw size={18} />}
             iconBg="rgba(139,92,246,0.12)"
             iconColor="#8b5cf6"
@@ -236,6 +242,7 @@ export default function OverviewPage() {
             footer="$38,400 pipeline unlocked"
           />
           <SellerCard
+            href="/dashboard/booked-calls"
             icon={<Calendar size={18} />}
             iconBg="rgba(59,130,246,0.12)"
             iconColor="#3b82f6"
@@ -247,6 +254,7 @@ export default function OverviewPage() {
             footer="Next: Mike R. at 2:30pm"
           />
           <SellerCard
+            href="/dashboard/proposals-out"
             icon={<FileText size={18} />}
             iconBg="rgba(245,158,11,0.12)"
             iconColor="#f59e0b"
@@ -258,6 +266,7 @@ export default function OverviewPage() {
             footer="3 ready to close"
           />
           <SellerCard
+            href="/dashboard/follow-ups"
             icon={<MessageSquare size={18} />}
             iconBg="rgba(236,72,153,0.12)"
             iconColor="#ec4899"
@@ -513,6 +522,7 @@ function RevenueHeroCard({ kpi }) {
 // ---------------------------------------------------------------------------
 
 function SellerCard({
+  href,
   icon,
   iconBg,
   iconColor,
@@ -523,7 +533,19 @@ function SellerCard({
   deltaPositive,
   footer,
 }) {
+  const [hover, setHover] = useState(false);
+  const Wrapper = href ? Link : 'div';
+  const wrapperProps = href
+    ? {
+        href,
+        onMouseEnter: () => setHover(true),
+        onMouseLeave: () => setHover(false),
+        style: { textDecoration: 'none', color: 'inherit', display: 'block' },
+      }
+    : {};
+
   return (
+    <Wrapper {...wrapperProps}>
     <div
       className="dark-card"
       style={{
@@ -532,6 +554,13 @@ function SellerCard({
         flexDirection: 'column',
         gap: 12,
         minHeight: 180,
+        cursor: href ? 'pointer' : 'default',
+        transition: 'transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease',
+        transform: hover ? 'translateY(-3px)' : 'translateY(0)',
+        borderColor: hover
+          ? 'color-mix(in srgb, var(--emerald-bright) 50%, var(--border))'
+          : undefined,
+        boxShadow: hover ? '0 10px 30px rgba(16,185,129,0.14)' : undefined,
       }}
     >
       <div
@@ -602,6 +631,7 @@ function SellerCard({
         </div>
       </div>
     </div>
+    </Wrapper>
   );
 }
 

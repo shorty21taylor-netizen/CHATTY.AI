@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard,
+  Home,
   Zap,
   Bot,
   BarChart3,
@@ -18,7 +18,8 @@ import {
   Settings,
   Plug,
   CreditCard,
-  Rocket,
+  RefreshCw,
+  DollarSign,
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
@@ -32,43 +33,69 @@ import { getAdminSession, clearAdminSession } from '@/lib/admin';
 // Navigation config
 // ---------------------------------------------------------------------------
 
-const MAIN_NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/brief', label: 'Daily Brief', icon: Zap, pulse: true },
-];
-
 const NAV_GROUPS = [
   {
-    id: 'operations',
-    label: 'Operations',
+    id: 'command-center',
+    label: 'Command Center',
+    icon: Home,
     defaultOpen: true,
     items: [
-      { href: '/dashboard/agents', label: 'Agents', icon: Bot },
-      { href: '/dashboard/crm', label: 'CRM', icon: Users },
-      { href: '/dashboard/voice', label: 'Voice Agents', icon: Mic },
-      { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-      { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
+      { href: '/dashboard', label: 'Today', icon: Home, exact: true },
+      { href: '/dashboard/brief', label: 'Daily Brief', icon: Zap, pulse: true },
     ],
   },
   {
-    id: 'management',
-    label: 'Management',
+    id: 'deliverables',
+    label: 'Deliverables',
+    icon: Zap,
     defaultOpen: true,
     items: [
-      { href: '/dashboard/pipeline', label: 'Pipeline', icon: GitBranch },
+      { href: '/dashboard/speed-to-lead', label: 'Speed to Lead', icon: Zap },
+      { href: '/dashboard/booked-calls', label: 'Booked Calls', icon: CalendarCheck },
+      { href: '/dashboard/follow-ups', label: 'Active Follow-Ups', icon: RefreshCw },
+      { href: '/dashboard/proposals-out', label: 'Proposals Out', icon: FileText },
+      { href: '/dashboard/closed', label: 'Closed Revenue', icon: DollarSign },
+    ],
+  },
+  {
+    id: 'agents',
+    label: 'Agents',
+    icon: Bot,
+    defaultOpen: true,
+    items: [
+      { href: '/dashboard/agents', label: 'All Agents', icon: Bot },
+    ],
+  },
+  {
+    id: 'people',
+    label: 'People',
+    icon: Users,
+    defaultOpen: true,
+    items: [
       { href: '/dashboard/contacts', label: 'Contacts', icon: Users },
-      { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarCheck },
-      { href: '/dashboard/proposals', label: 'Proposals', icon: FileText },
+    ],
+  },
+  {
+    id: 'performance',
+    label: 'Performance',
+    icon: BarChart3,
+    defaultOpen: true,
+    items: [
+      { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+      { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
+      { href: '/dashboard/pipeline', label: 'Pipeline', icon: GitBranch },
     ],
   },
   {
     id: 'settings',
     label: 'Settings',
+    icon: Settings,
     defaultOpen: false,
     items: [
-      { href: '/dashboard/admin', label: 'Admin', icon: Settings },
       { href: '/dashboard/integrations', label: 'Integrations', icon: Plug },
+      { href: '/dashboard/voice', label: 'Voice Library', icon: Mic },
       { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+      { href: '/dashboard/admin', label: 'Admin', icon: Settings },
     ],
   },
 ];
@@ -392,18 +419,6 @@ function Sidebar({
           gap: 6,
         }}
       >
-        {/* Main always-visible items */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {MAIN_NAV.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              collapsed={collapsed}
-            />
-          ))}
-        </div>
-
         {/* Groups */}
         {NAV_GROUPS.map((group) => (
           <NavGroup
@@ -427,19 +442,6 @@ function Sidebar({
           gap: 10,
         }}
       >
-        {/* Onboarding entry */}
-        <NavLink
-          item={{
-            href: '/onboarding',
-            label: 'Onboarding',
-            icon: Rocket,
-            sublabel: 'Setup',
-            external: false,
-          }}
-          pathname={pathname}
-          collapsed={collapsed}
-        />
-
         {/* User card */}
         <div
           style={{
