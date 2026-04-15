@@ -271,7 +271,26 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* SECTION 2 — Activity chart */}
+      {/* SECTION 2 — Agent Quality strip (moved up from bottom) */}
+      <motion.div variants={item} style={{ marginTop: 24 }}>
+        <div className="t-eyebrow" style={{ marginBottom: 12 }}>
+          AGENT QUALITY
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 16,
+          }}
+          className="quality-strip-grid"
+        >
+          {QUALITY_KPIS.map((k) => (
+            <QualityKpi key={k.id} label={k.label} value={k.value} delta={k.delta} />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* SECTION 3 — Activity chart */}
       <motion.div
         variants={item}
         className="dark-card"
@@ -297,7 +316,7 @@ export default function OverviewPage() {
         <ActivityChart />
       </motion.div>
 
-      {/* SECTION 3 — Live Agent Status */}
+      {/* SECTION 4 — Live Agent Status */}
       <motion.div
         variants={item}
         className="dark-card"
@@ -376,25 +395,6 @@ export default function OverviewPage() {
             icon={<RotateCcw size={14} />}
             iconColor="#8b5cf6"
           />
-        </div>
-      </motion.div>
-
-      {/* SECTION 4 — Quality Strip */}
-      <motion.div variants={item} style={{ marginTop: 32 }}>
-        <div className="t-eyebrow" style={{ marginBottom: 12 }}>
-          AGENT QUALITY
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 16,
-          }}
-          className="quality-strip-grid"
-        >
-          {QUALITY_KPIS.map((k) => (
-            <QualityKpi key={k.id} label={k.label} value={k.value} delta={k.delta} />
-          ))}
         </div>
       </motion.div>
 
