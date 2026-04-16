@@ -7,7 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "var(--bg)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          dark: "var(--primary-dark)",
+          tint: "var(--primary-tint)",
+        },
+        negative: "var(--negative)",
+        warning: "var(--warning)",
+        // Legacy — landing page + checkout
         surface: "var(--surface)",
         "surface-2": "var(--surface-2)",
         ink: "var(--ink)",
@@ -17,14 +24,10 @@ module.exports = {
           deep: "var(--green-deep)",
           soft: "var(--green-soft)",
         },
-        gold: {
-          DEFAULT: "var(--gold)",
-          soft: "var(--gold-soft)",
-        },
       },
       fontFamily: {
         sans: ["Inter Tight", "Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "sans-serif"],
-        serif: ["Playfair Display", "Georgia", "serif"],
+        display: ["Inter Tight", "Inter", "sans-serif"],
       },
     },
   },

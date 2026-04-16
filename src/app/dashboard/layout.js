@@ -153,7 +153,7 @@ export default function DashboardLayout({ children }) {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.55)',
+              background: 'rgba(0,0,0,0.4)',
               zIndex: 40,
             }}
             className="sidebar-scrim"
@@ -191,7 +191,7 @@ export default function DashboardLayout({ children }) {
             justifyContent: 'space-between',
             padding: '12px 16px',
             borderBottom: '1px solid var(--border)',
-            background: 'var(--sidebar-bg)',
+            background: 'var(--bg)',
             position: 'sticky',
             top: 0,
             zIndex: 20,
@@ -208,9 +208,9 @@ export default function DashboardLayout({ children }) {
               width: 36,
               height: 36,
               borderRadius: 8,
-              background: 'var(--surface-2)',
+              background: 'var(--bg-subtle)',
               border: '1px solid var(--border)',
-              color: 'var(--text-bright)',
+              color: 'var(--text-heading)',
               cursor: 'pointer',
             }}
           >
@@ -221,9 +221,9 @@ export default function DashboardLayout({ children }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
-              fontSize: 13,
-              fontWeight: 800,
-              color: 'var(--text-bright)',
+              fontSize: 14,
+              fontWeight: 700,
+              color: 'var(--text-heading)',
               letterSpacing: '-0.01em',
             }}
           >
@@ -232,8 +232,7 @@ export default function DashboardLayout({ children }) {
                 width: 22,
                 height: 22,
                 borderRadius: 6,
-                background:
-                  'linear-gradient(135deg, var(--emerald-bright), #6366f1)',
+                background: 'var(--primary)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -249,7 +248,7 @@ export default function DashboardLayout({ children }) {
         <main
           style={{
             padding: '40px 44px',
-            color: 'var(--text-primary)',
+            color: 'var(--text-body)',
             position: 'relative',
             zIndex: 1,
           }}
@@ -307,7 +306,7 @@ function Sidebar({
         top: 0,
         bottom: 0,
         left: 0,
-        background: 'var(--sidebar-bg)',
+        background: 'var(--bg)',
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
@@ -340,54 +339,28 @@ function Sidebar({
         >
           <span
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 9,
-              background:
-                'linear-gradient(135deg, var(--emerald-bright), #6366f1)',
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              background: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
               flexShrink: 0,
             }}
           >
-            <Sparkles size={15} style={{ color: '#ffffff' }} />
+            <Sparkles size={14} style={{ color: '#ffffff' }} />
           </span>
           {collapsed ? null : (
             <span
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                minWidth: 0,
+                fontSize: 15,
+                fontWeight: 700,
+                color: 'var(--text-heading)',
+                letterSpacing: '-0.02em',
               }}
             >
-              <span
-                style={{
-                  fontSize: 15,
-                  fontWeight: 800,
-                  color: 'var(--text-bright)',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                Chatty AI
-              </span>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  padding: '2px 6px',
-                  borderRadius: 6,
-                  background: 'var(--emerald-tint)',
-                  color: 'var(--emerald-bright)',
-                  fontSize: 9,
-                  fontWeight: 800,
-                  letterSpacing: '0.1em',
-                  border: '1px solid rgba(16,185,129,0.3)',
-                }}
-              >
-                AI OS
-              </span>
+              Chatty AI
             </span>
           )}
         </Link>
@@ -418,10 +391,9 @@ function Sidebar({
           padding: '14px 10px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 6,
+          gap: 4,
         }}
       >
-        {/* Groups */}
         {NAV_GROUPS.map((group) => (
           <NavGroup
             key={group.id}
@@ -452,7 +424,7 @@ function Sidebar({
             gap: collapsed ? 0 : 10,
             padding: collapsed ? '8px 0' : '10px 8px',
             borderRadius: 10,
-            background: 'var(--surface-2)',
+            background: 'var(--bg-subtle)',
             border: '1px solid var(--border)',
             justifyContent: collapsed ? 'center' : 'flex-start',
           }}
@@ -463,14 +435,13 @@ function Sidebar({
               width: 32,
               height: 32,
               borderRadius: '50%',
-              background:
-                'linear-gradient(135deg, var(--emerald-bright), #6366f1)',
+              background: 'var(--primary)',
               color: '#ffffff',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 11.5,
-              fontWeight: 800,
+              fontWeight: 700,
               flexShrink: 0,
               letterSpacing: '0.04em',
             }}
@@ -482,8 +453,8 @@ function Sidebar({
               <div
                 style={{
                   fontSize: 12.5,
-                  fontWeight: 700,
-                  color: 'var(--text-bright)',
+                  fontWeight: 600,
+                  color: 'var(--text-heading)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -543,12 +514,12 @@ function Sidebar({
             border: '1px solid var(--border)',
             color: 'var(--text-muted)',
             fontSize: 11.5,
-            fontWeight: 600,
+            fontWeight: 500,
             cursor: 'pointer',
           }}
         >
           {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
-          {collapsed ? null : <span>Collapse sidebar</span>}
+          {collapsed ? null : <span>Collapse</span>}
         </button>
       </div>
 
@@ -599,7 +570,7 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
   }
 
   return (
-    <div style={{ marginTop: 6 }}>
+    <div style={{ marginTop: 4 }}>
       <button
         type="button"
         onClick={onToggle}
@@ -608,23 +579,23 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '8px 12px',
+          padding: '6px 12px',
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
           color: hasActiveChild
-            ? 'var(--text-bright)'
-            : 'var(--text-subtle)',
-          fontSize: 10.5,
-          fontWeight: 800,
-          letterSpacing: '0.1em',
+            ? 'var(--text-heading)'
+            : 'var(--text-muted)',
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.06em',
           textTransform: 'uppercase',
         }}
       >
         <span>{group.label}</span>
         <motion.span
           animate={{ rotate: open ? 0 : -90 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.15 }}
           style={{ display: 'inline-flex' }}
         >
           <ChevronDown size={12} />
@@ -637,14 +608,14 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{ overflow: 'hidden' }}
           >
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 2,
+                gap: 1,
                 paddingTop: 2,
               }}
             >
@@ -679,18 +650,12 @@ function NavLink({ item, pathname, collapsed }) {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: collapsed ? 0 : 12,
-        padding: collapsed ? '10px 0' : '9px 12px',
-        borderRadius: 9,
+        gap: collapsed ? 0 : 10,
+        padding: collapsed ? '10px 0' : '8px 10px',
+        borderRadius: 8,
         textDecoration: 'none',
-        color: active ? 'var(--text-bright)' : 'var(--text-muted)',
-        background: active ? 'rgba(16,185,129,0.10)' : 'transparent',
-        borderLeft: collapsed
-          ? '0 solid transparent'
-          : active
-            ? '2px solid var(--emerald-bright)'
-            : '2px solid transparent',
-        paddingLeft: collapsed ? 0 : 10,
+        color: active ? 'var(--primary)' : 'var(--text-muted)',
+        background: active ? 'var(--primary-tint)' : 'transparent',
         fontSize: 13,
         fontWeight: active ? 600 : 500,
         position: 'relative',
@@ -704,7 +669,7 @@ function NavLink({ item, pathname, collapsed }) {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: active ? 'var(--emerald-bright)' : 'var(--text-muted)',
+          color: active ? 'var(--primary)' : 'var(--text-muted)',
           flexShrink: 0,
         }}
       >
@@ -727,14 +692,13 @@ function NavLink({ item, pathname, collapsed }) {
         <span
           style={{
             fontSize: 9.5,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            color: 'var(--text-subtle)',
-            background: 'var(--surface-3)',
-            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            background: 'var(--bg-hover)',
             padding: '2px 6px',
-            borderRadius: 6,
+            borderRadius: 4,
           }}
         >
           {item.sublabel}
@@ -744,11 +708,10 @@ function NavLink({ item, pathname, collapsed }) {
         <span
           aria-hidden
           style={{
-            width: 7,
-            height: 7,
+            width: 6,
+            height: 6,
             borderRadius: '50%',
-            background: 'var(--emerald-bright)',
-            boxShadow: '0 0 8px var(--emerald-glow)',
+            background: 'var(--primary)',
             animation: 'pulse-dot 2s infinite',
           }}
         />

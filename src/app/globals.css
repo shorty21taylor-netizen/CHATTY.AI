@@ -3,97 +3,77 @@
 @tailwind utilities;
 
 /* ================================================== */
-/* THEME-INDEPENDENT TOKENS                            */
+/* DESIGN TOKENS — Irish Green minimalist palette      */
 /* ================================================== */
 :root {
+  /* Typography */
   --font-sans: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Inter Tight', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
 
-  --emerald-bright: #10b981;
-  --emerald-hover: #059669;
-  --emerald-soft: #d1fae5;
-  --emerald-glow: rgba(16,185,129,0.25);
-  --negative: #ef4444;
-  --negative-soft: #fee2e2;
+  /* Primary brand — Irish Green */
+  --primary: #0F8A4F;
+  --primary-dark: #0A6B3C;
+  --primary-tint: #E8F5EE;
 
-  /* Legacy tokens kept for back-compat w/ checkout + landing gradients */
-  --bg: #fafaf7;
+  /* Backgrounds */
+  --bg: #FFFFFF;
+  --bg-subtle: #FAFAFA;
+  --bg-hover: #F4F4F5;
+
+  /* Borders */
+  --border: #E4E4E7;
+  --border-strong: #D4D4D8;
+
+  /* Text */
+  --text: #0A0A0A;
+  --text-heading: #18181B;
+  --text-body: #3F3F46;
+  --text-muted: #71717A;
+
+  /* Alerts */
+  --negative: #B91C1C;
+  --negative-soft: #FEE2E2;
+  --warning: #B45309;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --radius: 12px;
+
+  /* ---- Aliases — backward-compat for unrewritten pages ---- */
+  --emerald-bright: #0F8A4F;
+  --emerald-hover: #0A6B3C;
+  --emerald-soft: #E8F5EE;
+  --emerald-glow: rgba(15, 138, 79, 0.25);
+  --emerald-tint: rgba(15, 138, 79, 0.08);
+
+  --app-bg: var(--bg);
+  --surface-1: var(--bg);
+  --surface-2: var(--bg-subtle);
+  --surface-3: var(--bg-hover);
+  --sidebar-bg: var(--bg);
+  --text-bright: var(--text-heading);
+  --text-primary: var(--text-body);
+  --text-subtle: var(--text-muted);
+  --hover-bg: var(--bg-hover);
+  --input-bg: var(--bg);
+  --grid-line: transparent;
+
+  /* ---- Legacy tokens for landing page + checkout ---- */
+  --emerald: #0f3d2e;
+  --emerald-mid: #1f6f4a;
   --surface: #ffffff;
-  --surface-2: #f4f3ee;
   --ink: #1a1f1a;
   --ink-soft: #5a625a;
   --green: #1a3a2e;
   --green-deep: #0f2620;
   --green-soft: #2d5a47;
   --shadow-mac: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(26, 58, 46, 0.08);
-  --radius: 14px;
-
-  --emerald: #0f3d2e;
-  --emerald-mid: #1f6f4a;
 }
 
 /* ================================================== */
-/* LIGHT — default theme                               */
-/* ================================================== */
-:root, [data-theme="light"] {
-  --app-bg: #fafafa;
-  --surface-1: #ffffff;
-  --surface-2: #f7f8f7;
-  --surface-3: #f0f2f0;
-  --sidebar-bg: #ffffff;
-  --border: rgba(10,15,13,0.08);
-  --border-strong: rgba(10,15,13,0.14);
-  --text-bright: #0a0f0d;
-  --text-primary: #1a1f1d;
-  --text-muted: #5a625f;
-  --text-subtle: #8a9290;
-  --grid-line: rgba(10,15,13,0.025);
-  --hover-bg: rgba(10,15,13,0.03);
-  --emerald-tint: rgba(16,185,129,0.08);
-  --input-bg: #ffffff;
-  --shadow-card: 0 1px 2px rgba(10,15,13,0.04), 0 4px 16px rgba(10,15,13,0.04);
-
-  /* Aliases for legacy class selectors */
-  --dark-bg: var(--app-bg);
-  --dark-surface: var(--surface-1);
-  --dark-surface-2: var(--surface-2);
-  --dark-surface-3: var(--surface-3);
-  --dark-border: var(--border);
-  --dark-border-strong: var(--border-strong);
-}
-
-/* ================================================== */
-/* DARK — toggle only                                  */
-/* ================================================== */
-[data-theme="dark"] {
-  --app-bg: #0a0a0a;
-  --surface-1: #111111;
-  --surface-2: #161616;
-  --surface-3: #1c1c1c;
-  --sidebar-bg: #0d0d0d;
-  --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.12);
-  --text-bright: #fafafa;
-  --text-primary: #e5e7e5;
-  --text-muted: #8a9290;
-  --text-subtle: #5a625f;
-  --grid-line: rgba(255,255,255,0.02);
-  --hover-bg: rgba(255,255,255,0.03);
-  --emerald-tint: rgba(16,185,129,0.06);
-  --input-bg: #161616;
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.3);
-
-  --dark-bg: var(--app-bg);
-  --dark-surface: var(--surface-1);
-  --dark-surface-2: var(--surface-2);
-  --dark-surface-3: var(--surface-3);
-  --dark-border: var(--border);
-  --dark-border-strong: var(--border-strong);
-}
-
-/* ================================================== */
-/* LANDING SCOPE — always dark regardless of theme     */
+/* LANDING SCOPE — always dark, preserves original     */
+/* emerald palette regardless of dashboard redesign    */
 /* ================================================== */
 .landing-scope {
   --app-bg: #0a0a0a;
@@ -109,9 +89,15 @@
   --text-subtle: #5a625f;
   --grid-line: rgba(255,255,255,0.02);
   --hover-bg: rgba(255,255,255,0.03);
-  --emerald-tint: rgba(16,185,129,0.08);
   --input-bg: #161616;
   --shadow-card: 0 1px 2px rgba(0,0,0,0.3);
+
+  /* Restore original emerald for landing page */
+  --emerald-bright: #10b981;
+  --emerald-hover: #059669;
+  --emerald-glow: rgba(16,185,129,0.25);
+  --emerald-tint: rgba(16,185,129,0.08);
+  --emerald-soft: #d1fae5;
 
   --dark-bg: var(--app-bg);
   --dark-surface: var(--surface-1);
@@ -124,6 +110,10 @@
   color: var(--text-primary);
 }
 
+/* ================================================== */
+/* BASE RESET                                          */
+/* ================================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -132,8 +122,8 @@ html, body {
   padding: 0;
   margin: 0;
   font-family: var(--font-sans);
-  background: var(--app-bg);
-  color: var(--text-primary);
+  background: var(--bg);
+  color: var(--text-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'ss01', 'cv11';
@@ -143,6 +133,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   letter-spacing: -0.03em;
   font-weight: 700;
+  color: var(--text-heading);
 }
 
 a {
@@ -158,26 +149,26 @@ a {
   font-family: var(--font-display);
   font-size: 48px; font-weight: 700;
   letter-spacing: -0.035em; line-height: 1.05;
-  color: var(--text-bright);
+  color: var(--text-heading);
 }
 .t-h1 {
   font-size: 32px; font-weight: 700;
   letter-spacing: -0.03em; line-height: 1.1;
-  color: var(--text-bright);
+  color: var(--text-heading);
 }
 .t-h2 {
   font-size: 22px; font-weight: 600;
   letter-spacing: -0.02em; line-height: 1.25;
-  color: var(--text-bright);
+  color: var(--text-heading);
 }
 .t-h3 {
   font-size: 16px; font-weight: 600;
   letter-spacing: -0.015em;
-  color: var(--text-bright);
+  color: var(--text-heading);
 }
 .t-body {
   font-size: 14px; font-weight: 400;
-  line-height: 1.55; color: var(--text-primary);
+  line-height: 1.55; color: var(--text-body);
 }
 .t-body-sm {
   font-size: 13px; font-weight: 400;
@@ -192,14 +183,14 @@ a {
   font-family: var(--font-display);
   font-size: 36px; font-weight: 700;
   letter-spacing: -0.04em; line-height: 1;
-  color: var(--text-bright);
+  color: var(--text-heading);
   font-variant-numeric: tabular-nums;
 }
 .t-kpi-lg {
   font-family: var(--font-display);
   font-size: 72px; font-weight: 700;
   letter-spacing: -0.05em; line-height: 1;
-  color: var(--text-bright);
+  color: var(--text-heading);
   font-variant-numeric: tabular-nums;
 }
 .t-mono {
@@ -209,26 +200,26 @@ a {
 }
 
 /* ================================================== */
-/* FORM INPUTS — global polish                         */
+/* FORM INPUTS                                         */
 /* ================================================== */
 
 input, textarea, select {
   font-family: var(--font-sans);
-  background: var(--input-bg);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
-  color: var(--text-bright);
+  color: var(--text-heading);
   font-size: 14px;
   outline: none;
-  transition: border-color .15s, background .15s, box-shadow .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
 input:focus, textarea:focus, select:focus {
-  border-color: var(--emerald-bright);
-  box-shadow: 0 0 0 3px var(--emerald-tint);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
 }
 input::placeholder, textarea::placeholder {
-  color: var(--text-subtle);
+  color: var(--text-muted);
 }
 
 /* ================================================== */
@@ -247,11 +238,11 @@ input::placeholder, textarea::placeholder {
   border-bottom: 1px solid var(--border);
 }
 .data-table tbody td {
-  padding: 16px; font-size: 14px; color: var(--text-primary);
+  padding: 16px; font-size: 14px; color: var(--text-body);
   border-bottom: 1px solid var(--border);
 }
 .data-table tbody tr:hover {
-  background: var(--hover-bg);
+  background: var(--bg-hover);
 }
 
 /* ================================================== */
@@ -259,9 +250,9 @@ input::placeholder, textarea::placeholder {
 /* ================================================== */
 
 .dark-card {
-  background: var(--surface-1);
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   transition: border-color 0.15s;
 }
@@ -269,11 +260,10 @@ input::placeholder, textarea::placeholder {
   border-color: var(--border-strong);
 }
 
-/* Flat by default — inside the app, glow-card is just a card. */
 .glow-card {
-  background: var(--surface-1);
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   position: relative;
 }
@@ -310,17 +300,18 @@ input::placeholder, textarea::placeholder {
   position: absolute;
   inset: -1px;
   border-radius: 13px;
-  background: linear-gradient(135deg, var(--emerald-bright), transparent 40%);
+  background: linear-gradient(135deg, var(--primary), transparent 40%);
   z-index: -1;
   opacity: 0.5;
 }
 .landing-scope .glow-border::before {
   border-radius: 17px;
+  background: linear-gradient(135deg, var(--emerald-bright), transparent 40%);
 }
 
 /* Spotlight — landing only */
 .spotlight-card {
-  background: var(--surface-1);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 56px 32px;
@@ -331,20 +322,10 @@ input::placeholder, textarea::placeholder {
   border-radius: 20px;
 }
 
-/* App background — clean surface with subtle grid */
+/* App background — clean white */
 .app-bg {
-  background: var(--app-bg);
+  background: var(--bg);
   min-height: 100vh;
-}
-.app-bg::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* Landing page mesh-bg — landing only */
@@ -462,7 +443,7 @@ input::placeholder, textarea::placeholder {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: var(--surface-3);
+  background: var(--bg-hover);
   color: var(--text-muted);
 }
 
@@ -474,29 +455,27 @@ input::placeholder, textarea::placeholder {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: var(--emerald-tint);
-  color: var(--emerald-bright);
-  border: 1px solid rgba(16,185,129,0.25);
+  background: var(--primary-tint);
+  color: var(--primary);
+  border: 1px solid rgba(15, 138, 79, 0.2);
   letter-spacing: 0.02em;
 }
 .dark-pill .dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: var(--emerald-bright);
-  box-shadow: 0 0 12px var(--emerald-glow);
+  background: var(--primary);
 }
 
 .lime-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  background: var(--emerald-bright); color: #ffffff;
+  background: var(--primary); color: #ffffff;
   padding: 10px 22px; border-radius: 999px;
   font-weight: 600; font-size: 14px;
-  box-shadow: 0 0 24px var(--emerald-glow);
   border: none; cursor: pointer;
   transition: all .2s;
 }
 .lime-pill:hover {
-  background: var(--emerald-hover);
+  background: var(--primary-dark);
   transform: translateY(-1px);
 }
 
@@ -506,11 +485,11 @@ input::placeholder, textarea::placeholder {
   border: 1px solid var(--border);
   font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s;
 }
-.tab-pill:hover { color: var(--text-bright); }
+.tab-pill:hover { color: var(--text-heading); }
 .tab-pill.active {
-  background: var(--emerald-tint);
-  color: var(--emerald-bright);
-  border-color: rgba(16,185,129,0.3);
+  background: var(--primary-tint);
+  color: var(--primary);
+  border-color: rgba(15, 138, 79, 0.25);
 }
 
 .status-pill {
@@ -522,14 +501,14 @@ input::placeholder, textarea::placeholder {
   text-transform: uppercase;
 }
 .status-qualified {
-  background: var(--emerald-tint);
-  color: var(--emerald-bright);
-  border: 1px solid rgba(16,185,129,0.3);
+  background: var(--primary-tint);
+  color: var(--primary);
+  border: 1px solid rgba(15, 138, 79, 0.25);
 }
 .status-booked {
-  background: var(--emerald-tint);
-  color: var(--emerald-bright);
-  border: 1px solid rgba(16,185,129,0.3);
+  background: var(--primary-tint);
+  color: var(--primary);
+  border: 1px solid rgba(15, 138, 79, 0.25);
 }
 
 /* ================================================== */
@@ -550,13 +529,13 @@ input::placeholder, textarea::placeholder {
 }
 .filter-pill:hover {
   border-color: var(--border-strong);
-  color: var(--text-bright);
+  color: var(--text-heading);
 }
 .filter-pill-active {
   padding: 6px 14px;
   border-radius: 999px;
-  background: var(--emerald-bright);
-  border: 1px solid var(--emerald-bright);
+  background: var(--primary);
+  border: 1px solid var(--primary);
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
@@ -565,8 +544,8 @@ input::placeholder, textarea::placeholder {
   transition: all .15s;
 }
 .filter-pill-active:hover {
-  background: var(--emerald-hover);
-  border-color: var(--emerald-hover);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
 }
 
 .btn-primary {
@@ -575,23 +554,23 @@ input::placeholder, textarea::placeholder {
   gap: 6px;
   padding: 10px 18px;
   border-radius: 10px;
-  background: var(--emerald-bright);
+  background: var(--primary);
   color: #ffffff;
   border: none;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
   transition: all .15s;
-  box-shadow: 0 1px 2px rgba(16,185,129,0.2);
+  box-shadow: 0 1px 2px rgba(15, 138, 79, 0.15);
   font-family: var(--font-sans);
 }
 .btn-primary:hover {
-  background: var(--emerald-hover);
+  background: var(--primary-dark);
   transform: translateY(-1px);
 }
 
 /* ================================================== */
-/* LANDING PAGE components                             */
+/* LANDING PAGE components (preserved as-is)           */
 /* ================================================== */
 
 .cta-primary {
