@@ -18,7 +18,7 @@ const CATEGORY_MAP = {
   leads: {
     label: 'Leads',
     icon: Target,
-    color: '#10b981',
+    color: '#0F8A4F',
     eventTypes: ['lead_created', 'lead_status_changed'],
   },
   ads: {
@@ -141,8 +141,8 @@ const MOCK_SIGNALS = [
 ];
 
 const FILTERS = [
-  { id: 'all', label: 'All', icon: Activity, color: 'var(--emerald-bright)' },
-  { id: 'leads', label: 'Leads', icon: Target, color: '#10b981' },
+  { id: 'all', label: 'All', icon: Activity, color: 'var(--primary)' },
+  { id: 'leads', label: 'Leads', icon: Target, color: '#0F8A4F' },
   { id: 'ads', label: 'Ads', icon: Megaphone, color: '#818cf8' },
   { id: 'calls', label: 'Calls', icon: PhoneCall, color: '#f59e0b' },
   { id: 'weather', label: 'Weather', icon: CloudLightning, color: '#38bdf8' },
@@ -222,7 +222,7 @@ export default function SignalFeed({ events }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Activity size={16} className="text-[var(--emerald-bright)]" />
+            <Activity size={16} className="text-[var(--primary)]" />
             <h3 className="font-semibold text-[var(--text-bright)]">
               Signal activity
             </h3>

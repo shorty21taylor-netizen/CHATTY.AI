@@ -38,7 +38,7 @@ const TEAM_MEMBERS = [
     name: 'Anthony Taylor',
     email: 'anthony@chatty.ai',
     role: 'Owner',
-    roleColor: 'var(--emerald-bright)',
+    roleColor: 'var(--primary)',
     lastActive: 'Now',
     color: '#ef4444',
   },
@@ -58,7 +58,7 @@ const TEAM_MEMBERS = [
     role: 'Operator',
     roleColor: '#8b5cf6',
     lastActive: 'Yesterday',
-    color: '#10b981',
+    color: '#0F8A4F',
   },
 ];
 
@@ -301,7 +301,7 @@ function OrganizationTab() {
               gap: 8,
             }}
           >
-            <Pill color="var(--emerald-bright)">VERIFIED</Pill>
+            <Pill color="var(--primary)">VERIFIED</Pill>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               A2P 10DLC brand approved
             </span>
@@ -598,7 +598,7 @@ export default function AdminPage() {
                 background: 'transparent',
                 border: 'none',
                 borderBottom: `2px solid ${
-                  active ? 'var(--emerald-bright)' : 'transparent'
+                  active ? 'var(--primary)' : 'transparent'
                 }`,
                 color: active ? 'var(--text-bright)' : 'var(--text-muted)',
                 cursor: 'pointer',

@@ -21,12 +21,12 @@ import { Button } from '@/components/ui/Button';
 // "qualified" and "proposal_sent" in the user-facing spec map to the closest
 // schema values (appointment_set+inspected → Qualified, quoted → Proposal).
 const COLUMNS = [
-  { key: 'new', label: 'New', color: '#6366f1' },
+  { key: 'new', label: 'New', color: '#2563EB' },
   { key: 'contacted', label: 'Contacted', color: '#8b5cf6' },
   { key: 'qualified', label: 'Qualified', color: '#06b6d4', includes: ['appointment_set', 'inspected'] },
   { key: 'quoted', label: 'Proposal', color: '#0ea5e9' },
   { key: 'negotiating', label: 'Negotiation', color: '#f59e0b' },
-  { key: 'won', label: 'Won', color: '#10b981' },
+  { key: 'won', label: 'Won', color: '#0F8A4F' },
   { key: 'lost', label: 'Lost', color: '#ef4444' },
 ];
 
@@ -292,7 +292,7 @@ function LeadCard({ lead, contact, onClick }) {
           </span>
         ) : null}
         {lead.estimated_value ? (
-          <span className="inline-flex items-center gap-0.5 font-medium text-[var(--emerald-bright)]">
+          <span className="inline-flex items-center gap-0.5 font-medium text-[var(--primary)]">
             <DollarSign size={11} />
             {Math.round(Number(lead.estimated_value)).toLocaleString()}
           </span>
@@ -414,7 +414,7 @@ function LeadDetailPanel({ lead, contact, acting, onClose, onStatusChange }) {
                 onChange={(e) => setLostReason(e.target.value)}
                 placeholder="Reason for loss (optional)"
                 rows={2}
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
               />
               <div className="flex gap-2">
                 <Button
@@ -615,7 +615,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, contact_id: e.target.value }))
                 }
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
               >
                 <option value="">Select a contact…</option>
                 {contacts.map((c) => (
@@ -636,7 +636,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                 required
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
                 placeholder="e.g. Roof replacement — 123 Oak St"
               />
             </label>
@@ -650,7 +650,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, service_type: e.target.value }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)] capitalize"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)] capitalize"
                 >
                   <option value="">—</option>
                   {SERVICE_TYPES.map((s) => (
@@ -669,7 +669,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, priority: e.target.value }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)] capitalize"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)] capitalize"
                 >
                   {PRIORITIES.map((p) => (
                     <option key={p} value={p}>
@@ -692,7 +692,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, estimated_value: e.target.value }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
                   placeholder="0"
                 />
               </label>
@@ -705,7 +705,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, source: e.target.value }))
                   }
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
                   placeholder="referral, website…"
                 />
               </label>
@@ -720,7 +720,7 @@ function NewLeadModal({ open, onClose, onCreated, contacts }) {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--emerald-bright)]"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text-bright)] outline-none focus:border-[var(--primary)]"
               />
             </label>
             {error ? (

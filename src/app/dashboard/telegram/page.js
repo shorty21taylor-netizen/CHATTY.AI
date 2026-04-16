@@ -90,7 +90,7 @@ export default function TelegramPage() {
             <li>
               <span
                 style={{
-                  color: "var(--emerald-bright)",
+                  color: "var(--primary)",
                   fontWeight: 700,
                 }}
               >
@@ -101,7 +101,7 @@ export default function TelegramPage() {
             <li>
               <span
                 style={{
-                  color: "var(--emerald-bright)",
+                  color: "var(--primary)",
                   fontWeight: 700,
                 }}
               >
@@ -112,7 +112,7 @@ export default function TelegramPage() {
             <li>
               <span
                 style={{
-                  color: "var(--emerald-bright)",
+                  color: "var(--primary)",
                   fontWeight: 700,
                 }}
               >
@@ -123,7 +123,7 @@ export default function TelegramPage() {
             <li>
               <span
                 style={{
-                  color: "var(--emerald-bright)",
+                  color: "var(--primary)",
                   fontWeight: 700,
                 }}
               >
@@ -233,14 +233,14 @@ function Bubble({ who, text }) {
           borderRadius: 16,
           background: isAgent
             ? "var(--surface-2)"
-            : "var(--emerald-bright)",
+            : "var(--primary)",
           color: isAgent ? "var(--text-bright)" : "#ffffff",
           fontSize: 13.5,
           lineHeight: 1.5,
           borderBottomLeftRadius: isAgent ? 4 : 16,
           borderBottomRightRadius: isAgent ? 16 : 4,
           borderLeft: isAgent
-            ? "2px solid var(--emerald-bright)"
+            ? "2px solid var(--primary)"
             : "none",
           border: isAgent
             ? undefined

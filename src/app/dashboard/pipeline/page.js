@@ -9,14 +9,14 @@ import { TrendingUp, Plus, Clock, Zap, DollarSign } from 'lucide-react';
 const STAGES = [
   { id: 'new', label: 'New Lead', color: 'var(--text-muted)', border: 'var(--border-strong)' },
   { id: 'qualified', label: 'Qualified', color: '#38bdf8', border: '#38bdf8' },
-  { id: 'proposal', label: 'Proposal Sent', color: '#6366f1', border: '#6366f1' },
+  { id: 'proposal', label: 'Proposal Sent', color: '#2563EB', border: '#2563EB' },
   { id: 'negotiation', label: 'Negotiation', color: '#f59e0b', border: '#f59e0b' },
-  { id: 'closing', label: 'Closing', color: 'var(--emerald-bright)', border: 'var(--emerald-bright)' },
+  { id: 'closing', label: 'Closing', color: 'var(--primary)', border: 'var(--primary)' },
 ];
 
 // Deterministic avatar color from agent name
 const AGENT_COLORS = [
-  '#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#8b5cf6', '#14b8a6',
+  '#0F8A4F', '#2563EB', '#f59e0b', '#ec4899', '#3b82f6', '#8b5cf6', '#14b8a6',
 ];
 function agentAvatarColor(name) {
   let h = 0;
@@ -95,7 +95,7 @@ export default function PipelinePage() {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <TrendingUp size={12} style={{ color: 'var(--emerald-bright)' }} />
+            <TrendingUp size={12} style={{ color: 'var(--primary)' }} />
             Pipeline
           </div>
           <h1 className="t-h1" style={{ margin: '6px 0 4px' }}>
@@ -127,7 +127,7 @@ export default function PipelinePage() {
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-hover)',
+                color: 'var(--primary-dark)',
               }}
             >
               Total Pipeline Value
@@ -136,7 +136,7 @@ export default function PipelinePage() {
               style={{
                 fontSize: 32,
                 fontWeight: 700,
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 fontVariantNumeric: 'tabular-nums',
                 lineHeight: 1,
                 marginTop: 4,
@@ -257,12 +257,12 @@ function StatCell({ label, value, accent }) {
       className="dark-card"
       style={{
         padding: 16,
-        borderLeft: accent ? '3px solid var(--emerald-bright)' : undefined,
+        borderLeft: accent ? '3px solid var(--primary)' : undefined,
       }}
     >
       <div
         className="t-eyebrow"
-        style={{ color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)' }}
+        style={{ color: accent ? 'var(--primary)' : 'var(--text-muted)' }}
       >
         {label}
       </div>
@@ -271,7 +271,7 @@ function StatCell({ label, value, accent }) {
           marginTop: 6,
           fontSize: 26,
           fontWeight: 700,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
           lineHeight: 1,
         }}
@@ -404,7 +404,7 @@ function DealCard({ d }) {
           marginTop: 10,
           fontSize: 20,
           fontWeight: 700,
-          color: 'var(--emerald-bright)',
+          color: 'var(--primary)',
           fontVariantNumeric: 'tabular-nums',
           lineHeight: 1,
         }}
@@ -489,7 +489,7 @@ function DealCard({ d }) {
               textOverflow: 'ellipsis',
             }}
           >
-            <Zap size={10} style={{ color: 'var(--emerald-bright)' }} />
+            <Zap size={10} style={{ color: 'var(--primary)' }} />
             {d.lastTouch}
           </div>
         </div>
@@ -535,7 +535,7 @@ function FunnelBar({ from, to, rate }) {
           style={{
             fontSize: 16,
             fontWeight: 700,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
@@ -556,7 +556,7 @@ function FunnelBar({ from, to, rate }) {
             width: `${rate}%`,
             height: '100%',
             background:
-              'linear-gradient(90deg, var(--emerald-bright), #6366f1)',
+              'linear-gradient(90deg, var(--primary), var(--primary-dark))',
             borderRadius: 999,
           }}
         />

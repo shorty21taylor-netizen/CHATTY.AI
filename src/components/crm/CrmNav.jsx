@@ -32,7 +32,7 @@ export default function CrmNav() {
             className={cn(
               'relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors',
               active
-                ? 'text-[var(--emerald-bright)]'
+                ? 'text-[var(--primary)]'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-bright)]'
             )}
           >
@@ -41,8 +41,8 @@ export default function CrmNav() {
             {active ? (
               <span
                 aria-hidden
-                className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[var(--emerald-bright)]"
-                style={{ boxShadow: '0 0 8px var(--emerald-glow)' }}
+                className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[var(--primary)]"
+                style={{ boxShadow: '0 0 8px rgba(15, 138, 79, 0.2)' }}
               />
             ) : null}
           </Link>

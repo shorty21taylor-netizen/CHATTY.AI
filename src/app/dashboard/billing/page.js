@@ -227,7 +227,7 @@ export default function BillingPage() {
           gap: 20,
           flexWrap: 'wrap',
           borderColor:
-            'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))',
+            'color-mix(in srgb, var(--primary) 40%, var(--border))',
           boxShadow: '0 0 24px rgba(16,185,129,0.12)',
         }}
       >
@@ -238,8 +238,8 @@ export default function BillingPage() {
               height: 52,
               borderRadius: 12,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -256,12 +256,12 @@ export default function BillingPage() {
                 fontSize: 11,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 fontWeight: 600,
               }}
             >
               Current plan
-              <Pill color="var(--emerald-bright)">ACTIVE</Pill>
+              <Pill color="var(--primary)">ACTIVE</Pill>
             </div>
             <div
               style={{
@@ -441,7 +441,7 @@ export default function BillingPage() {
                       {inv.amount}
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      <Pill color="var(--emerald-bright)">
+                      <Pill color="var(--primary)">
                         {inv.status.toUpperCase()}
                       </Pill>
                     </td>
@@ -500,7 +500,7 @@ export default function BillingPage() {
                 flexDirection: 'column',
                 gap: 12,
                 borderColor: p.current
-                  ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
                   : 'var(--border)',
                 boxShadow: p.current ? '0 0 24px rgba(16,185,129,0.10)' : 'none',
               }}
@@ -523,7 +523,7 @@ export default function BillingPage() {
                   {p.name}
                 </div>
                 {p.current ? (
-                  <Pill color="var(--emerald-bright)">CURRENT</Pill>
+                  <Pill color="var(--primary)">CURRENT</Pill>
                 ) : null}
               </div>
               <div
@@ -574,7 +574,7 @@ export default function BillingPage() {
                   >
                     <CheckCircle2
                       size={13}
-                      style={{ color: 'var(--emerald-bright)', flexShrink: 0 }}
+                      style={{ color: 'var(--primary)', flexShrink: 0 }}
                     />
                     {f}
                   </li>

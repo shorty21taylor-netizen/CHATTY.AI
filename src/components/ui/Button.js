@@ -8,11 +8,11 @@ const base =
 
 const variants = {
   default:
-    'bg-[var(--emerald-bright)] text-white shadow-[0_0_0_1px_rgba(16,185,129,0.4),0_8px_24px_rgba(16,185,129,0.25)] hover:-translate-y-0.5 hover:bg-[var(--emerald-hover)] hover:shadow-[0_0_0_1px_rgba(16,185,129,0.6),0_12px_32px_rgba(16,185,129,0.35)]',
+    'bg-[var(--primary)] text-white shadow-[0_0_0_1px_rgba(16,185,129,0.4),0_8px_24px_rgba(16,185,129,0.25)] hover:-translate-y-0.5 hover:bg-[var(--primary-dark)] hover:shadow-[0_0_0_1px_rgba(16,185,129,0.6),0_12px_32px_rgba(16,185,129,0.35)]',
   outline:
-    'bg-transparent border border-[var(--border)] text-[var(--text-bright)] hover:border-[var(--emerald-bright)] hover:text-[var(--emerald-bright)]',
+    'bg-transparent border border-[var(--border)] text-[var(--text-bright)] hover:border-[var(--primary)] hover:text-[var(--primary)]',
   ghost:
-    'bg-transparent text-[var(--text-bright)] hover:bg-[var(--hover-bg)] hover:text-[var(--emerald-bright)]',
+    'bg-transparent text-[var(--text-bright)] hover:bg-[var(--hover-bg)] hover:text-[var(--primary)]',
 };
 
 const sizes = {

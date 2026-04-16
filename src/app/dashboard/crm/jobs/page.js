@@ -25,7 +25,7 @@ const TABS = [
     key: 'scheduled',
     label: 'Scheduled',
     statuses: ['scheduled', 'materials_ordered'],
-    color: '#6366f1',
+    color: '#2563EB',
   },
   {
     key: 'in_progress',
@@ -37,7 +37,7 @@ const TABS = [
     key: 'completed',
     label: 'Completed',
     statuses: ['completed', 'invoiced', 'paid', 'warranty'],
-    color: '#10b981',
+    color: '#0F8A4F',
   },
   {
     key: 'cancelled',
@@ -48,14 +48,14 @@ const TABS = [
 ];
 
 const STATUS_COLORS = {
-  scheduled: '#6366f1',
+  scheduled: '#2563EB',
   materials_ordered: '#8b5cf6',
   in_progress: '#f59e0b',
   punch_list: '#f97316',
   on_hold: '#ef4444',
-  completed: '#10b981',
+  completed: '#0F8A4F',
   invoiced: '#0ea5e9',
-  paid: '#059669',
+  paid: '#0A6B3C',
   warranty: '#64748b',
 };
 
@@ -98,7 +98,7 @@ function formatCurrency(n) {
 }
 
 function StatusBadge({ status }) {
-  const color = STATUS_COLORS[status] ?? 'var(--emerald-bright)';
+  const color = STATUS_COLORS[status] ?? 'var(--primary)';
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize"
@@ -226,7 +226,7 @@ export default function JobsPage() {
               <span
                 className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
                   active
-                    ? 'bg-[var(--emerald-tint)] text-[var(--emerald-bright)]'
+                    ? 'bg-[var(--primary-tint)] text-[var(--primary)]'
                     : 'bg-[var(--surface-3)] text-[var(--text-muted)]'
                 }`}
               >
@@ -328,7 +328,7 @@ function JobCard({ job, contact, acting, onStatusChange }) {
             <dt className="text-[var(--text-subtle)] uppercase tracking-wider">
               Value
             </dt>
-            <dd className="mt-0.5 font-medium text-[var(--emerald-bright)]">
+            <dd className="mt-0.5 font-medium text-[var(--primary)]">
               {jobValue}
             </dd>
           </div>

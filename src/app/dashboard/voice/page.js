@@ -78,13 +78,13 @@ const VOICE_LIBRARY = [
   { name: 'Rachel', gender: 'Female', tone: 'Warm · Upbeat', color: '#ec4899' },
   { name: 'Marcus', gender: 'Male', tone: 'Confident · Clear', color: '#3b82f6' },
   { name: 'Sarah', gender: 'Female', tone: 'Calm · Reassuring', color: '#8b5cf6' },
-  { name: 'James', gender: 'Male', tone: 'Friendly · Casual', color: '#10b981' },
+  { name: 'James', gender: 'Male', tone: 'Friendly · Casual', color: '#0F8A4F' },
   { name: 'Emily', gender: 'Female', tone: 'Professional', color: '#f59e0b' },
   {
     name: 'Custom Clone',
     gender: 'Your voice',
     tone: 'ElevenLabs Voice Lab',
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     custom: true,
   },
 ];
@@ -99,7 +99,7 @@ const RECENT_CALLS = [
     duration: '4m 12s',
     outcome: 'Booked',
     when: '3m ago',
-    outcomeColor: 'var(--emerald-bright)',
+    outcomeColor: 'var(--primary)',
   },
   {
     id: 2,
@@ -132,7 +132,7 @@ const RECENT_CALLS = [
     duration: '5m 21s',
     outcome: 'Won',
     when: '42m ago',
-    outcomeColor: 'var(--emerald-bright)',
+    outcomeColor: 'var(--primary)',
   },
   {
     id: 5,
@@ -176,7 +176,7 @@ const RECENT_CALLS = [
     duration: '2m 51s',
     outcome: 'Booked',
     when: '3h ago',
-    outcomeColor: 'var(--emerald-bright)',
+    outcomeColor: 'var(--primary)',
   },
   {
     id: 9,
@@ -235,7 +235,7 @@ function StatCard({ icon, label, value, hint, accent }) {
         gap: 10,
         boxShadow: accent ? '0 0 24px rgba(16,185,129,0.12)' : 'none',
         borderColor: accent
-          ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+          ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
           : 'var(--border)',
       }}
     >
@@ -260,9 +260,9 @@ function StatCard({ icon, label, value, hint, accent }) {
             height: 22,
             borderRadius: 6,
             background: accent
-              ? 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)'
+              ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
               : 'color-mix(in srgb, var(--text-muted) 14%, transparent)',
-            color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+            color: accent ? 'var(--primary)' : 'var(--text-muted)',
           }}
         >
           <Icon size={13} />
@@ -274,7 +274,7 @@ function StatCard({ icon, label, value, hint, accent }) {
           fontSize: 30,
           fontWeight: 700,
           letterSpacing: '-0.02em',
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
         }}
       >
         {value}
@@ -307,9 +307,9 @@ export default function VoicePage() {
               gap: 8,
               padding: '4px 10px',
               borderRadius: 999,
-              background: 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-              color: 'var(--emerald-bright)',
-              border: '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+              background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+              color: 'var(--primary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
               fontSize: 10,
               fontWeight: 600,
               letterSpacing: '0.12em',
@@ -426,7 +426,7 @@ export default function VoicePage() {
                     fontSize: 10,
                     fontWeight: 600,
                     letterSpacing: '0.08em',
-                    color: 'var(--emerald-bright)',
+                    color: 'var(--primary)',
                   }}
                 >
                   <span
@@ -434,8 +434,8 @@ export default function VoicePage() {
                       width: 7,
                       height: 7,
                       borderRadius: '50%',
-                      background: 'var(--emerald-bright)',
-                      boxShadow: '0 0 0 4px color-mix(in srgb, var(--emerald-bright) 20%, transparent)',
+                      background: 'var(--primary)',
+                      boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent)',
                     }}
                   />
                   LIVE
@@ -547,7 +547,7 @@ export default function VoicePage() {
                   alignItems: 'center',
                   gap: 12,
                   borderColor: v.custom
-                    ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+                    ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
                     : 'var(--border)',
                 }}
               >
@@ -592,7 +592,7 @@ export default function VoicePage() {
                   </div>
                 </div>
                 {v.custom ? (
-                  <Pill color="var(--emerald-bright)">NEW</Pill>
+                  <Pill color="var(--primary)">NEW</Pill>
                 ) : null}
               </div>
             );
@@ -630,7 +630,7 @@ export default function VoicePage() {
                 {RECENT_CALLS.map((c) => {
                   const Icon = c.direction === 'inbound' ? PhoneIncoming : PhoneOutgoing;
                   const iconColor =
-                    c.direction === 'inbound' ? '#3b82f6' : 'var(--emerald-bright)';
+                    c.direction === 'inbound' ? '#3b82f6' : 'var(--primary)';
                   return (
                     <tr key={c.id}>
                       <td>

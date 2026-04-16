@@ -56,7 +56,7 @@ export default function ActivityChart() {
           type="monotone"
           dataKey="speedToLead"
           name="Speed-to-Lead"
-          stroke="var(--emerald-bright)"
+          stroke="var(--primary)"
           strokeWidth={2.5}
           dot={{ r: 3 }}
         />

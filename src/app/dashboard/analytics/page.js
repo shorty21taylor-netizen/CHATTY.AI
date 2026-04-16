@@ -28,7 +28,7 @@ import {
 } from 'recharts';
 
 const REVENUE_BY_AGENT = [
-  { agent: 'Instant Lead Response', value: 18400, color: 'var(--emerald-bright)' },
+  { agent: 'Instant Lead Response', value: 18400, color: 'var(--primary)' },
   { agent: 'Appointment Setter', value: 12200, color: '#3b82f6' },
   { agent: 'Quote Follow-Up', value: 6800, color: '#8b5cf6' },
   { agent: 'Ghosted Bid Follow-Up', value: 3200, color: '#f59e0b' },
@@ -39,7 +39,7 @@ const CONVERSION_FUNNEL = [
   { stage: 'Leads', value: 247, color: '#3b82f6' },
   { stage: 'Qualified', value: 148, color: '#8b5cf6' },
   { stage: 'Proposals', value: 34, color: '#f59e0b' },
-  { stage: 'Won', value: 15, color: 'var(--emerald-bright)' },
+  { stage: 'Won', value: 15, color: 'var(--primary)' },
 ];
 
 const RESPONSE_TREND = Array.from({ length: 30 }).map((_, i) => ({
@@ -48,7 +48,7 @@ const RESPONSE_TREND = Array.from({ length: 30 }).map((_, i) => ({
 }));
 
 const LEAD_SOURCE = [
-  { name: 'Google Ads', value: 38, color: 'var(--emerald-bright)' },
+  { name: 'Google Ads', value: 38, color: 'var(--primary)' },
   { name: 'Facebook', value: 27, color: '#3b82f6' },
   { name: 'Website Form', value: 18, color: '#8b5cf6' },
   { name: 'Referral', value: 11, color: '#f59e0b' },
@@ -91,7 +91,7 @@ function KpiHero({ icon, label, value, hint, accent }) {
         position: 'relative',
         overflow: 'hidden',
         boxShadow: accent ? '0 0 24px rgba(16,185,129,0.12)' : 'none',
-        borderColor: accent ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))' : 'var(--border)',
+        borderColor: accent ? 'color-mix(in srgb, var(--primary) 40%, var(--border))' : 'var(--border)',
       }}
     >
       <div
@@ -115,9 +115,9 @@ function KpiHero({ icon, label, value, hint, accent }) {
             height: 22,
             borderRadius: 6,
             background: accent
-              ? 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)'
+              ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
               : 'color-mix(in srgb, var(--text-muted) 14%, transparent)',
-            color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+            color: accent ? 'var(--primary)' : 'var(--text-muted)',
           }}
         >
           {icon}
@@ -129,7 +129,7 @@ function KpiHero({ icon, label, value, hint, accent }) {
           fontSize: 30,
           fontWeight: 700,
           letterSpacing: '-0.02em',
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
         }}
       >
         {value}
@@ -352,8 +352,8 @@ export default function AnalyticsPage() {
             >
               <defs>
                 <linearGradient id="emeraldFade" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--emerald-bright)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--emerald-bright)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -384,7 +384,7 @@ export default function AnalyticsPage() {
               <Area
                 type="monotone"
                 dataKey="seconds"
-                stroke="var(--emerald-bright)"
+                stroke="var(--primary)"
                 strokeWidth={2.5}
                 fill="url(#emeraldFade)"
               />
@@ -542,7 +542,7 @@ export default function AnalyticsPage() {
                     <td
                       style={{
                         textAlign: 'right',
-                        color: 'var(--emerald-bright)',
+                        color: 'var(--primary)',
                         fontWeight: 600,
                         fontVariantNumeric: 'tabular-nums',
                       }}
@@ -621,8 +621,8 @@ export default function AnalyticsPage() {
                     width: 36,
                     height: 36,
                     borderRadius: 8,
-                    background: 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-                    color: 'var(--emerald-bright)',
+                    background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+                    color: 'var(--primary)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',

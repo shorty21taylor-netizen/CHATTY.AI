@@ -33,9 +33,9 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
               gap: 5,
               padding: '3px 9px',
               borderRadius: 999,
-              background: 'var(--emerald-tint)',
+              background: 'var(--primary-tint)',
               border: '1px solid rgba(16,185,129,0.3)',
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: '0.08em',
@@ -63,8 +63,8 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
             width: 44,
             height: 26,
             borderRadius: 999,
-            background: enabled ? 'var(--emerald-bright)' : 'var(--surface-3)',
-            border: '1px solid ' + (enabled ? 'var(--emerald-bright)' : 'var(--border)'),
+            background: enabled ? 'var(--primary)' : 'var(--surface-3)',
+            border: '1px solid ' + (enabled ? 'var(--primary)' : 'var(--border)'),
             position: 'relative',
             cursor: 'pointer',
             padding: 0,
@@ -148,14 +148,14 @@ export function VoiceNoteCard({ defaultScript = '', defaultVoiceId = 'mike-warm'
             gap: 8,
             padding: '9px 16px',
             borderRadius: 10,
-            background: 'var(--emerald-bright)',
+            background: 'var(--primary)',
             color: '#ffffff',
             border: 'none',
             fontSize: 13,
             fontWeight: 700,
             cursor: enabled ? 'pointer' : 'not-allowed',
             opacity: enabled ? 1 : 0.5,
-            boxShadow: enabled ? '0 0 16px var(--emerald-glow)' : 'none',
+            boxShadow: enabled ? '0 0 16px rgba(15, 138, 79, 0.2)' : 'none',
           }}
         >
           <Play size={13} /> Preview voice note
@@ -194,7 +194,7 @@ function Stat({ label, value, highlight }) {
         style={{
           fontSize: 20,
           fontWeight: 700,
-          color: highlight ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: highlight ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
           marginTop: 2,
         }}

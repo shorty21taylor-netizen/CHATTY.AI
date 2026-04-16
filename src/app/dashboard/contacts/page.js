@@ -18,15 +18,15 @@ import {
 // ---------------------------------------------------------------------------
 
 const TYPE_CONFIG = {
-  lead: { label: 'LEAD', color: 'var(--emerald-bright)' },
+  lead: { label: 'LEAD', color: 'var(--primary)' },
   customer: { label: 'CUSTOMER', color: '#8b5cf6' },
   past_customer: { label: 'PAST CUSTOMER', color: 'var(--text-muted)' },
   vip: { label: 'VIP', color: '#f59e0b' },
 };
 
 const STATUS_CONFIG = {
-  active: { label: 'ACTIVE', color: 'var(--emerald-bright)' },
-  won: { label: 'WON', color: 'var(--emerald-bright)' },
+  active: { label: 'ACTIVE', color: 'var(--primary)' },
+  won: { label: 'WON', color: 'var(--primary)' },
   nurturing: { label: 'NURTURING', color: '#3b82f6' },
   cold: { label: 'COLD', color: 'var(--text-muted)' },
   lost: { label: 'LOST', color: 'var(--negative)' },
@@ -36,7 +36,7 @@ const STATUS_CONFIG = {
 const AVATAR_COLORS = [
   '#ef4444',
   '#f59e0b',
-  '#10b981',
+  '#0F8A4F',
   '#3b82f6',
   '#8b5cf6',
   '#ec4899',
@@ -242,7 +242,7 @@ export default function ContactsPage() {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <Users size={12} style={{ color: 'var(--emerald-bright)' }} />
+            <Users size={12} style={{ color: 'var(--primary)' }} />
             Contacts
           </div>
           <h1 className="t-h1" style={{ margin: '6px 0 4px' }}>
@@ -470,7 +470,7 @@ function KpiCard({ icon, label, value, accent }) {
       className="dark-card"
       style={{
         padding: 20,
-        borderLeft: accent ? '3px solid var(--emerald-bright)' : undefined,
+        borderLeft: accent ? '3px solid var(--primary)' : undefined,
       }}
     >
       <div
@@ -479,7 +479,7 @@ function KpiCard({ icon, label, value, accent }) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+          color: accent ? 'var(--primary)' : 'var(--text-muted)',
         }}
       >
         {icon}
@@ -489,7 +489,7 @@ function KpiCard({ icon, label, value, accent }) {
         className="t-kpi"
         style={{
           marginTop: 8,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
         }}
       >
         {value}

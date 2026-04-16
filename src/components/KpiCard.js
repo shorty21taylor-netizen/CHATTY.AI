@@ -47,7 +47,7 @@ export default function KpiCard({ label, value, delta, suffix, action }) {
             marginTop: 8,
             fontSize: 13,
             fontWeight: 600,
-            color: "var(--emerald-bright)",
+            color: "var(--primary)",
           }}
         >
           {delta}

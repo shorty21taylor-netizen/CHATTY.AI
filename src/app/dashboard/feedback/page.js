@@ -145,7 +145,7 @@ const SIGNAL_BULLETS = [
 ];
 
 const REACTION_MAP = {
-  love: { emoji: '😍', color: 'var(--emerald-bright)' },
+  love: { emoji: '😍', color: 'var(--primary)' },
   good: { emoji: '👍', color: '#3b82f6' },
   neutral: { emoji: '😐', color: 'var(--text-muted)' },
   bad: { emoji: '👎', color: '#f59e0b' },
@@ -153,7 +153,7 @@ const REACTION_MAP = {
 };
 
 const STATUS_MAP = {
-  acted: { label: 'ACTED', color: 'var(--emerald-bright)' },
+  acted: { label: 'ACTED', color: 'var(--primary)' },
   open: { label: 'OPEN', color: '#f59e0b' },
   ignored: { label: 'IGNORED', color: 'var(--text-muted)' },
 };
@@ -191,7 +191,7 @@ function StatCard({ icon, label, value, hint, accent }) {
         gap: 10,
         boxShadow: accent ? '0 0 24px rgba(16,185,129,0.12)' : 'none',
         borderColor: accent
-          ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+          ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
           : 'var(--border)',
       }}
     >
@@ -216,9 +216,9 @@ function StatCard({ icon, label, value, hint, accent }) {
             height: 22,
             borderRadius: 6,
             background: accent
-              ? 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)'
+              ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
               : 'color-mix(in srgb, var(--text-muted) 14%, transparent)',
-            color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+            color: accent ? 'var(--primary)' : 'var(--text-muted)',
           }}
         >
           <Icon size={13} />
@@ -230,7 +230,7 @@ function StatCard({ icon, label, value, hint, accent }) {
           fontSize: 30,
           fontWeight: 700,
           letterSpacing: '-0.02em',
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
         }}
       >
         {value}
@@ -368,7 +368,7 @@ export default function FeedbackPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontSize: 11,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
@@ -416,7 +416,7 @@ export default function FeedbackPage() {
                     height: 6,
                     marginTop: 7,
                     borderRadius: '50%',
-                    background: 'var(--emerald-bright)',
+                    background: 'var(--primary)',
                     flexShrink: 0,
                   }}
                 />

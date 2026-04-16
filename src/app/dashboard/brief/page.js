@@ -63,7 +63,7 @@ export default function MissionControlPage() {
           style={{
             background: 'rgba(16,185,129,0.1)',
             borderColor: 'rgba(16,185,129,0.3)',
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
           }}
         >
           <Crosshair size={18} />
@@ -71,7 +71,7 @@ export default function MissionControlPage() {
         <div>
           <h1
             className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] sm:text-3xl"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            style={{ letterSpacing: '-0.02em' }}
           >
             Mission Control
           </h1>

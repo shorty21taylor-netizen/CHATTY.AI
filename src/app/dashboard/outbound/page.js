@@ -99,7 +99,7 @@ function CallsTable({ calls }) {
               <Td>
                 <span
                   style={{
-                    color: "var(--emerald-bright)",
+                    color: "var(--primary)",
                     fontWeight: 600,
                     fontSize: 13,
                     cursor: "pointer",
@@ -151,13 +151,13 @@ function Td({ children }) {
 function OutcomePill({ outcome }) {
   const styles = {
     Booked: {
-      background: "var(--emerald-tint)",
-      color: "var(--emerald-bright)",
+      background: "var(--primary-tint)",
+      color: "var(--primary)",
       border: "1px solid rgba(16,185,129,0.3)",
     },
     Qualified: {
-      background: "var(--emerald-tint)",
-      color: "var(--emerald-bright)",
+      background: "var(--primary-tint)",
+      color: "var(--primary)",
       border: "1px solid rgba(16,185,129,0.3)",
     },
     "No-show": {

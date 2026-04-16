@@ -25,12 +25,12 @@ export function RevenueFunnel() {
             gap: 6,
             padding: '5px 12px',
             borderRadius: 999,
-            background: 'var(--emerald-tint)',
+            background: 'var(--primary-tint)',
             border: '1px solid rgba(16,185,129,0.25)',
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.08em',
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
           }}
         >
           <span
@@ -38,8 +38,8 @@ export function RevenueFunnel() {
               width: 6,
               height: 6,
               borderRadius: '50%',
-              background: 'var(--emerald-bright)',
-              boxShadow: '0 0 8px var(--emerald-glow)',
+              background: 'var(--primary)',
+              boxShadow: '0 0 8px rgba(15, 138, 79, 0.2)',
             }}
           />
           LIVE
@@ -61,7 +61,7 @@ export function RevenueFunnel() {
             style={{
               position: 'relative',
               padding: '18px 16px',
-              background: 'var(--emerald-tint)',
+              background: 'var(--primary-tint)',
               border: '1px solid var(--border)',
               borderRadius: 12,
               display: 'flex',
@@ -86,7 +86,7 @@ export function RevenueFunnel() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--emerald-bright)',
+                  color: 'var(--primary)',
                   fontSize: 11,
                   zIndex: 2,
                 }}
@@ -121,9 +121,9 @@ export function RevenueFunnel() {
                   gap: 5,
                   padding: '4px 9px',
                   borderRadius: 999,
-                  background: 'var(--emerald-tint)',
+                  background: 'var(--primary-tint)',
                   border: '1px solid rgba(16,185,129,0.25)',
-                  color: 'var(--emerald-bright)',
+                  color: 'var(--primary)',
                   fontSize: 10.5,
                   fontWeight: 700,
                   letterSpacing: '0.03em',
@@ -153,7 +153,7 @@ export function RevenueFunnel() {
       >
         <div>
           <div className="t-eyebrow">Recovered revenue &middot; last 30 days</div>
-          <div className="t-kpi-lg" style={{ marginTop: 6, color: 'var(--emerald-bright)' }}>
+          <div className="t-kpi-lg" style={{ marginTop: 6, color: 'var(--primary)' }}>
             $184,200
           </div>
           <div className="t-body-sm" style={{ marginTop: 4 }}>
@@ -168,12 +168,12 @@ export function RevenueFunnel() {
             gap: 6,
             padding: '10px 18px',
             borderRadius: 10,
-            background: 'var(--emerald-bright)',
+            background: 'var(--primary)',
             color: '#ffffff',
             fontSize: 13,
             fontWeight: 700,
             textDecoration: 'none',
-            boxShadow: '0 0 20px var(--emerald-glow)',
+            boxShadow: '0 0 20px rgba(15, 138, 79, 0.2)',
           }}
         >
           See full breakdown {'\u2192'}

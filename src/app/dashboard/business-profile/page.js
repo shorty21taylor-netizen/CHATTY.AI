@@ -165,14 +165,14 @@ export default function BusinessProfilePage() {
           className="t-eyebrow"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
-          <Briefcase size={12} style={{ color: 'var(--emerald-bright)' }} />
+          <Briefcase size={12} style={{ color: 'var(--primary)' }} />
           Command Center
         </div>
         <h1
           className="t-h1"
           style={{
             margin: '6px 0 6px',
-            fontFamily: "'Playfair Display', Georgia, serif",
+            letterSpacing: '-0.02em',
             letterSpacing: '-0.01em',
           }}
         >
@@ -197,13 +197,13 @@ export default function BusinessProfilePage() {
           gap: 10,
           border: `1px solid ${
             status.complete
-              ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+              ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
               : 'color-mix(in srgb, #f59e0b 40%, var(--border))'
           }`,
           background: status.complete
-            ? 'color-mix(in srgb, var(--emerald-bright) 8%, transparent)'
+            ? 'color-mix(in srgb, var(--primary) 8%, transparent)'
             : 'color-mix(in srgb, #f59e0b 8%, transparent)',
-          color: status.complete ? 'var(--emerald-bright)' : '#f59e0b',
+          color: status.complete ? 'var(--primary)' : '#f59e0b',
           fontSize: 12,
           fontWeight: 600,
         }}
@@ -719,12 +719,12 @@ export default function BusinessProfilePage() {
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               borderRadius: 999,
-              color: status.complete ? 'var(--emerald-bright)' : '#f59e0b',
+              color: status.complete ? 'var(--primary)' : '#f59e0b',
               background: `color-mix(in srgb, ${
-                status.complete ? 'var(--emerald-bright)' : '#f59e0b'
+                status.complete ? 'var(--primary)' : '#f59e0b'
               } 14%, transparent)`,
               border: `1px solid color-mix(in srgb, ${
-                status.complete ? 'var(--emerald-bright)' : '#f59e0b'
+                status.complete ? 'var(--primary)' : '#f59e0b'
               } 30%, transparent)`,
             }}
           >
@@ -734,7 +734,7 @@ export default function BusinessProfilePage() {
             <span
               style={{
                 fontSize: 12,
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 fontWeight: 600,
                 display: 'inline-flex',
                 alignItems: 'center',

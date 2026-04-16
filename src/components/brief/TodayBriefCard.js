@@ -177,7 +177,7 @@ export default function TodayBriefCard({ brief }) {
         className="absolute inset-y-0 left-0 w-1"
         style={{
           background:
-            'linear-gradient(180deg, var(--emerald-bright) 0%, rgba(16,185,129,0.2) 100%)',
+            'linear-gradient(180deg, var(--primary) 0%, rgba(16,185,129,0.2) 100%)',
           boxShadow: '0 0 28px rgba(16,185,129,0.35)',
         }}
       />
@@ -187,12 +187,12 @@ export default function TodayBriefCard({ brief }) {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-              <Sparkles size={14} className="text-[var(--emerald-bright)]" />
+              <Sparkles size={14} className="text-[var(--primary)]" />
               Today&apos;s Brief
             </div>
             <h2
               className="mt-1 text-2xl font-semibold tracking-tight text-[var(--text-bright)] sm:text-3xl"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              style={{ letterSpacing: '-0.02em' }}
             >
               {briefDate}
             </h2>
@@ -216,7 +216,7 @@ export default function TodayBriefCard({ brief }) {
                   className="inline-block h-1.5 w-1.5 rounded-full"
                   style={{
                     background: deliveredAt
-                      ? 'var(--emerald-bright)'
+                      ? 'var(--primary)'
                       : '#fbbf24',
                     boxShadow: deliveredAt
                       ? '0 0 6px rgba(16,185,129,0.8)'
@@ -231,7 +231,7 @@ export default function TodayBriefCard({ brief }) {
           {/* Voice play */}
           <button
             onClick={() => setPlaying((p) => !p)}
-            className="group flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all hover:border-[var(--emerald-bright)]"
+            className="group flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all hover:border-[var(--primary)]"
             style={{
               background: 'var(--surface-2)',
               borderColor: 'var(--border)',
@@ -241,7 +241,7 @@ export default function TodayBriefCard({ brief }) {
               className="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-white"
               style={{
                 background:
-                  'linear-gradient(135deg, var(--emerald-bright), #059669)',
+                  'linear-gradient(135deg, var(--primary), #0A6B3C)',
                 boxShadow: '0 0 14px rgba(16,185,129,0.4)',
               }}
             >
@@ -259,7 +259,7 @@ export default function TodayBriefCard({ brief }) {
                     style={{
                       height: h,
                       background: playing
-                        ? 'var(--emerald-bright)'
+                        ? 'var(--primary)'
                         : 'var(--border-strong)',
                       opacity: playing ? 1 : 0.7,
                       transition: 'all .2s',
@@ -303,7 +303,7 @@ export default function TodayBriefCard({ brief }) {
                     <p className="mt-1 text-sm text-[var(--text-muted)]">
                       {action.why}
                     </p>
-                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.08)] px-2 py-1 text-xs font-semibold text-[var(--emerald-bright)]">
+                    <div className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.08)] px-2 py-1 text-xs font-semibold text-[var(--primary)]">
                       <Zap size={12} />
                       {action.impact}
                     </div>
@@ -316,7 +316,7 @@ export default function TodayBriefCard({ brief }) {
                       color={{
                         bg: 'rgba(16,185,129,0.12)',
                         border: 'rgba(16,185,129,0.4)',
-                        text: 'var(--emerald-bright)',
+                        text: 'var(--primary)',
                       }}
                     >
                       Act on it
@@ -356,7 +356,7 @@ export default function TodayBriefCard({ brief }) {
         <div className="mt-6">
           <button
             onClick={() => setTraceOpen((o) => !o)}
-            className="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors hover:border-[var(--emerald-bright)]"
+            className="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors hover:border-[var(--primary)]"
             style={{
               background: 'var(--surface-2)',
               borderColor: 'var(--border)',
@@ -364,7 +364,7 @@ export default function TodayBriefCard({ brief }) {
             aria-expanded={traceOpen}
           >
             <div className="flex items-center gap-2">
-              <Brain size={15} className="text-[var(--emerald-bright)]" />
+              <Brain size={15} className="text-[var(--primary)]" />
               <span className="text-sm font-semibold text-[var(--text-bright)]">
                 Decision Engine reasoning
               </span>
@@ -404,13 +404,13 @@ export default function TodayBriefCard({ brief }) {
                       <div className="flex items-center gap-2">
                         <Icon
                           size={14}
-                          className="text-[var(--emerald-bright)]"
+                          className="text-[var(--primary)]"
                         />
                         <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                           {pass.title}
                         </span>
                       </div>
-                      <span className="text-xs font-semibold tabular-nums text-[var(--emerald-bright)]">
+                      <span className="text-xs font-semibold tabular-nums text-[var(--primary)]">
                         {pct}%
                       </span>
                     </div>
@@ -420,7 +420,7 @@ export default function TodayBriefCard({ brief }) {
                     <ul className="mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
                       {pass.bullets.map((b, i) => (
                         <li key={i} className="flex gap-2">
-                          <span className="mt-1 inline-block h-1 w-1 flex-none rounded-full bg-[var(--emerald-bright)]" />
+                          <span className="mt-1 inline-block h-1 w-1 flex-none rounded-full bg-[var(--primary)]" />
                           <span>{b}</span>
                         </li>
                       ))}

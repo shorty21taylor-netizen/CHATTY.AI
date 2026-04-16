@@ -40,11 +40,11 @@ const ACTIVE_JOB_STATUSES = new Set([
 ]);
 
 const FUNNEL_STAGES = [
-  { label: 'New', statuses: ['new'], color: '#6366f1' },
+  { label: 'New', statuses: ['new'], color: '#2563EB' },
   { label: 'Qualified', statuses: ['contacted', 'appointment_set', 'inspected'], color: '#8b5cf6' },
   { label: 'Proposal', statuses: ['quoted'], color: '#06b6d4' },
   { label: 'Negotiation', statuses: ['negotiating'], color: '#f59e0b' },
-  { label: 'Won', statuses: ['won'], color: '#10b981' },
+  { label: 'Won', statuses: ['won'], color: '#0F8A4F' },
 ];
 
 const INTERACTION_ICONS = {
@@ -85,7 +85,7 @@ function SummaryCard({ icon: Icon, label, value, hint, accent = 'emerald', delay
     emerald: {
       bg: 'rgba(16,185,129,0.08)',
       border: 'rgba(16,185,129,0.25)',
-      color: 'var(--emerald-bright)',
+      color: 'var(--primary)',
     },
     indigo: {
       bg: 'rgba(99,102,241,0.08)',
@@ -325,7 +325,7 @@ export default function CrmOverviewPage() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <TrendingUp size={16} className="text-[var(--emerald-bright)]" />
+                <TrendingUp size={16} className="text-[var(--primary)]" />
                 <h3 className="font-semibold text-[var(--text-bright)]">
                   Pipeline funnel
                 </h3>
@@ -402,7 +402,7 @@ export default function CrmOverviewPage() {
                 return (
                   <li key={it.id} className="flex gap-3">
                     <div
-                      className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg border text-[var(--emerald-bright)]"
+                      className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg border text-[var(--primary)]"
                       style={{
                         background: 'rgba(16,185,129,0.08)',
                         borderColor: 'rgba(16,185,129,0.2)',

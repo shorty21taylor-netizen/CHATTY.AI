@@ -4,7 +4,7 @@
 export function Delta({ value, suffix = '', positive }) {
   const numeric = typeof value === 'number' ? value : parseFloat(value);
   const isPositive = positive !== undefined ? positive : (isNaN(numeric) ? true : numeric >= 0);
-  const color = isPositive ? 'var(--emerald-bright)' : 'var(--negative)';
+  const color = isPositive ? 'var(--primary)' : 'var(--negative)';
   const arrow = isPositive ? '\u2191' : '\u2193';
   const mag = isNaN(numeric) ? value : Math.abs(numeric);
   return (

@@ -297,7 +297,7 @@ function AddContactModal({ open, onClose, onCreated }) {
               transition: border-color 0.15s;
             }
             :global(.input:focus) {
-              border-color: var(--emerald-bright);
+              border-color: var(--primary);
             }
           `}</style>
         </form>
@@ -384,7 +384,7 @@ export default function ContactsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, company, or email…"
-            className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-sm text-[var(--text-bright)] outline-none placeholder:text-[var(--text-subtle)] focus:border-[var(--emerald-bright)]"
+            className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-sm text-[var(--text-bright)] outline-none placeholder:text-[var(--text-subtle)] focus:border-[var(--primary)]"
           />
         </div>
         <Button size="sm" onClick={() => setModalOpen(true)}>

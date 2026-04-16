@@ -41,7 +41,7 @@ const BRIEF = {
       why: 'She viewed the proposal 5 times in the last 48h — that is the single strongest intent signal in today\'s pipeline. Two competitor quotes are landing this week; delay costs the deal.',
       impact: '+$34,200 likely close',
       cta: 'Call Patricia',
-      ctaColor: 'var(--emerald-bright)',
+      ctaColor: 'var(--primary)',
     },
     {
       rank: '02',
@@ -63,7 +63,7 @@ const BRIEF = {
     },
   ],
   signals: [
-    { label: 'New Leads', value: '14', delta: '+22% vs avg', positive: true, icon: Users, color: 'var(--emerald-bright)' },
+    { label: 'New Leads', value: '14', delta: '+22% vs avg', positive: true, icon: Users, color: 'var(--primary)' },
     { label: 'Calls Answered by AI', value: '31', delta: 'Speed-to-lead 38s avg', positive: true, icon: Phone, color: '#3b82f6' },
     { label: 'Proposals Viewed', value: '8', delta: '3 viewed 3+ times', positive: true, icon: Eye, color: '#8b5cf6' },
     { label: 'Ad Spend', value: '$340', delta: '↓12% vs yesterday', positive: true, icon: DollarSign, color: '#f59e0b' },
@@ -168,7 +168,7 @@ export default function BriefDetailPage({ params }) {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <FileText size={12} style={{ color: 'var(--emerald-bright)' }} />
+            <FileText size={12} style={{ color: 'var(--primary)' }} />
             Daily Brief
           </div>
           <h1 className="t-h1" style={{ margin: '6px 0 6px' }}>
@@ -233,7 +233,7 @@ export default function BriefDetailPage({ params }) {
         style={{
           padding: '28px 32px',
           marginTop: 24,
-          borderLeft: '4px solid var(--emerald-bright)',
+          borderLeft: '4px solid var(--primary)',
         }}
       >
         <div
@@ -248,7 +248,7 @@ export default function BriefDetailPage({ params }) {
         >
           <span
             style={{
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontSize: 36,
               lineHeight: 0,
               verticalAlign: '-0.25em',
@@ -265,7 +265,7 @@ export default function BriefDetailPage({ params }) {
       <div style={{ marginTop: 36 }}>
         <div
           className="t-eyebrow"
-          style={{ marginBottom: 16, color: 'var(--emerald-bright)' }}
+          style={{ marginBottom: 16, color: 'var(--primary)' }}
         >
           TOP 3 ACTIONS TODAY
         </div>
@@ -321,7 +321,7 @@ export default function BriefDetailPage({ params }) {
               gap: 4,
               fontSize: 12,
               fontWeight: 600,
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
@@ -400,14 +400,14 @@ export default function BriefDetailPage({ params }) {
                   padding: '8px 12px',
                   borderRadius: 10,
                   background: active
-                    ? 'var(--emerald-tint)'
+                    ? 'var(--primary-tint)'
                     : 'var(--surface-2)',
                   border: active
                     ? '1px solid rgba(16,185,129,0.4)'
                     : '1px solid var(--border)',
                   cursor: 'pointer',
                   fontSize: 13,
-                  color: active ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                  color: active ? 'var(--primary)' : 'var(--text-bright)',
                   fontWeight: 500,
                 }}
               >
@@ -587,8 +587,8 @@ function ActionCard({ a }) {
             gap: 6,
             padding: '4px 10px',
             borderRadius: 999,
-            background: 'var(--emerald-tint)',
-            color: 'var(--emerald-bright)',
+            background: 'var(--primary-tint)',
+            color: 'var(--primary)',
             fontSize: 12,
             fontWeight: 700,
           }}
@@ -677,7 +677,7 @@ function SignalTile({ s }) {
           marginTop: 6,
           fontSize: 11,
           fontWeight: 600,
-          color: s.positive ? 'var(--emerald-bright)' : 'var(--negative)',
+          color: s.positive ? 'var(--primary)' : 'var(--negative)',
         }}
       >
         {s.delta}
@@ -717,8 +717,8 @@ function TracePass({ t }) {
               height: 36,
               borderRadius: 10,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 14%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -774,7 +774,7 @@ function TracePass({ t }) {
             style={{
               fontSize: 20,
               fontWeight: 700,
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontVariantNumeric: 'tabular-nums',
               lineHeight: 1,
             }}
@@ -811,7 +811,7 @@ function TracePass({ t }) {
                 width: 4,
                 height: 4,
                 borderRadius: '50%',
-                background: 'var(--emerald-bright)',
+                background: 'var(--primary)',
                 marginTop: 9,
                 flexShrink: 0,
               }}

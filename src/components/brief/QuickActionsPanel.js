@@ -77,28 +77,28 @@ export default function QuickActionsPanel({ recentBriefs }) {
       {/* Ask Chatty */}
       <Card delay={0}>
         <div className="flex items-center gap-2">
-          <MessageSquare size={15} className="text-[var(--emerald-bright)]" />
+          <MessageSquare size={15} className="text-[var(--primary)]" />
           <h3 className="font-semibold text-[var(--text-bright)]">Ask Chatty</h3>
         </div>
         <p className="mt-1 text-xs text-[var(--text-muted)]">
           Ask a question about today&apos;s signals or pipeline.
         </p>
         <button
-          className="mt-3 flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm text-[var(--text-muted)] transition-colors hover:border-[var(--emerald-bright)] hover:text-[var(--text-bright)]"
+          className="mt-3 flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--text-bright)]"
           style={{
             background: 'var(--surface-2)',
             borderColor: 'var(--border)',
           }}
         >
           <span>Why are we losing quotes this week?</span>
-          <Send size={13} className="text-[var(--emerald-bright)]" />
+          <Send size={13} className="text-[var(--primary)]" />
         </button>
       </Card>
 
       {/* Recent briefs */}
       <Card delay={0.05}>
         <div className="flex items-center gap-2">
-          <History size={15} className="text-[var(--emerald-bright)]" />
+          <History size={15} className="text-[var(--primary)]" />
           <h3 className="font-semibold text-[var(--text-bright)]">
             Recent briefs
           </h3>
@@ -121,7 +121,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
                   {b.label}
                 </span>
                 {i === 0 ? (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--emerald-bright)]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--primary)]">
                     Today
                   </span>
                 ) : null}
@@ -134,7 +134,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
       {/* Feedback */}
       <Card delay={0.1}>
         <div className="flex items-center gap-2">
-          <Star size={15} className="text-[var(--emerald-bright)]" />
+          <Star size={15} className="text-[var(--primary)]" />
           <h3 className="font-semibold text-[var(--text-bright)]">
             Brief feedback
           </h3>
@@ -158,10 +158,10 @@ export default function QuickActionsPanel({ recentBriefs }) {
               >
                 <Star
                   size={20}
-                  fill={filled ? 'var(--emerald-bright)' : 'transparent'}
+                  fill={filled ? 'var(--primary)' : 'transparent'}
                   className={
                     filled
-                      ? 'text-[var(--emerald-bright)]'
+                      ? 'text-[var(--primary)]'
                       : 'text-[var(--text-muted)]'
                   }
                 />
@@ -174,7 +174,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
           placeholder="Anything off today?"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="mt-2 w-full resize-none rounded-xl border bg-[var(--surface-2)] p-2 text-sm text-[var(--text-bright)] placeholder:text-[var(--text-muted)] focus:border-[var(--emerald-bright)] focus:outline-none"
+          className="mt-2 w-full resize-none rounded-xl border bg-[var(--surface-2)] p-2 text-sm text-[var(--text-bright)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
           style={{ borderColor: 'var(--border)' }}
         />
         <button
@@ -183,7 +183,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
           className="mt-2 w-full rounded-xl px-3 py-2 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
           style={{
             background:
-              'linear-gradient(135deg, var(--emerald-bright), #059669)',
+              'linear-gradient(135deg, var(--primary), #0A6B3C)',
             boxShadow:
               rating > 0 && !submitted
                 ? '0 0 14px rgba(16,185,129,0.35)'
@@ -197,7 +197,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
       {/* Source status */}
       <Card delay={0.15}>
         <div className="flex items-center gap-2">
-          <PlugZap size={15} className="text-[var(--emerald-bright)]" />
+          <PlugZap size={15} className="text-[var(--primary)]" />
           <h3 className="font-semibold text-[var(--text-bright)]">
             Signal sources
           </h3>
@@ -215,7 +215,7 @@ export default function QuickActionsPanel({ recentBriefs }) {
                     aria-hidden
                     className="inline-block h-2 w-2 rounded-full"
                     style={{
-                      background: live ? 'var(--emerald-bright)' : '#6b7280',
+                      background: live ? 'var(--primary)' : '#6b7280',
                       boxShadow: live
                         ? '0 0 8px rgba(16,185,129,0.7)'
                         : 'none',

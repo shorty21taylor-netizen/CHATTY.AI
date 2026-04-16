@@ -38,7 +38,7 @@ const INTEGRATIONS = [
     name: 'ElevenLabs',
     category: 'Voice',
     icon: Mic,
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     status: 'connected',
     desc: 'Conversational AI voice agents, TTS, and Voice Lab cloning.',
     meta: '3 agents running · 6 voices',
@@ -146,7 +146,7 @@ const INTEGRATIONS = [
 ];
 
 const STATUS_CONFIG = {
-  connected: { label: 'CONNECTED', color: 'var(--emerald-bright)' },
+  connected: { label: 'CONNECTED', color: 'var(--primary)' },
   available: { label: 'AVAILABLE', color: '#3b82f6' },
   unavailable: { label: 'BY DESIGN', color: 'var(--text-muted)' },
 };
@@ -232,9 +232,9 @@ export default function IntegrationsPage() {
               gap: 8,
               padding: '4px 10px',
               borderRadius: 999,
-              background: 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-              color: 'var(--emerald-bright)',
-              border: '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+              background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+              color: 'var(--primary)',
+              border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
               fontSize: 10,
               fontWeight: 600,
               letterSpacing: '0.12em',
@@ -297,7 +297,7 @@ export default function IntegrationsPage() {
                 gap: 14,
                 opacity: isUnavailable ? 0.7 : 1,
                 borderColor: isConnected
-                  ? 'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 30%, var(--border))'
                   : 'var(--border)',
               }}
             >

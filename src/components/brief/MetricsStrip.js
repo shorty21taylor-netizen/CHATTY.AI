@@ -32,7 +32,7 @@ const MOCK_METRICS = [
     unit: '/10',
     trend: 6.2,
     benchmark: 'vs. 7.1 avg',
-    color: '#10b981',
+    color: '#0F8A4F',
     data: sparkline([7.2, 7.5, 7.1, 7.8, 8.0, 8.1, 8.4]),
   },
   {
@@ -77,7 +77,7 @@ const MOCK_METRICS = [
     unit: '',
     trend: 9.7,
     benchmark: 'vs. $168k wk avg',
-    color: '#10b981',
+    color: '#0F8A4F',
     data: sparkline([142, 151, 158, 164, 170, 176, 184]),
   },
   {
@@ -98,7 +98,7 @@ function MetricCard({ metric, delay }) {
   const positive = metric.positiveDown ? metric.trend < 0 : metric.trend > 0;
   const TrendIcon = metric.trend >= 0 ? TrendingUp : TrendingDown;
   const trendColor = positive
-    ? 'var(--emerald-bright)'
+    ? 'var(--primary)'
     : '#fb7185';
 
   return (
