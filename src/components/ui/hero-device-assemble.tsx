@@ -11,7 +11,43 @@ export interface HeroDeviceAssembleProps {
 }
 
 const FONT_FAMILY =
-  "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif";
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+/* ------------------------------------------------------------------ */
+/* Chatty AI Dashboard MockUI                                          */
+/* ------------------------------------------------------------------ */
+
+const GREEN = "#0F8A4F";
+const GREEN_TINT = "#E8F5EE";
+const GREEN_DARK = "#0A6B3C";
+
+const NAV_ITEMS = [
+  { label: "Today", active: true },
+  { label: "Daily Brief" },
+  { label: "Speed to Lead" },
+  { label: "Booked Calls" },
+  { label: "Follow-Ups" },
+  { label: "Proposals Out" },
+  { label: "Closed Revenue" },
+  { label: "Agents" },
+  { label: "Contacts" },
+  { label: "Pipeline" },
+];
+
+const SELLERS = [
+  { agent: "SPEED-TO-LEAD", value: "47", label: "leads in <60s", color: GREEN, bg: `rgba(15,138,79,0.10)` },
+  { agent: "REACTIVATION", value: "23", label: "leads reawakened", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)" },
+  { agent: "BOOKED CALLS", value: "18", label: "appointments", color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
+  { agent: "QUOTES SENT", value: "12", label: "quotes + follow-ups", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+  { agent: "FOLLOW-UPS", value: "142", label: "texts sent", color: "#ec4899", bg: "rgba(236,72,153,0.12)" },
+];
+
+const QUALITY = [
+  { label: "Answer Rate", value: "94.2%", delta: "+2.1%" },
+  { label: "Time to Answer", value: "0.8s", delta: "-12%" },
+  { label: "Qualification", value: "67%", delta: "+4%" },
+  { label: "Booking Rate", value: "38%", delta: "+6%" },
+];
 
 function MockUI({ accentColor }: { accentColor: string }) {
   return (
@@ -20,177 +56,412 @@ function MockUI({ accentColor }: { accentColor: string }) {
         position: "absolute",
         inset: 0,
         display: "flex",
-        flexDirection: "column",
-        background: "#0b0b0f",
+        background: "#ffffff",
         fontFamily: FONT_FAMILY,
-        color: "white",
+        color: "#18181b",
         overflow: "hidden",
       }}
     >
-      {/* Title bar */}
+      {/* ---- Sidebar ---- */}
       <div
         style={{
-          height: "10%",
-          background: "#111118",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          width: 180,
+          background: "#fafafa",
+          borderRight: "1px solid #e4e4e7",
+          padding: "14px 10px",
           display: "flex",
-          alignItems: "center",
-          padding: "0 16px",
-          gap: 8,
+          flexDirection: "column",
+          gap: 1,
+          flexShrink: 0,
         }}
       >
+        {/* Logo */}
         <div
           style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.18)",
-          }}
-        />
-        <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.18)",
-          }}
-        />
-        <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.18)",
-          }}
-        />
-      </div>
-      <div style={{ flex: 1, display: "flex" }}>
-        {/* Sidebar */}
-        <div
-          style={{
-            width: "22%",
-            background: "#0e0e14",
-            borderRight: "1px solid rgba(255,255,255,0.05)",
-            padding: 16,
             display: "flex",
-            flexDirection: "column",
-            gap: 10,
+            alignItems: "center",
+            gap: 8,
+            padding: "6px 8px",
+            marginBottom: 12,
           }}
         >
           <div
             style={{
-              height: 12,
-              borderRadius: 4,
+              width: 26,
+              height: 26,
+              borderRadius: 8,
               background: accentColor,
-              opacity: 0.85,
-              width: "70%",
-            }}
-          />
-          <div
-            style={{
-              height: 10,
-              borderRadius: 4,
-              background: "rgba(255,255,255,0.1)",
-              width: "85%",
-            }}
-          />
-          <div
-            style={{
-              height: 10,
-              borderRadius: 4,
-              background: "rgba(255,255,255,0.08)",
-              width: "60%",
-            }}
-          />
-          <div
-            style={{
-              height: 10,
-              borderRadius: 4,
-              background: "rgba(255,255,255,0.08)",
-              width: "75%",
-            }}
-          />
-        </div>
-        {/* Content */}
-        <div
-          style={{
-            flex: 1,
-            padding: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              height: 18,
-              width: "40%",
-              background: "rgba(255,255,255,0.85)",
-              borderRadius: 4,
-            }}
-          />
-          <div
-            style={{
-              height: 10,
-              width: "65%",
-              background: "rgba(255,255,255,0.18)",
-              borderRadius: 4,
-            }}
-          />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: 12,
-              marginTop: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
             }}
           >
-            <div
+            <span style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>C</span>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#18181b", letterSpacing: "-0.01em" }}>
+            Chatty AI
+          </span>
+        </div>
+
+        {/* Section label */}
+        <div
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#a1a1aa",
+            padding: "8px 8px 4px",
+          }}
+        >
+          Command Center
+        </div>
+
+        {NAV_ITEMS.slice(0, 2).map((item) => (
+          <div
+            key={item.label}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: item.active ? 600 : 500,
+              color: item.active ? accentColor : "#71717a",
+              background: item.active ? GREEN_TINT : "transparent",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.label}
+          </div>
+        ))}
+
+        <div
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#a1a1aa",
+            padding: "10px 8px 4px",
+          }}
+        >
+          Deliverables
+        </div>
+
+        {NAV_ITEMS.slice(2, 7).map((item) => (
+          <div
+            key={item.label}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#71717a",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.label}
+          </div>
+        ))}
+
+        <div
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#a1a1aa",
+            padding: "10px 8px 4px",
+          }}
+        >
+          System
+        </div>
+
+        {NAV_ITEMS.slice(7).map((item) => (
+          <div
+            key={item.label}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#71717a",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.label}
+          </div>
+        ))}
+      </div>
+
+      {/* ---- Main content ---- */}
+      <div
+        style={{
+          flex: 1,
+          padding: "16px 20px",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        {/* Header */}
+        <div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#a1a1aa",
+            }}
+          >
+            <span
               style={{
-                height: 90,
-                borderRadius: 8,
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                border: "1px solid rgba(255,255,255,0.06)",
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: accentColor,
+                display: "inline-block",
               }}
             />
-            <div
-              style={{
-                height: 90,
-                borderRadius: 8,
-                background: `linear-gradient(180deg, ${accentColor}33, ${accentColor}11)`,
-                border: `1px solid ${accentColor}55`,
-              }}
-            />
-            <div
-              style={{
-                height: 90,
-                borderRadius: 8,
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            />
+            Command Center
           </div>
           <div
             style={{
-              flex: 1,
-              borderRadius: 8,
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-              border: "1px solid rgba(255,255,255,0.06)",
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#18181b",
+              letterSpacing: "-0.02em",
+              marginTop: 2,
             }}
-          />
+          >
+            Today
+          </div>
+        </div>
+
+        {/* Revenue hero card */}
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #e4e4e7",
+            borderLeft: `3px solid ${accentColor}`,
+            borderRadius: 8,
+            padding: "10px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                background: GREEN_TINT,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span style={{ fontSize: 16, color: accentColor, fontWeight: 800 }}>$</span>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: GREEN_DARK,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Revenue Generated
+              </div>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  color: "#18181b",
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                  marginTop: 2,
+                }}
+              >
+                $48,200
+              </div>
+            </div>
+          </div>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              background: GREEN_TINT,
+              color: GREEN_DARK,
+              padding: "3px 8px",
+              borderRadius: 99,
+            }}
+          >
+            +15% ↑
+          </span>
+        </div>
+
+        {/* Seller cards */}
+        <div>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#a1a1aa",
+              marginBottom: 6,
+            }}
+          >
+            What Chatty Did Today
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {SELLERS.map((s) => (
+              <div
+                key={s.agent}
+                style={{
+                  flex: 1,
+                  background: "#fff",
+                  border: "1px solid #e4e4e7",
+                  borderRadius: 8,
+                  padding: "8px 8px 6px",
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 6,
+                    background: s.bg,
+                    marginBottom: 6,
+                  }}
+                />
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    color: "#a1a1aa",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {s.agent}
+                </div>
+                <div
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: "#18181b",
+                    lineHeight: 1,
+                    marginTop: 2,
+                  }}
+                >
+                  {s.value}
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: "#71717a",
+                    marginTop: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {s.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quality strip */}
+        <div>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#a1a1aa",
+              marginBottom: 6,
+            }}
+          >
+            Agent Quality
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {QUALITY.map((q) => (
+              <div
+                key={q.label}
+                style={{
+                  flex: 1,
+                  background: "#fff",
+                  border: "1px solid #e4e4e7",
+                  borderRadius: 8,
+                  padding: "8px 8px 6px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 8,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#a1a1aa",
+                  }}
+                >
+                  {q.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: "#18181b",
+                    lineHeight: 1,
+                    marginTop: 3,
+                  }}
+                >
+                  {q.value}
+                </div>
+                <div
+                  style={{
+                    fontSize: 8,
+                    fontWeight: 600,
+                    color: accentColor,
+                    marginTop: 2,
+                  }}
+                >
+                  {q.delta}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Main composition                                                    */
+/* ------------------------------------------------------------------ */
+
 export function HeroDeviceAssemble({
   assembleStart = 0,
   device = "laptop",
-  accentColor = "#22c55e",
+  accentColor = "#0F8A4F",
   speed = 1,
   className,
 }: HeroDeviceAssembleProps) {
@@ -239,7 +510,7 @@ export function HeroDeviceAssemble({
 
   const isPhone = device === "phone";
 
-  // Device dimensions
+  // Device dimensions (full size — scaled down 50% via transform)
   const deviceW = isPhone ? 320 : 760;
   const deviceH = isPhone ? 640 : 470;
   const screenInset = isPhone ? 12 : 18;
@@ -267,11 +538,11 @@ export function HeroDeviceAssemble({
           width: deviceW,
           height: deviceH,
           transformStyle: "preserve-3d",
-          transform: `rotateX(${rotX}deg) rotateY(${rotY}deg)`,
+          transform: `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(0.5)`,
           willChange: "transform",
         }}
       >
-        {/* Back lid (laptop only — for phone, acts as the back shell) */}
+        {/* Back lid */}
         <div
           style={{
             position: "absolute",
