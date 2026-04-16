@@ -21,6 +21,11 @@ import { TrustSection } from '@/components/landing/TrustSection';
 import { Pricing } from '@/components/landing/Pricing';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
+import dynamic from 'next/dynamic';
+
+const HeroLaptopDemo = dynamic(() => import('@/components/ui/hero-laptop-demo'), {
+  ssr: false,
+});
 
 function ScrollProgress() {
   const { scrollYProgress } = useScroll();
@@ -190,6 +195,18 @@ export default function Landing() {
                 </AnimatedGroup>
               </div>
             </div>
+
+            {/* 3D Laptop hero */}
+            <AnimatedGroup
+              variants={{
+                container: { visible: { transition: { staggerChildren: 0.05, delayChildren: 0.9 } } },
+                ...transitionVariants,
+              }}
+            >
+              <div className="relative mt-10 sm:mt-14 md:mt-20">
+                <HeroLaptopDemo />
+              </div>
+            </AnimatedGroup>
 
             {/* Product mockup */}
             <AnimatedGroup
