@@ -35,13 +35,13 @@ const TARGETS = [
   'Angela Foster',
 ];
 const OUTCOMES = [
-  { text: 'Delivered', color: 'var(--emerald-bright)' },
-  { text: 'Replied', color: 'var(--emerald-bright)' },
+  { text: 'Delivered', color: 'var(--primary)' },
+  { text: 'Replied', color: 'var(--primary)' },
   { text: 'Awaiting approval', color: '#f59e0b' },
   { text: 'Notified Telegram EA', color: '#3b82f6' },
   { text: 'Tag: price-sensitive', color: 'var(--text-muted)' },
   { text: 'Status: qualified', color: 'var(--text-muted)' },
-  { text: 'Thu 2pm', color: 'var(--emerald-bright)' },
+  { text: 'Thu 2pm', color: 'var(--primary)' },
   { text: 'No reply', color: 'var(--text-muted)' },
   { text: 'Failed to deliver', color: 'var(--negative)' },
 ];
@@ -172,7 +172,7 @@ export default function ActivityAgentPage({ params }) {
               className="t-h1"
               style={{
                 margin: '4px 0 6px',
-                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >

@@ -157,8 +157,8 @@ export default function Step4Voice({ config, businessProfile, updateConfig }) {
                   letterSpacing: '0.08em',
                   borderRadius: 4,
                   background:
-                    'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-                  color: 'var(--emerald-bright)',
+                    'color-mix(in srgb, var(--primary) 14%, transparent)',
+                  color: 'var(--primary)',
                 }}
               >
                 SAMPLE {i + 1}

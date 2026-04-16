@@ -35,11 +35,11 @@ export default function Step3Context({ config, updateConfig }) {
               borderRadius: 10,
               border: `1px solid ${
                 ctx[f.id]
-                  ? 'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 30%, var(--border))'
                   : 'var(--border)'
               }`,
               background: ctx[f.id]
-                ? 'color-mix(in srgb, var(--emerald-bright) 6%, transparent)'
+                ? 'color-mix(in srgb, var(--primary) 6%, transparent)'
                 : 'transparent',
               display: 'flex',
               alignItems: 'flex-start',

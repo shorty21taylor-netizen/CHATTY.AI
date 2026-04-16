@@ -31,10 +31,10 @@ export function AgentTabs({ agentId, active }) {
               padding: '10px 14px',
               fontSize: 13,
               fontWeight: 600,
-              color: isActive ? 'var(--emerald-bright)' : 'var(--text-muted)',
+              color: isActive ? 'var(--primary)' : 'var(--text-muted)',
               textDecoration: 'none',
               borderBottom: isActive
-                ? '2px solid var(--emerald-bright)'
+                ? '2px solid var(--primary)'
                 : '2px solid transparent',
               marginBottom: -1,
               whiteSpace: 'nowrap',

@@ -36,13 +36,13 @@ const PERF_SERIES = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 const ACTIVITY = [
-  { id: 1, at: '10:42 AM', action: 'Sent SMS', target: 'Patricia Williams', outcome: 'Delivered', color: 'var(--emerald-bright)' },
+  { id: 1, at: '10:42 AM', action: 'Sent SMS', target: 'Patricia Williams', outcome: 'Delivered', color: 'var(--primary)' },
   { id: 2, at: '10:38 AM', action: 'Draft queued', target: 'Marcus Miller', outcome: 'Awaiting approval', color: '#f59e0b' },
   { id: 3, at: '10:31 AM', action: 'Escalated', target: 'James Rodriguez', outcome: 'Notified Telegram EA', color: '#3b82f6' },
-  { id: 4, at: '10:12 AM', action: 'Sent SMS', target: 'Sarah Chen', outcome: 'Replied', color: 'var(--emerald-bright)' },
-  { id: 5, at: '9:47 AM', action: 'Booked appointment', target: 'Kevin Park', outcome: 'Thu 2pm', color: 'var(--emerald-bright)' },
+  { id: 4, at: '10:12 AM', action: 'Sent SMS', target: 'Sarah Chen', outcome: 'Replied', color: 'var(--primary)' },
+  { id: 5, at: '9:47 AM', action: 'Booked appointment', target: 'Kevin Park', outcome: 'Thu 2pm', color: 'var(--primary)' },
   { id: 6, at: '9:33 AM', action: 'Tagged contact', target: 'Jennifer Davis', outcome: 'Tag: price-sensitive', color: 'var(--text-muted)' },
-  { id: 7, at: '9:17 AM', action: 'Sent SMS', target: 'Robert Thompson', outcome: 'Replied', color: 'var(--emerald-bright)' },
+  { id: 7, at: '9:17 AM', action: 'Sent SMS', target: 'Robert Thompson', outcome: 'Replied', color: 'var(--primary)' },
   { id: 8, at: '9:02 AM', action: 'Updated status', target: 'Linda Martinez', outcome: 'Status: qualified', color: 'var(--text-muted)' },
 ];
 
@@ -117,7 +117,7 @@ export default function AgentDetailPage({ params }) {
               className="t-h1"
               style={{
                 margin: '4px 0 6px',
-                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -169,9 +169,9 @@ export default function AgentDetailPage({ params }) {
             alignItems: 'center',
             gap: 12,
             borderColor:
-              'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+              'color-mix(in srgb, var(--primary) 30%, var(--border))',
             background:
-              'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--emerald-bright) 5%, transparent) 100%)',
+              'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--primary) 5%, transparent) 100%)',
           }}
         >
           <div
@@ -180,8 +180,8 @@ export default function AgentDetailPage({ params }) {
               height: 56,
               borderRadius: 14,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -311,7 +311,7 @@ export default function AgentDetailPage({ params }) {
                     <Line
                       type="monotone"
                       dataKey="messages"
-                      stroke="var(--emerald-bright)"
+                      stroke="var(--primary)"
                       strokeWidth={2}
                       dot={false}
                     />
@@ -357,7 +357,7 @@ export default function AgentDetailPage({ params }) {
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: 'var(--emerald-bright)',
+                  color: 'var(--primary)',
                   textDecoration: 'none',
                 }}
               >
@@ -422,7 +422,7 @@ function QuickStat({ label, value, hint, accent }) {
         style={{
           fontSize: 22,
           fontWeight: 700,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
           letterSpacing: '-0.01em',
         }}

@@ -180,8 +180,8 @@ export default function Step5Templates({ config, updateConfig }) {
                     height: 24,
                     borderRadius: '50%',
                     background:
-                      'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-                    color: 'var(--emerald-bright)',
+                      'color-mix(in srgb, var(--primary) 14%, transparent)',
+                    color: 'var(--primary)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',

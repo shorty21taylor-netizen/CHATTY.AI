@@ -90,7 +90,7 @@ export default function KnowledgeAgentPage({ params }) {
               className="t-h1"
               style={{
                 margin: '4px 0 6px',
-                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >

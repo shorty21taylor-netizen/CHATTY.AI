@@ -18,7 +18,7 @@ const PILLARS = [
     id: 'capture',
     label: 'Capture',
     eyebrow: 'CAPTURE',
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     description: 'Catch every inbound lead the moment it arrives.',
   },
   {
@@ -73,7 +73,7 @@ export default function AgentsPage() {
           className="t-h1"
           style={{
             margin: '4px 0 6px',
-            fontFamily: "'Playfair Display', Georgia, serif",
+            letterSpacing: '-0.02em',
             letterSpacing: '-0.01em',
           }}
         >
@@ -150,9 +150,9 @@ function TelegramHero({ agent, status, hydrated }) {
       style={{
         padding: 22,
         background:
-          'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 8%, var(--surface-1)) 0%, color-mix(in srgb, #8b5cf6 6%, var(--surface-1)) 100%)',
+          'var(--bg)',
         borderColor:
-          'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+          'color-mix(in srgb, var(--primary) 30%, var(--border))',
       }}
     >
       <div
@@ -178,14 +178,14 @@ function TelegramHero({ agent, status, hydrated }) {
               height: 52,
               borderRadius: 12,
               background:
-                'linear-gradient(135deg, var(--emerald-bright) 0%, #8b5cf6 100%)',
+                'var(--primary)',
               color: '#fff',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
               boxShadow:
-                '0 6px 20px color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+                '0 6px 20px color-mix(in srgb, var(--primary) 30%, transparent)',
             }}
           >
             <Icon size={24} />
@@ -205,18 +205,18 @@ function TelegramHero({ agent, status, hydrated }) {
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
                   fontWeight: 700,
-                  color: 'var(--emerald-bright)',
+                  color: 'var(--primary)',
                 }}
               >
                 Premium
               </span>
-              <Sparkles size={12} style={{ color: 'var(--emerald-bright)' }} />
+              <Sparkles size={12} style={{ color: 'var(--primary)' }} />
             </div>
             <h2
               className="t-h2"
               style={{
                 margin: '0 0 4px',
-                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -532,7 +532,7 @@ function AgentCard({ agent, status, hydrated }) {
             gap: 4,
             fontSize: 12,
             fontWeight: 700,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             textDecoration: 'none',
             marginLeft: 'auto',
           }}

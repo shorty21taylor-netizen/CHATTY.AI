@@ -244,11 +244,11 @@ export default function Step11Activation({
                   borderRadius: 10,
                   border: `1px solid ${
                     selected
-                      ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+                      ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
                       : 'var(--border)'
                   }`,
                   background: selected
-                    ? 'color-mix(in srgb, var(--emerald-bright) 6%, transparent)'
+                    ? 'color-mix(in srgb, var(--primary) 6%, transparent)'
                     : 'transparent',
                   textAlign: 'left',
                   cursor: 'pointer',
@@ -261,7 +261,7 @@ export default function Step11Activation({
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: selected ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                    color: selected ? 'var(--primary)' : 'var(--text-bright)',
                   }}
                 >
                   {m.label}
@@ -342,7 +342,7 @@ export default function Step11Activation({
         <div
           style={{
             fontSize: 12,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             fontWeight: 600,
             display: 'inline-flex',
             alignItems: 'center',

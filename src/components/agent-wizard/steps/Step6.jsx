@@ -171,11 +171,11 @@ export default function Step6Knowledge({ config, updateConfig }) {
               padding: '6px 12px',
               fontSize: 12,
               fontWeight: 600,
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               background:
-                'color-mix(in srgb, var(--emerald-bright) 10%, transparent)',
+                'color-mix(in srgb, var(--primary) 10%, transparent)',
               border:
-                '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+                '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
               borderRadius: 8,
               cursor: 'pointer',
               display: 'inline-flex',

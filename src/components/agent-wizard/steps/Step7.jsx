@@ -5,7 +5,7 @@ import { AGENT_TOOLS } from '@/lib/agents/registry';
 const MODE_OPTIONS = [
   { value: 'off', label: 'OFF', color: 'var(--text-muted)' },
   { value: 'draft', label: 'DRAFT', color: '#f59e0b' },
-  { value: 'auto', label: 'AUTO', color: 'var(--emerald-bright)' },
+  { value: 'auto', label: 'AUTO', color: 'var(--primary)' },
 ];
 
 const MODE_HINT = {

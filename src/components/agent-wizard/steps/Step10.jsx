@@ -104,12 +104,12 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
           borderRadius: 10,
           border: `1px solid ${
             passedCount >= 4
-              ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+              ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
               : 'var(--border)'
           }`,
           background:
             passedCount >= 4
-              ? 'color-mix(in srgb, var(--emerald-bright) 8%, transparent)'
+              ? 'color-mix(in srgb, var(--primary) 8%, transparent)'
               : 'var(--surface-2)',
           flexWrap: 'wrap',
         }}
@@ -121,7 +121,7 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
               fontWeight: 700,
               color:
                 passedCount >= 4
-                  ? 'var(--emerald-bright)'
+                  ? 'var(--primary)'
                   : 'var(--text-bright)',
               fontVariantNumeric: 'tabular-nums',
               letterSpacing: '-0.01em',
@@ -160,7 +160,7 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
           const status = passed[name] === true ? 'passed' : result === 'fail' ? 'failed' : hasRun ? 'ran' : 'idle';
           const statusColor =
             status === 'passed'
-              ? 'var(--emerald-bright)'
+              ? 'var(--primary)'
               : status === 'failed'
               ? 'var(--negative)'
               : status === 'ran'
@@ -174,7 +174,7 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
                 padding: 0,
                 overflow: 'hidden',
                 borderColor: isOpen
-                  ? 'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 30%, var(--border))'
                   : 'var(--border)',
               }}
             >
@@ -244,11 +244,11 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
                       fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: '0.04em',
-                      color: 'var(--emerald-bright)',
+                      color: 'var(--primary)',
                       background:
-                        'color-mix(in srgb, var(--emerald-bright) 10%, transparent)',
+                        'color-mix(in srgb, var(--primary) 10%, transparent)',
                       border:
-                        '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+                        '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
                       borderRadius: 6,
                       cursor: 'pointer',
                       display: 'inline-flex',
@@ -293,7 +293,7 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
                         fontSize: 10,
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
-                        color: 'var(--emerald-bright)',
+                        color: 'var(--primary)',
                         fontWeight: 700,
                         marginBottom: 4,
                       }}
@@ -362,11 +362,11 @@ export default function Step10Simulation({ agent, config, updateConfig }) {
                         padding: '8px 14px',
                         fontSize: 12,
                         fontWeight: 700,
-                        color: 'var(--emerald-bright)',
+                        color: 'var(--primary)',
                         background:
-                          'color-mix(in srgb, var(--emerald-bright) 12%, transparent)',
+                          'color-mix(in srgb, var(--primary) 12%, transparent)',
                         border:
-                          '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+                          '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
                         borderRadius: 6,
                         cursor: 'pointer',
                         display: 'inline-flex',

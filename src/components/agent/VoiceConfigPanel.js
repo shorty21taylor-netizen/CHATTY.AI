@@ -112,14 +112,14 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
             width: 34,
             height: 34,
             borderRadius: 10,
-            background: 'var(--emerald-tint)',
+            background: 'var(--primary-tint)',
             border: '1px solid rgba(16,185,129,0.25)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Volume2 size={16} style={{ color: 'var(--emerald-bright)' }} />
+          <Volume2 size={16} style={{ color: 'var(--primary)' }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="t-h3" style={{ marginBottom: 2 }}>
@@ -178,8 +178,8 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                       padding: '8px 14px',
                       borderRadius: 10,
                       border: '1px dashed rgba(16,185,129,0.45)',
-                      background: 'var(--emerald-tint)',
-                      color: 'var(--emerald-bright)',
+                      background: 'var(--primary-tint)',
+                      color: 'var(--primary)',
                       fontWeight: 600,
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
@@ -250,9 +250,9 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                           padding: 14,
                           borderRadius: 12,
                           border: active
-                            ? '1px solid var(--emerald-bright)'
+                            ? '1px solid var(--primary)'
                             : '1px solid var(--border)',
-                          background: active ? 'var(--emerald-tint)' : 'var(--surface-2)',
+                          background: active ? 'var(--primary-tint)' : 'var(--surface-2)',
                           cursor: 'pointer',
                           textAlign: 'left',
                           transition: 'all .15s',
@@ -265,7 +265,7 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                             height: 30,
                             borderRadius: 8,
                             background: active
-                              ? 'var(--emerald-bright)'
+                              ? 'var(--primary)'
                               : 'var(--surface-3)',
                             display: 'flex',
                             alignItems: 'center',
@@ -284,7 +284,7 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                           style={{
                             fontSize: 13,
                             fontWeight: 700,
-                            color: active ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                            color: active ? 'var(--primary)' : 'var(--text-bright)',
                             marginBottom: 4,
                           }}
                         >
@@ -332,7 +332,7 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                           size={14}
                           style={{
                             color: on
-                              ? 'var(--emerald-bright)'
+                              ? 'var(--primary)'
                               : 'var(--text-subtle)',
                           }}
                         />
@@ -414,11 +414,11 @@ export function VoiceConfigPanel({ defaultOpen = false, agentName = 'Voice Agent
                     gap: 8,
                     padding: '10px 16px',
                     borderRadius: 10,
-                    border: '1px solid var(--emerald-bright)',
+                    border: '1px solid var(--primary)',
                     background: testing
                       ? 'transparent'
-                      : 'var(--emerald-bright)',
-                    color: testing ? 'var(--emerald-bright)' : '#ffffff',
+                      : 'var(--primary)',
+                    color: testing ? 'var(--primary)' : '#ffffff',
                     fontWeight: 700,
                     fontSize: 13,
                     cursor: testing ? 'default' : 'pointer',
@@ -486,7 +486,7 @@ function VoicePreviewRow({ voice }) {
           height: 30,
           borderRadius: '50%',
           background:
-            'linear-gradient(135deg, var(--emerald-bright), var(--emerald-hover))',
+            'linear-gradient(135deg, var(--primary), var(--primary-dark))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -519,8 +519,8 @@ function Toggle({ on, onChange }) {
         width: 36,
         height: 20,
         borderRadius: 999,
-        background: on ? 'var(--emerald-bright)' : 'var(--surface-3)',
-        border: '1px solid ' + (on ? 'var(--emerald-bright)' : 'var(--border)'),
+        background: on ? 'var(--primary)' : 'var(--surface-3)',
+        border: '1px solid ' + (on ? 'var(--primary)' : 'var(--border)'),
         position: 'relative',
         cursor: 'pointer',
         padding: 0,
@@ -559,7 +559,7 @@ function TestingPulse() {
           style={{
             width: 3,
             borderRadius: 2,
-            background: 'var(--emerald-bright)',
+            background: 'var(--primary)',
           }}
           animate={{ height: [6, 14, 6] }}
           transition={{

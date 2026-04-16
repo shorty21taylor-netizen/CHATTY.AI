@@ -38,8 +38,8 @@ export function Section({ id, title, description, icon: Icon, defaultOpen = true
                 width: 32,
                 height: 32,
                 borderRadius: 8,
-                background: 'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-                color: 'var(--emerald-bright)',
+                background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+                color: 'var(--primary)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -226,14 +226,14 @@ export function RadioGroup({ value, onChange, options, layout = 'horizontal' }) 
               fontWeight: 500,
               border: `1px solid ${
                 selected
-                  ? 'color-mix(in srgb, var(--emerald-bright) 50%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 50%, var(--border))'
                   : 'var(--border)'
               }`,
               borderRadius: 8,
               background: selected
-                ? 'color-mix(in srgb, var(--emerald-bright) 10%, transparent)'
+                ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
                 : 'transparent',
-              color: selected ? 'var(--emerald-bright)' : 'var(--text-body)',
+              color: selected ? 'var(--primary)' : 'var(--text-body)',
               cursor: 'pointer',
               transition: 'all 120ms ease',
               display: 'inline-flex',
@@ -276,14 +276,14 @@ export function ChipMultiSelect({ value = [], onChange, options }) {
               fontWeight: 500,
               border: `1px solid ${
                 selected
-                  ? 'color-mix(in srgb, var(--emerald-bright) 50%, var(--border))'
+                  ? 'color-mix(in srgb, var(--primary) 50%, var(--border))'
                   : 'var(--border)'
               }`,
               borderRadius: 999,
               background: selected
-                ? 'color-mix(in srgb, var(--emerald-bright) 12%, transparent)'
+                ? 'color-mix(in srgb, var(--primary) 12%, transparent)'
                 : 'transparent',
-              color: selected ? 'var(--emerald-bright)' : 'var(--text-body)',
+              color: selected ? 'var(--primary)' : 'var(--text-body)',
               cursor: 'pointer',
               transition: 'all 120ms ease',
             }}
@@ -322,7 +322,7 @@ export function Toggle({ value, onChange, label }) {
           width: 34,
           height: 20,
           borderRadius: 999,
-          background: value ? 'var(--emerald-bright)' : 'var(--border-strong)',
+          background: value ? 'var(--primary)' : 'var(--border-strong)',
           position: 'relative',
           transition: 'background 120ms ease',
           flexShrink: 0,
@@ -374,10 +374,10 @@ export function Checkbox({ value, onChange, label, hint }) {
           height: 16,
           borderRadius: 4,
           border: `1.5px solid ${
-            value ? 'var(--emerald-bright)' : 'var(--border-strong)'
+            value ? 'var(--primary)' : 'var(--border-strong)'
           }`,
           background: value
-            ? 'var(--emerald-bright)'
+            ? 'var(--primary)'
             : 'transparent',
           display: 'inline-flex',
           alignItems: 'center',
@@ -440,10 +440,10 @@ export function TagInput({ value = [], onChange, placeholder = 'Add and press En
             padding: '0 14px',
             fontSize: 12,
             fontWeight: 600,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             background:
-              'color-mix(in srgb, var(--emerald-bright) 10%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+              'color-mix(in srgb, var(--primary) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
             borderRadius: 8,
             cursor: 'pointer',
           }}
@@ -517,7 +517,7 @@ export function Slider({ value, onChange, leftLabel, rightLabel, min = 1, max = 
         <span>{leftLabel}</span>
         <span
           style={{
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             fontWeight: 700,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -534,7 +534,7 @@ export function Slider({ value, onChange, leftLabel, rightLabel, min = 1, max = 
         onChange={(e) => onChange(Number(e.target.value))}
         style={{
           width: '100%',
-          accentColor: 'var(--emerald-bright)',
+          accentColor: 'var(--primary)',
         }}
       />
     </div>
@@ -616,7 +616,7 @@ export function ProgressRing({ value = 0, size = 36, stroke = 4, label }) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="var(--emerald-bright)"
+          stroke="var(--primary)"
           strokeWidth={stroke}
           fill="none"
           strokeDasharray={circ}
@@ -675,7 +675,7 @@ export function StatusBadge({ status }) {
     not_configured: { label: 'Not Configured', color: 'var(--text-muted)' },
     draft: { label: 'Draft', color: '#f59e0b' },
     shadow: { label: 'Shadow', color: '#3b82f6' },
-    active: { label: 'Active', color: 'var(--emerald-bright)' },
+    active: { label: 'Active', color: 'var(--primary)' },
     paused: { label: 'Paused', color: 'var(--text-muted)' },
   };
   const meta = MAP[status] || MAP.not_configured;

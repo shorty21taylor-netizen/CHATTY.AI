@@ -189,7 +189,7 @@ export default function ConfigureAgentPage({ params }) {
               className="t-h1"
               style={{
                 margin: '4px 0 0',
-                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -222,7 +222,7 @@ export default function ConfigureAgentPage({ params }) {
               style={{
                 width: `${completeness}%`,
                 height: '100%',
-                background: 'var(--emerald-bright)',
+                background: 'var(--primary)',
                 transition: 'width 160ms ease',
               }}
             />
@@ -230,7 +230,7 @@ export default function ConfigureAgentPage({ params }) {
           <span
             style={{
               fontSize: 12,
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontWeight: 700,
               fontVariantNumeric: 'tabular-nums',
             }}
@@ -309,10 +309,10 @@ export default function ConfigureAgentPage({ params }) {
                     gap: 10,
                     padding: '9px 10px',
                     background: isCurrent
-                      ? 'color-mix(in srgb, var(--emerald-bright) 12%, transparent)'
+                      ? 'color-mix(in srgb, var(--primary) 12%, transparent)'
                       : 'transparent',
                     border: isCurrent
-                      ? '1px solid color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+                      ? '1px solid color-mix(in srgb, var(--primary) 40%, var(--border))'
                       : '1px solid transparent',
                     borderRadius: 8,
                     cursor: 'pointer',
@@ -331,16 +331,16 @@ export default function ConfigureAgentPage({ params }) {
                       fontSize: 10,
                       fontWeight: 700,
                       background: isDone
-                        ? 'var(--emerald-bright)'
+                        ? 'var(--primary)'
                         : isCurrent
-                        ? 'color-mix(in srgb, var(--emerald-bright) 20%, transparent)'
+                        ? 'color-mix(in srgb, var(--primary) 20%, transparent)'
                         : 'var(--surface-2)',
-                      color: isDone ? '#fff' : isCurrent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+                      color: isDone ? '#fff' : isCurrent ? 'var(--primary)' : 'var(--text-muted)',
                       border: `1px solid ${
                         isDone
-                          ? 'var(--emerald-bright)'
+                          ? 'var(--primary)'
                           : isCurrent
-                          ? 'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))'
+                          ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
                           : 'var(--border)'
                       }`,
                       flexShrink: 0,
@@ -431,7 +431,7 @@ export default function ConfigureAgentPage({ params }) {
           {savedAt ? (
             <span
               style={{
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 fontWeight: 600,
                 display: 'inline-flex',
                 alignItems: 'center',
