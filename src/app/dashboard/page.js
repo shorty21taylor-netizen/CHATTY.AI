@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
@@ -12,19 +11,12 @@ import {
   Calendar,
   FileText,
   MessageSquare,
-  Phone,
-  Clock,
   CheckCircle,
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   DollarSign,
 } from 'lucide-react';
-
-// Recharts wrapped in dynamic import (client-only) for the activity chart
-const ActivityChart = dynamic(() => import('@/components/ActivityChart'), {
-  ssr: false,
-});
 
 // ---------------------------------------------------------------------------
 // Mock data
@@ -295,122 +287,11 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* SECTION 3 — Activity chart */}
-      <motion.div
-        variants={item}
-        className="dark-card"
-        style={{ padding: 24, marginTop: 24 }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
-          <div>
-            <h2 className="t-h2" style={{ margin: 0 }}>
-              Agent activity this week
-            </h2>
-            <p className="t-body-sm" style={{ margin: '4px 0 0' }}>
-              What every agent is producing, day over day.
-            </p>
-          </div>
-        </div>
-        <ActivityChart />
-      </motion.div>
-
-      {/* SECTION 4 — Live Agent Status */}
-      <motion.div
-        variants={item}
-        className="dark-card"
-        style={{ padding: 24, marginTop: 24 }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
-          <div>
-            <h2 className="t-h2" style={{ margin: 0 }}>
-              Your sales team
-            </h2>
-            <p className="t-body-sm" style={{ margin: '4px 0 0' }}>
-              6 of 10 agents active · All systems operational
-            </p>
-          </div>
-          <Link
-            href="/dashboard/agents"
-            style={{
-              color: 'var(--primary)',
-              fontSize: 13,
-              fontWeight: 500,
-              textDecoration: 'none',
-            }}
-          >
-            Manage agents →
-          </Link>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 12,
-          }}
-          className="agent-status-grid"
-        >
-          <AgentRow
-            name="Speed-to-Lead"
-            lastAction="Contacted 3 leads, 4 min ago"
-            icon={<Zap size={14} />}
-            iconColor="var(--primary)"
-          />
-          <AgentRow
-            name="Inbound Qualifier"
-            lastAction="Answered 1 call, 12 min ago"
-            icon={<Phone size={14} />}
-            iconColor="var(--primary)"
-          />
-          <AgentRow
-            name="SMS Concierge"
-            lastAction="Replied to Mike R., 2 min ago"
-            icon={<MessageSquare size={14} />}
-            iconColor="var(--primary)"
-          />
-          <AgentRow
-            name="Estimate Follow-Up"
-            lastAction="Sent 12 follow-ups today"
-            icon={<FileText size={14} />}
-            iconColor="#f59e0b"
-          />
-          <AgentRow
-            name="No-Show Rescue"
-            lastAction="Rescued 2 no-shows today"
-            icon={<Clock size={14} />}
-            iconColor="#3b82f6"
-          />
-          <AgentRow
-            name="Dead Lead Reactivation"
-            lastAction="Reawakened 23 leads, 6 replied"
-            icon={<RotateCcw size={14} />}
-            iconColor="#8b5cf6"
-          />
-        </div>
-      </motion.div>
-
       {/* Responsive fallbacks */}
       <style jsx>{`
         @media (max-width: 1100px) {
           :global(.core-sellers-grid) {
             grid-template-columns: repeat(3, 1fr) !important;
-          }
-          :global(.agent-status-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
           }
           :global(.quality-strip-grid) {
             grid-template-columns: repeat(2, 1fr) !important;
@@ -418,7 +299,6 @@ export default function OverviewPage() {
         }
         @media (max-width: 700px) {
           :global(.core-sellers-grid),
-          :global(.agent-status-grid),
           :global(.quality-strip-grid) {
             grid-template-columns: 1fr !important;
           }
@@ -626,76 +506,6 @@ function SellerCard({
       </div>
     </div>
     </Wrapper>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// AgentRow — Live Agent Status
-// ---------------------------------------------------------------------------
-
-function AgentRow({ name, lastAction, icon, iconColor }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: 12,
-        borderRadius: 8,
-        background: 'var(--surface-2)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      <div
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: 8,
-          background: `color-mix(in srgb, ${iconColor} 14%, transparent)`,
-          color: iconColor,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--text-bright)',
-            }}
-          >
-            {name}
-          </span>
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: 'var(--primary)',
-              boxShadow: '0 0 6px rgba(15, 138, 79, 0.2)',
-            }}
-          />
-        </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            marginTop: 2,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {lastAction}
-        </div>
-      </div>
-    </div>
   );
 }
 
