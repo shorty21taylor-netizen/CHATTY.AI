@@ -17,7 +17,10 @@ const HeroDeviceAssemble = dynamic(
 );
 
 export default function HeroLaptopDemo() {
-  const inputProps = useMemo(() => ({ accentColor: "#0F8A4F" }), []);
+  const inputProps = useMemo(
+    () => ({ accentColor: "#0F8A4F", device: "laptop" as const, speed: 1 }),
+    []
+  );
 
   if (!RemotionPlayer || !HeroDeviceAssemble) return null;
 
