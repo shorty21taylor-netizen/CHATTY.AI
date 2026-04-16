@@ -102,8 +102,8 @@ export default function OverviewPage() {
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
-                background: 'var(--emerald-bright)',
-                boxShadow: '0 0 8px var(--emerald-glow)',
+                background: 'var(--primary)',
+                boxShadow: '0 0 8px rgba(15, 138, 79, 0.2)',
                 display: 'inline-block',
               }}
             />
@@ -111,11 +111,7 @@ export default function OverviewPage() {
           </div>
           <h1
             className="t-h1"
-            style={{
-              margin: '8px 0 4px',
-              letterSpacing: '-0.01em',
-              fontFamily: "'Playfair Display', Georgia, serif",
-            }}
+            style={{ margin: '8px 0 4px' }}
           >
             Today
           </h1>
@@ -175,13 +171,13 @@ export default function OverviewPage() {
               gap: 8,
               padding: '10px 16px',
               borderRadius: 10,
-              background: 'var(--emerald-bright)',
+              background: 'var(--primary)',
               color: '#ffffff',
               fontWeight: 700,
               fontSize: 13,
               textDecoration: 'none',
-              border: '1px solid var(--emerald-bright)',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
+              border: '1px solid var(--primary)',
+              boxShadow: '0 1px 3px rgba(15, 138, 79, 0.2)',
             }}
           >
             <Zap size={14} fill="#ffffff" />
@@ -220,8 +216,8 @@ export default function OverviewPage() {
           <SellerCard
             href="/dashboard/speed-to-lead"
             icon={<Zap size={18} />}
-            iconBg="rgba(16,185,129,0.12)"
-            iconColor="var(--emerald-bright)"
+            iconBg="rgba(15,138,79,0.10)"
+            iconColor="var(--primary)"
             agent="SPEED-TO-LEAD"
             value="47"
             label="leads contacted in under 60 seconds"
@@ -350,7 +346,7 @@ export default function OverviewPage() {
           <Link
             href="/dashboard/agents"
             style={{
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               fontSize: 13,
               fontWeight: 500,
               textDecoration: 'none',
@@ -372,19 +368,19 @@ export default function OverviewPage() {
             name="Speed-to-Lead"
             lastAction="Contacted 3 leads, 4 min ago"
             icon={<Zap size={14} />}
-            iconColor="var(--emerald-bright)"
+            iconColor="var(--primary)"
           />
           <AgentRow
             name="Inbound Qualifier"
             lastAction="Answered 1 call, 12 min ago"
             icon={<Phone size={14} />}
-            iconColor="var(--emerald-bright)"
+            iconColor="var(--primary)"
           />
           <AgentRow
             name="SMS Concierge"
             lastAction="Replied to Mike R., 2 min ago"
             icon={<MessageSquare size={14} />}
-            iconColor="var(--emerald-bright)"
+            iconColor="var(--primary)"
           />
           <AgentRow
             name="Estimate Follow-Up"
@@ -445,18 +441,16 @@ function RevenueHeroCard({ kpi }) {
   return (
     <motion.div
       variants={item}
-      className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white py-8 px-6 sm:px-8 shadow-sm shadow-[inset_4px_0_0_#10b981] ring-1 ring-emerald-500/20"
+      className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white py-8 px-6 sm:px-8 shadow-sm"
+      style={{ borderLeft: '4px solid var(--primary)' }}
     >
-      {/* Emerald glow backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent"
-      />
-
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 ring-1 ring-inset ring-emerald-500/40">
-            <Icon size={26} className="text-emerald-600" />
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl"
+            style={{ background: 'var(--primary-tint)' }}
+          >
+            <Icon size={26} style={{ color: 'var(--primary)' }} />
           </div>
           <div className="min-w-0">
             <div
@@ -465,7 +459,7 @@ function RevenueHeroCard({ kpi }) {
                 fontWeight: 700,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-hover)',
+                color: 'var(--primary-dark)',
                 marginBottom: 8,
               }}
             >
@@ -478,7 +472,10 @@ function RevenueHeroCard({ kpi }) {
         </div>
 
         <div className="flex flex-col items-start gap-3 sm:items-end">
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold"
+            style={{ background: 'var(--primary-tint)', color: 'var(--primary-dark)' }}
+          >
             <Arrow size={14} />
             {kpi.deltaLabel}
           </span>
@@ -496,14 +493,14 @@ function RevenueHeroCard({ kpi }) {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.55} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#0F8A4F" stopOpacity={0.55} />
+                    <stop offset="100%" stopColor="#0F8A4F" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <Area
                   type="monotone"
                   dataKey="y"
-                  stroke="#10b981"
+                  stroke="#0F8A4F"
                   strokeWidth={2.25}
                   fill="url(#home-kpi-revenue-hero)"
                   dot={false}
@@ -555,12 +552,9 @@ function SellerCard({
         gap: 12,
         minHeight: 180,
         cursor: href ? 'pointer' : 'default',
-        transition: 'transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease',
-        transform: hover ? 'translateY(-3px)' : 'translateY(0)',
-        borderColor: hover
-          ? 'color-mix(in srgb, var(--emerald-bright) 50%, var(--border))'
-          : undefined,
-        boxShadow: hover ? '0 10px 30px rgba(16,185,129,0.14)' : undefined,
+        transition: 'border-color 150ms ease, box-shadow 150ms ease',
+        borderColor: hover ? 'var(--border-strong)' : undefined,
+        boxShadow: hover ? '0 4px 16px rgba(0,0,0,0.06)' : undefined,
       }}
     >
       <div
@@ -618,7 +612,7 @@ function SellerCard({
           style={{
             fontSize: 12,
             fontWeight: 600,
-            color: deltaPositive ? 'var(--emerald-bright)' : 'var(--negative)',
+            color: deltaPositive ? 'var(--primary)' : 'var(--negative)',
             display: 'flex',
             alignItems: 'center',
             gap: 4,
@@ -683,8 +677,8 @@ function AgentRow({ name, lastAction, icon, iconColor }) {
               width: 6,
               height: 6,
               borderRadius: '50%',
-              background: 'var(--emerald-bright)',
-              boxShadow: '0 0 6px var(--emerald-glow)',
+              background: 'var(--primary)',
+              boxShadow: '0 0 6px rgba(15, 138, 79, 0.2)',
             }}
           />
         </div>
@@ -725,7 +719,7 @@ function QualityKpi({ label, value, delta }) {
           gap: 6,
         }}
       >
-        <CheckCircle size={11} style={{ color: 'var(--emerald-bright)' }} />
+        <CheckCircle size={11} style={{ color: 'var(--primary)' }} />
         {label}
       </div>
       <div
@@ -746,7 +740,7 @@ function QualityKpi({ label, value, delta }) {
             marginTop: 6,
             fontSize: 11,
             fontWeight: 600,
-            color: positive ? 'var(--emerald-bright)' : 'var(--negative)',
+            color: positive ? 'var(--primary)' : 'var(--negative)',
           }}
         >
           {delta} vs last week

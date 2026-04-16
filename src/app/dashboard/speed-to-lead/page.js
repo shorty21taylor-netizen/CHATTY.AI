@@ -28,7 +28,7 @@ const AGENTS = [
     id: 'instant-lead',
     name: 'Instant Lead Response',
     icon: Zap,
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     status: 'active',
     count: 42,
     countLabel: 'leads today',
@@ -54,7 +54,7 @@ const AGENTS = [
 ];
 
 const DISTRIBUTION = [
-  { bucket: '<30s', count: 34, color: 'var(--emerald-bright)' },
+  { bucket: '<30s', count: 34, color: 'var(--primary)' },
   { bucket: '30-60s', count: 11, color: '#3b82f6' },
   { bucket: '1-2m', count: 2, color: '#8b5cf6' },
   { bucket: '2-5m', count: 0, color: '#f59e0b' },
@@ -69,10 +69,10 @@ const LEADS_TODAY = [
     source: 'Google Ads',
     sourceIcon: Globe,
     responseTime: '8s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Instant Lead Response',
     status: 'Booked',
-    statusColor: 'var(--emerald-bright)',
+    statusColor: 'var(--primary)',
   },
   {
     id: 2,
@@ -81,7 +81,7 @@ const LEADS_TODAY = [
     source: 'Facebook',
     sourceIcon: MessageCircle,
     responseTime: '14s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Instant Lead Response',
     status: 'Replied',
     statusColor: '#3b82f6',
@@ -93,10 +93,10 @@ const LEADS_TODAY = [
     source: 'Website Form',
     sourceIcon: Globe,
     responseTime: '22s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Form Bot',
     status: 'Booked',
-    statusColor: 'var(--emerald-bright)',
+    statusColor: 'var(--primary)',
   },
   {
     id: 4,
@@ -105,7 +105,7 @@ const LEADS_TODAY = [
     source: 'Instagram DM',
     sourceIcon: Camera,
     responseTime: '31s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Social DM Agent',
     status: 'Replied',
     statusColor: '#3b82f6',
@@ -117,7 +117,7 @@ const LEADS_TODAY = [
     source: 'Google Ads',
     sourceIcon: Globe,
     responseTime: '18s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Instant Lead Response',
     status: 'No Response',
     statusColor: 'var(--text-muted)',
@@ -141,10 +141,10 @@ const LEADS_TODAY = [
     source: 'Website Form',
     sourceIcon: Globe,
     responseTime: '12s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Form Bot',
     status: 'Booked',
-    statusColor: 'var(--emerald-bright)',
+    statusColor: 'var(--primary)',
   },
   {
     id: 8,
@@ -153,7 +153,7 @@ const LEADS_TODAY = [
     source: 'Google Ads',
     sourceIcon: Globe,
     responseTime: '26s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Instant Lead Response',
     status: 'Replied',
     statusColor: '#3b82f6',
@@ -177,10 +177,10 @@ const LEADS_TODAY = [
     source: 'Website Form',
     sourceIcon: Globe,
     responseTime: '9s',
-    responseColor: 'var(--emerald-bright)',
+    responseColor: 'var(--primary)',
     agent: 'Form Bot',
     status: 'Booked',
-    statusColor: 'var(--emerald-bright)',
+    statusColor: 'var(--primary)',
   },
 ];
 
@@ -232,7 +232,7 @@ function StatCard({ label, value, hint, accent }) {
           fontSize: 22,
           fontWeight: 700,
           letterSpacing: '-0.01em',
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
         }}
       >
@@ -294,8 +294,8 @@ function AgentTile({ agent }) {
               width: 7,
               height: 7,
               borderRadius: '50%',
-              background: 'var(--emerald-bright)',
-              boxShadow: '0 0 6px var(--emerald-glow)',
+              background: 'var(--primary)',
+              boxShadow: '0 0 6px rgba(15, 138, 79, 0.2)',
             }}
             title="Active"
           />
@@ -316,7 +316,7 @@ function AgentTile({ agent }) {
         style={{
           fontSize: 11,
           fontWeight: 600,
-          color: 'var(--emerald-bright)',
+          color: 'var(--primary)',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
         }}
@@ -336,15 +336,14 @@ export default function SpeedToLeadPage() {
           className="t-eyebrow"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
-          <Zap size={12} style={{ color: 'var(--emerald-bright)' }} />
+          <Zap size={12} style={{ color: 'var(--primary)' }} />
           Deliverable
         </div>
         <h1
           className="t-h1"
           style={{
             margin: '6px 0 6px',
-            fontFamily: "'Playfair Display', Georgia, serif",
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.02em',
           }}
         >
           Speed to Lead
@@ -369,7 +368,7 @@ export default function SpeedToLeadPage() {
           gap: 20,
           flexWrap: 'wrap',
           borderColor:
-            'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))',
+            'color-mix(in srgb, var(--primary) 40%, var(--border))',
           boxShadow: '0 0 28px rgba(16,185,129,0.14)',
         }}
       >
@@ -387,8 +386,8 @@ export default function SpeedToLeadPage() {
               height: 64,
               borderRadius: 14,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -406,7 +405,7 @@ export default function SpeedToLeadPage() {
                 fontSize: 11,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-hover)',
+                color: 'var(--primary-dark)',
                 fontWeight: 700,
               }}
             >
@@ -417,7 +416,7 @@ export default function SpeedToLeadPage() {
                 fontSize: 56,
                 fontWeight: 700,
                 lineHeight: 1,
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 marginTop: 6,
                 fontVariantNumeric: 'tabular-nums',
                 letterSpacing: '-0.02em',
@@ -437,7 +436,7 @@ export default function SpeedToLeadPage() {
             </div>
           </div>
         </div>
-        <Pill color="var(--emerald-bright)">AVG 38s</Pill>
+        <Pill color="var(--primary)">AVG 38s</Pill>
       </div>
 
       {/* Stat strip */}
@@ -640,9 +639,9 @@ export default function SpeedToLeadPage() {
             alignItems: 'center',
             gap: 10,
             borderColor:
-              'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+              'color-mix(in srgb, var(--primary) 30%, var(--border))',
             background:
-              'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--emerald-bright) 5%, transparent) 100%)',
+              'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--primary) 5%, transparent) 100%)',
           }}
         >
           <div
@@ -651,8 +650,8 @@ export default function SpeedToLeadPage() {
               height: 44,
               borderRadius: 12,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -689,7 +688,7 @@ export default function SpeedToLeadPage() {
           borderRadius: 12,
           border: '1px solid var(--border)',
           background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 6%, transparent), transparent)',
+            'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
         }}
       >
         <div
@@ -700,7 +699,7 @@ export default function SpeedToLeadPage() {
             minWidth: 0,
           }}
         >
-          <Sparkles size={16} style={{ color: 'var(--emerald-bright)' }} />
+          <Sparkles size={16} style={{ color: 'var(--primary)' }} />
           <div>
             <div
               style={{

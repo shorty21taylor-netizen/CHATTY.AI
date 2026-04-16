@@ -21,13 +21,13 @@ import {
 // ---------------------------------------------------------------------------
 
 const STATUS_CONFIG = {
-  confirmed: { label: 'CONFIRMED', color: 'var(--emerald-bright)' },
+  confirmed: { label: 'CONFIRMED', color: 'var(--primary)' },
   pending: { label: 'PENDING', color: '#f59e0b' },
   rescheduled: { label: 'RESCHEDULED', color: '#3b82f6' },
 };
 
 const SOURCE_CONFIG = {
-  ai: { label: 'AI AGENT', color: 'var(--emerald-bright)' },
+  ai: { label: 'AI AGENT', color: 'var(--primary)' },
   manual: { label: 'MANUAL', color: 'var(--text-muted)' },
   referral: { label: 'REFERRAL', color: '#8b5cf6' },
 };
@@ -113,15 +113,14 @@ export default function AppointmentsPage() {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <Calendar size={12} style={{ color: 'var(--emerald-bright)' }} />
+            <Calendar size={12} style={{ color: 'var(--primary)' }} />
             Deliverable
           </div>
           <h1
             className="t-h1"
             style={{
               margin: '6px 0 6px',
-              fontFamily: "'Playfair Display', Georgia, serif",
-              letterSpacing: '-0.01em',
+              letterSpacing: '-0.02em',
             }}
           >
             Booked Calls
@@ -259,7 +258,7 @@ function StatCard({ icon, label, value, accent }) {
       className="dark-card"
       style={{
         padding: 20,
-        borderLeft: accent ? '3px solid var(--emerald-bright)' : undefined,
+        borderLeft: accent ? '3px solid var(--primary)' : undefined,
       }}
     >
       <div
@@ -268,7 +267,7 @@ function StatCard({ icon, label, value, accent }) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-muted)',
+          color: accent ? 'var(--primary)' : 'var(--text-muted)',
         }}
       >
         {icon}
@@ -278,7 +277,7 @@ function StatCard({ icon, label, value, accent }) {
         className="t-kpi"
         style={{
           marginTop: 8,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
         }}
       >
         {value}
@@ -493,7 +492,7 @@ function CalendarWidget() {
         className="t-eyebrow"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
       >
-        <Calendar size={11} style={{ color: 'var(--emerald-bright)' }} />
+        <Calendar size={11} style={{ color: 'var(--primary)' }} />
         This Week
       </div>
       <h3
@@ -521,7 +520,7 @@ function CalendarWidget() {
                 gap: 6,
                 padding: '10px 4px',
                 borderRadius: 8,
-                background: isToday ? 'var(--emerald-tint)' : 'transparent',
+                background: isToday ? 'var(--primary-tint)' : 'transparent',
                 border: isToday
                   ? '1px solid rgba(16,185,129,0.3)'
                   : '1px solid transparent',
@@ -532,7 +531,7 @@ function CalendarWidget() {
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
-                  color: isToday ? 'var(--emerald-bright)' : 'var(--text-muted)',
+                  color: isToday ? 'var(--primary)' : 'var(--text-muted)',
                   textTransform: 'uppercase',
                 }}
               >
@@ -553,7 +552,7 @@ function CalendarWidget() {
                       width: 4,
                       height: 4,
                       borderRadius: '50%',
-                      background: 'var(--emerald-bright)',
+                      background: 'var(--primary)',
                       opacity: 0.5 + (d.count / max) * 0.5,
                     }}
                   />
@@ -563,7 +562,7 @@ function CalendarWidget() {
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: isToday ? 'var(--emerald-bright)' : 'var(--text-bright)',
+                  color: isToday ? 'var(--primary)' : 'var(--text-bright)',
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
@@ -591,7 +590,7 @@ function BookedByAiCard() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          color: 'var(--emerald-bright)',
+          color: 'var(--primary)',
         }}
       >
         <Sparkles size={11} />
@@ -609,7 +608,7 @@ function BookedByAiCard() {
           style={{
             fontSize: 32,
             fontWeight: 700,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -649,8 +648,8 @@ function BookedByAiCard() {
                   height: 28,
                   borderRadius: 8,
                   background:
-                    'color-mix(in srgb, var(--emerald-bright) 14%, transparent)',
-                  color: 'var(--emerald-bright)',
+                    'color-mix(in srgb, var(--primary) 14%, transparent)',
+                  color: 'var(--primary)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',

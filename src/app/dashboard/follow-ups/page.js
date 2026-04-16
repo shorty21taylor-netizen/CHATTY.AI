@@ -39,7 +39,7 @@ const AGENTS = [
     id: 'review',
     name: 'Review Request',
     icon: Star,
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     count: 8,
     countLabel: 'sent today',
   },
@@ -164,7 +164,7 @@ const TIMELINE_DAYS = [
 const TYPE_COLORS = {
   'Quote FU': '#f59e0b',
   Objection: '#8b5cf6',
-  Review: 'var(--emerald-bright)',
+  Review: 'var(--primary)',
   'Dead Lead': '#3b82f6',
   'Ghosted Bid': '#ec4899',
   Ghosted: '#ec4899',
@@ -219,7 +219,7 @@ function StatCard({ label, value, hint, accent }) {
         style={{
           fontSize: 22,
           fontWeight: 700,
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
         }}
       >
@@ -273,8 +273,8 @@ function AgentTile({ agent }) {
               width: 6,
               height: 6,
               borderRadius: '50%',
-              background: 'var(--emerald-bright)',
-              boxShadow: '0 0 6px var(--emerald-glow)',
+              background: 'var(--primary)',
+              boxShadow: '0 0 6px rgba(15, 138, 79, 0.2)',
               flexShrink: 0,
             }}
           />
@@ -295,7 +295,7 @@ function AgentTile({ agent }) {
         style={{
           fontSize: 11,
           fontWeight: 600,
-          color: 'var(--emerald-bright)',
+          color: 'var(--primary)',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
         }}
@@ -317,15 +317,14 @@ export default function FollowUpsPage() {
           className="t-eyebrow"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
-          <RefreshCw size={12} style={{ color: 'var(--emerald-bright)' }} />
+          <RefreshCw size={12} style={{ color: 'var(--primary)' }} />
           Deliverable
         </div>
         <h1
           className="t-h1"
           style={{
             margin: '6px 0 6px',
-            fontFamily: "'Playfair Display', Georgia, serif",
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.02em',
           }}
         >
           Active Follow-Ups
@@ -351,7 +350,7 @@ export default function FollowUpsPage() {
           gap: 20,
           flexWrap: 'wrap',
           borderColor:
-            'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))',
+            'color-mix(in srgb, var(--primary) 40%, var(--border))',
           boxShadow: '0 0 28px rgba(16,185,129,0.14)',
         }}
       >
@@ -362,8 +361,8 @@ export default function FollowUpsPage() {
               height: 64,
               borderRadius: 14,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -378,7 +377,7 @@ export default function FollowUpsPage() {
                 fontSize: 11,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-hover)',
+                color: 'var(--primary-dark)',
                 fontWeight: 700,
               }}
             >
@@ -389,7 +388,7 @@ export default function FollowUpsPage() {
                 fontSize: 56,
                 fontWeight: 700,
                 lineHeight: 1,
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 marginTop: 6,
                 fontVariantNumeric: 'tabular-nums',
                 letterSpacing: '-0.02em',
@@ -776,7 +775,7 @@ export default function FollowUpsPage() {
           borderRadius: 12,
           border: '1px solid var(--border)',
           background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 6%, transparent), transparent)',
+            'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -787,7 +786,7 @@ export default function FollowUpsPage() {
         <div
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}
         >
-          <Sparkles size={16} style={{ color: 'var(--emerald-bright)' }} />
+          <Sparkles size={16} style={{ color: 'var(--primary)' }} />
           <div>
             <div
               style={{

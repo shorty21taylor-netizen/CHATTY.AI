@@ -24,8 +24,8 @@ import {
 const STATUS_CONFIG = {
   won: {
     label: 'WON',
-    color: 'var(--emerald-bright)',
-    barColor: 'var(--emerald-bright)',
+    color: 'var(--primary)',
+    barColor: 'var(--primary)',
     icon: CheckCircle,
   },
   sent: {
@@ -202,15 +202,14 @@ export default function ProposalsPage() {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <FileText size={12} style={{ color: 'var(--emerald-bright)' }} />
+            <FileText size={12} style={{ color: 'var(--primary)' }} />
             Deliverable
           </div>
           <h1
             className="t-h1"
             style={{
               margin: '6px 0 6px',
-              fontFamily: "'Playfair Display', Georgia, serif",
-              letterSpacing: '-0.01em',
+              letterSpacing: '-0.02em',
             }}
           >
             Proposals Out
@@ -243,13 +242,13 @@ export default function ProposalsPage() {
           style={{
             padding: 20,
             position: 'relative',
-            borderLeft: '3px solid var(--emerald-bright)',
+            borderLeft: '3px solid var(--primary)',
           }}
         >
           <div
             className="t-eyebrow"
             style={{
-              color: 'var(--emerald-bright)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
@@ -260,7 +259,7 @@ export default function ProposalsPage() {
           </div>
           <div
             className="t-kpi"
-            style={{ marginTop: 8, color: 'var(--emerald-bright)' }}
+            style={{ marginTop: 8, color: 'var(--primary)' }}
           >
             ${pipelineValue.toLocaleString()}
           </div>
@@ -272,7 +271,7 @@ export default function ProposalsPage() {
           label="Won"
           value="15"
           icon={CheckCircle}
-          valueColor="var(--emerald-bright)"
+          valueColor="var(--primary)"
         />
         <KpiCard
           label="Lost"
@@ -436,7 +435,7 @@ function ProposalCard({ proposal }) {
         <div
           className="t-h2"
           style={{
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             fontVariantNumeric: 'tabular-nums',
             whiteSpace: 'nowrap',
           }}

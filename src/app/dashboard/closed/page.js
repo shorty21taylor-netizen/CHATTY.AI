@@ -29,7 +29,7 @@ const AGENT_CONTRIBUTIONS = [
     id: 'quote-follow-up',
     name: 'Quote Follow-Up',
     icon: FileText,
-    color: 'var(--emerald-bright)',
+    color: 'var(--primary)',
     attributed: 38400,
     attributedLabel: '$38.4K',
     deals: 6,
@@ -73,7 +73,7 @@ const AGENT_CONTRIBUTIONS = [
 ];
 
 const REASON_COLORS = {
-  Speed: 'var(--emerald-bright)',
+  Speed: 'var(--primary)',
   Persistence: '#3b82f6',
   Price: '#f59e0b',
   Relationship: '#8b5cf6',
@@ -144,7 +144,7 @@ const WON_DEALS = [
 ];
 
 const WIN_REASONS = [
-  { name: 'Speed', value: 33, color: 'var(--emerald-bright)' },
+  { name: 'Speed', value: 33, color: 'var(--primary)' },
   { name: 'Persistence', value: 27, color: '#3b82f6' },
   { name: 'Price', value: 20, color: '#f59e0b' },
   { name: 'Relationship', value: 13, color: '#8b5cf6' },
@@ -199,7 +199,7 @@ function StatCard({ label, value, hint, accent }) {
           fontSize: 22,
           fontWeight: 700,
           letterSpacing: '-0.01em',
-          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          color: accent ? 'var(--primary)' : 'var(--text-bright)',
           fontVariantNumeric: 'tabular-nums',
         }}
       >
@@ -261,8 +261,8 @@ function AgentContributionTile({ agent }) {
               width: 7,
               height: 7,
               borderRadius: '50%',
-              background: 'var(--emerald-bright)',
-              boxShadow: '0 0 6px var(--emerald-glow)',
+              background: 'var(--primary)',
+              boxShadow: '0 0 6px rgba(15, 138, 79, 0.2)',
             }}
             title="Active"
           />
@@ -289,7 +289,7 @@ function AgentContributionTile({ agent }) {
           style={{
             fontSize: 16,
             fontWeight: 700,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             letterSpacing: '-0.01em',
           }}
         >
@@ -358,7 +358,7 @@ function WonDealCard({ deal }) {
           style={{
             fontSize: 26,
             fontWeight: 700,
-            color: 'var(--emerald-bright)',
+            color: 'var(--primary)',
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.01em',
           }}
@@ -386,7 +386,7 @@ function WonDealCard({ deal }) {
           color: 'var(--text-muted)',
         }}
       >
-        <Sparkles size={11} style={{ color: 'var(--emerald-bright)' }} />
+        <Sparkles size={11} style={{ color: 'var(--primary)' }} />
         <span>
           AI assisted by{' '}
           <span style={{ color: 'var(--text-body)' }}>
@@ -407,15 +407,14 @@ export default function ClosedRevenuePage() {
           className="t-eyebrow"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
-          <Trophy size={12} style={{ color: 'var(--emerald-bright)' }} />
+          <Trophy size={12} style={{ color: 'var(--primary)' }} />
           Deliverable
         </div>
         <h1
           className="t-h1"
           style={{
             margin: '6px 0 6px',
-            fontFamily: "'Playfair Display', Georgia, serif",
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.02em',
           }}
         >
           Closed Revenue
@@ -440,7 +439,7 @@ export default function ClosedRevenuePage() {
           gap: 20,
           flexWrap: 'wrap',
           borderColor:
-            'color-mix(in srgb, var(--emerald-bright) 40%, var(--border))',
+            'color-mix(in srgb, var(--primary) 40%, var(--border))',
           boxShadow: '0 0 28px rgba(16,185,129,0.14)',
         }}
       >
@@ -458,8 +457,8 @@ export default function ClosedRevenuePage() {
               height: 64,
               borderRadius: 14,
               background:
-                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-              color: 'var(--emerald-bright)',
+                'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -477,7 +476,7 @@ export default function ClosedRevenuePage() {
                 fontSize: 11,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                color: 'var(--emerald-hover)',
+                color: 'var(--primary-dark)',
                 fontWeight: 700,
               }}
             >
@@ -488,7 +487,7 @@ export default function ClosedRevenuePage() {
                 fontSize: 56,
                 fontWeight: 700,
                 lineHeight: 1,
-                color: 'var(--emerald-bright)',
+                color: 'var(--primary)',
                 marginTop: 6,
                 fontVariantNumeric: 'tabular-nums',
                 letterSpacing: '-0.02em',
@@ -507,7 +506,7 @@ export default function ClosedRevenuePage() {
             </div>
           </div>
         </div>
-        <Pill color="var(--emerald-bright)">AI INFLUENCE 87%</Pill>
+        <Pill color="var(--primary)">AI INFLUENCE 87%</Pill>
       </div>
 
       {/* Stat strip */}
@@ -697,9 +696,9 @@ export default function ClosedRevenuePage() {
           alignItems: 'flex-start',
           gap: 16,
           borderColor:
-            'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+            'color-mix(in srgb, var(--primary) 30%, var(--border))',
           background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 6%, transparent), transparent)',
+            'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
         }}
       >
         <div
@@ -708,8 +707,8 @@ export default function ClosedRevenuePage() {
             height: 44,
             borderRadius: 12,
             background:
-              'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
-            color: 'var(--emerald-bright)',
+              'color-mix(in srgb, var(--primary) 18%, transparent)',
+            color: 'var(--primary)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -744,7 +743,7 @@ export default function ClosedRevenuePage() {
             <div
               style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}
             >
-              <Star size={14} style={{ color: 'var(--emerald-bright)', flexShrink: 0 }} />
+              <Star size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
               <span>
                 <b style={{ color: 'var(--text-bright)' }}>Review Request</b> will
                 ask these <b>15</b> happy customers for Google reviews in{' '}
@@ -780,7 +779,7 @@ export default function ClosedRevenuePage() {
           borderRadius: 12,
           border: '1px solid var(--border)',
           background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 6%, transparent), transparent)',
+            'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
         }}
       >
         <div
@@ -791,7 +790,7 @@ export default function ClosedRevenuePage() {
             minWidth: 0,
           }}
         >
-          <Sparkles size={16} style={{ color: 'var(--emerald-bright)' }} />
+          <Sparkles size={16} style={{ color: 'var(--primary)' }} />
           <div>
             <div
               style={{
