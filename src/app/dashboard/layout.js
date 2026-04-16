@@ -20,6 +20,7 @@ import {
   CreditCard,
   RefreshCw,
   DollarSign,
+  Briefcase,
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
@@ -41,6 +42,7 @@ const NAV_GROUPS = [
     defaultOpen: true,
     items: [
       { href: '/dashboard', label: 'Today', icon: Home, exact: true },
+      { href: '/dashboard/business-profile', label: 'Business Profile', icon: Briefcase },
       { href: '/dashboard/brief', label: 'Daily Brief', icon: Zap, pulse: true },
     ],
   },

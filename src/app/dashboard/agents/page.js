@@ -1,297 +1,307 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
-  MessageCircle,
-  Zap,
-  FileText,
-  MessageSquare,
-  FileCheck,
-  Calendar,
-  Shield,
-  Star,
-  RotateCcw,
-  Send,
-  Users,
-  Plus,
   ArrowRight,
+  MessageCircle,
+  Plus,
+  Settings,
+  Sparkles,
 } from 'lucide-react';
-
-// ---------------------------------------------------------------------------
-// Agent data
-// ---------------------------------------------------------------------------
+import { AGENT_TYPES } from '@/lib/agents/registry';
+import { loadAgentConfig, agentConfigStatus } from '@/lib/agents/storage';
+import { StatusBadge, ProgressRing } from '@/components/agent/FormPrimitives';
 
 const PILLARS = [
   {
     id: 'capture',
-    label: 'CAPTURE',
-    accent: 'emerald',
-    agents: [
-      {
-        id: 'instant-lead-response',
-        name: 'Instant Lead Response',
-        icon: Zap,
-        status: 'active',
-        description: 'Responds to new leads in under 5 seconds via SMS',
-        stats: [
-          { label: 'Avg Response', value: '4.2s' },
-          { label: 'Leads Handled', value: '847' },
-          { label: 'Conversion', value: '34%' },
-        ],
-      },
-      {
-        id: 'form-bot',
-        name: 'Form Bot',
-        icon: FileText,
-        status: 'active',
-        description: 'Captures and qualifies web form submissions instantly',
-        stats: [
-          { label: 'Forms Processed', value: '1,203' },
-          { label: 'Qualified', value: '67%' },
-          { label: 'Response Time', value: '1.1s' },
-        ],
-      },
-      {
-        id: 'social-dm-agent',
-        name: 'Social DM Agent',
-        icon: MessageSquare,
-        status: 'active',
-        description: 'Monitors and replies to Facebook/Instagram DMs',
-        stats: [
-          { label: 'DMs Handled', value: '312' },
-          { label: 'Reply Rate', value: '98%' },
-          { label: 'Avg Time', value: '8s' },
-        ],
-      },
-    ],
+    label: 'Capture',
+    eyebrow: 'CAPTURE',
+    color: 'var(--emerald-bright)',
+    description: 'Catch every inbound lead the moment it arrives.',
   },
   {
     id: 'convert',
-    label: 'CONVERT',
-    accent: 'indigo',
-    agents: [
-      {
-        id: 'quote-follow-up',
-        name: 'Quote Follow-Up',
-        icon: FileCheck,
-        status: 'active',
-        description: 'Follows up on sent quotes until they close or decline',
-        stats: [
-          { label: 'Quotes Tracked', value: '156' },
-          { label: 'Follow-ups Sent', value: '423' },
-          { label: 'Close Rate', value: '41%' },
-        ],
-      },
-      {
-        id: 'appointment-setter',
-        name: 'Appointment Setter',
-        icon: Calendar,
-        status: 'active',
-        description: 'Books inspections and consultations automatically',
-        stats: [
-          { label: 'Booked Today', value: '8' },
-          { label: 'This Week', value: '31' },
-          { label: 'Show Rate', value: '89%' },
-        ],
-      },
-      {
-        id: 'objection-handler',
-        name: 'Objection Handler',
-        icon: Shield,
-        status: 'active',
-        description: 'Handles common objections with proven responses',
-        stats: [
-          { label: 'Objections Resolved', value: '234' },
-          { label: 'Win Rate', value: '62%' },
-          { label: 'Avg Touches', value: '2.3' },
-        ],
-      },
-      {
-        id: 'review-request',
-        name: 'Review Request',
-        icon: Star,
-        status: 'active',
-        description: 'Asks happy customers for Google/Yelp reviews',
-        stats: [
-          { label: 'Requests Sent', value: '189' },
-          { label: 'Reviews Received', value: '94' },
-          { label: 'Avg Rating', value: '4.8' },
-        ],
-      },
-    ],
+    label: 'Convert',
+    eyebrow: 'CONVERT',
+    color: '#8b5cf6',
+    description: 'Move qualified leads through to booked, quoted, and closed.',
   },
   {
     id: 'reclaim',
-    label: 'RECLAIM',
-    accent: 'amber',
-    agents: [
-      {
-        id: 'dead-lead-reactivation',
-        name: 'Dead Lead Reactivation',
-        icon: RotateCcw,
-        status: 'active',
-        description: 'Re-engages cold leads with personalized outreach',
-        stats: [
-          { label: 'Leads Revived', value: '67' },
-          { label: 'Reactivation Rate', value: '12%' },
-          { label: 'Revenue', value: '$34K' },
-        ],
-      },
-      {
-        id: 'ghosted-bid-follow-up',
-        name: 'Ghosted Bid Follow-Up',
-        icon: Send,
-        status: 'active',
-        description: 'Follows up on proposals that went silent',
-        stats: [
-          { label: 'Bids Tracked', value: '89' },
-          { label: 'Responses', value: '31' },
-          { label: 'Recovered', value: '$128K' },
-        ],
-      },
-      {
-        id: 'past-customer-reengagement',
-        name: 'Past Customer Re-engagement',
-        icon: Users,
-        status: 'active',
-        description: 'Reaches out to past customers for repeat business',
-        stats: [
-          { label: 'Contacted', value: '234' },
-          { label: 'Rebooked', value: '18%' },
-          { label: 'Revenue', value: '$67K' },
-        ],
-      },
-    ],
+    label: 'Reclaim',
+    eyebrow: 'RECLAIM',
+    color: '#f59e0b',
+    description: 'Win back lost, dormant, and past customers.',
   },
 ];
 
-// Tailwind does not allow fully dynamic class names, so we map accent
-// keys to the concrete classes we need. Every class below is referenced
-// literally here, which keeps Tailwind's JIT happy.
-const ACCENT = {
-  emerald: {
-    text: 'text-emerald-600',
-    bgSoft: 'bg-emerald-500/10',
-    border: 'border-emerald-500/30',
-    leftBorder: 'border-l-emerald-500',
-    icon: 'text-emerald-600',
-    iconBg: 'bg-emerald-500/10',
-  },
-  indigo: {
-    text: 'text-indigo-600',
-    bgSoft: 'bg-indigo-500/10',
-    border: 'border-indigo-500/30',
-    leftBorder: 'border-l-indigo-500',
-    icon: 'text-indigo-600',
-    iconBg: 'bg-indigo-500/10',
-  },
-  amber: {
-    text: 'text-amber-600',
-    bgSoft: 'bg-amber-500/10',
-    border: 'border-amber-500/30',
-    leftBorder: 'border-l-amber-500',
-    icon: 'text-amber-600',
-    iconBg: 'bg-amber-500/10',
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export default function AgentsPage() {
+  const [hydrated, setHydrated] = useState(false);
+  const [configs, setConfigs] = useState({});
+
+  useEffect(() => {
+    const all = {};
+    for (const a of AGENT_TYPES) {
+      all[a.id] = loadAgentConfig(a.id);
+    }
+    setConfigs(all);
+    setHydrated(true);
+  }, []);
+
+  const telegramEa = AGENT_TYPES.find((a) => a.id === 'telegram-ea');
+  const telegramStatus = hydrated
+    ? agentConfigStatus(configs[telegramEa?.id])
+    : null;
+
+  const grouped = useMemo(() => {
+    return PILLARS.map((pillar) => ({
+      ...pillar,
+      agents: AGENT_TYPES.filter((a) => a.pillar === pillar.id),
+    }));
+  }, []);
+
   return (
-    <div className="text-zinc-900">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Page header */}
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-            AI Agents
-          </h1>
-          <p className="text-sm text-zinc-500 sm:text-base">
-            Your autonomous workforce — 10 agents, 3 pillars, full funnel coverage
-          </p>
-        </header>
-
-        {/* Telegram EA Hero */}
-        <TelegramHero />
-
-        {/* Pillars */}
-        <div className="space-y-10">
-          {PILLARS.map((pillar) => (
-            <PillarSection key={pillar.id} pillar={pillar} />
-          ))}
+    <div>
+      {/* Page header */}
+      <div style={{ marginBottom: 24 }}>
+        <div className="t-eyebrow" style={{ color: 'var(--text-muted)' }}>
+          AI Workforce
         </div>
+        <h1
+          className="t-h1"
+          style={{
+            margin: '4px 0 6px',
+            fontFamily: "'Playfair Display', Georgia, serif",
+            letterSpacing: '-0.01em',
+          }}
+        >
+          Agents
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+          Your autonomous workforce — 10 specialist agents across 3 pillars, plus
+          your Telegram executive assistant.
+        </p>
+      </div>
 
-        {/* Create Custom Agent */}
-        <div className="flex justify-center pt-4">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-600 transition hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-900"
-          >
-            <Plus size={16} />
-            Create Custom Agent
-          </button>
-        </div>
+      {/* Telegram EA hero */}
+      {telegramEa ? (
+        <TelegramHero
+          agent={telegramEa}
+          status={telegramStatus}
+          hydrated={hydrated}
+        />
+      ) : null}
+
+      {/* Pillars */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginTop: 24 }}>
+        {grouped.map((pillar) => (
+          <PillarSection
+            key={pillar.id}
+            pillar={pillar}
+            configs={configs}
+            hydrated={hydrated}
+          />
+        ))}
+      </div>
+
+      {/* Create Custom Agent */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: 28,
+        }}
+      >
+        <button
+          type="button"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '11px 18px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--text-muted)',
+            background: 'transparent',
+            border: '1px dashed var(--border-strong)',
+            borderRadius: 10,
+            cursor: 'pointer',
+          }}
+        >
+          <Plus size={14} />
+          Create Custom Agent
+        </button>
       </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Telegram EA hero card
+// Telegram EA hero
 // ---------------------------------------------------------------------------
 
-function TelegramHero() {
+function TelegramHero({ agent, status, hydrated }) {
+  const Icon = agent.icon;
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-500/60 to-indigo-500 p-[1.5px] shadow-sm">
-      <div className="rounded-2xl bg-white p-6 sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          {/* Left: icon + text */}
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-500 shadow-lg shadow-emerald-500/20">
-              <MessageCircle size={26} className="text-white" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">
-                  Your Executive Assistant
-                </h2>
-                <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
-                  Premium
-                </span>
-              </div>
-              <p className="text-sm text-zinc-500 sm:text-base">
-                Message on Telegram anytime — ask anything about your business today
-              </p>
-            </div>
+    <div
+      className="dark-card"
+      style={{
+        padding: 22,
+        background:
+          'linear-gradient(135deg, color-mix(in srgb, var(--emerald-bright) 8%, var(--surface-1)) 0%, color-mix(in srgb, #8b5cf6 6%, var(--surface-1)) 100%)',
+        borderColor:
+          'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            minWidth: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              background:
+                'linear-gradient(135deg, var(--emerald-bright) 0%, #8b5cf6 100%)',
+              color: '#fff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow:
+                '0 6px 20px color-mix(in srgb, var(--emerald-bright) 30%, transparent)',
+            }}
+          >
+            <Icon size={24} />
           </div>
-
-          {/* Right: stats + CTA */}
-          <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex flex-wrap gap-2">
-              <HeroStat label="Messages Today" value="12" />
-              <HeroStat label="Avg Response" value="<2s" />
-              <HeroStat label="Uptime" value="99.9%" />
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
+          <div>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 4,
+              }}
             >
-              Message on Telegram
-              <ArrowRight size={16} />
-            </button>
+              <span
+                style={{
+                  fontSize: 10,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  fontWeight: 700,
+                  color: 'var(--emerald-bright)',
+                }}
+              >
+                Premium
+              </span>
+              <Sparkles size={12} style={{ color: 'var(--emerald-bright)' }} />
+            </div>
+            <h2
+              className="t-h2"
+              style={{
+                margin: '0 0 4px',
+                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Your Executive Assistant
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+              Message on Telegram anytime — ask anything about your business today.
+            </p>
           </div>
         </div>
+
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <HeroStat label="Messages Today" value="12" />
+          <HeroStat label="Avg Response" value="<2s" />
+          <HeroStat label="Uptime" value="99.9%" />
+          <Link
+            href={`/dashboard/agents/${agent.id}`}
+            className="btn-primary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            Open EA
+            <ArrowRight size={14} />
+          </Link>
+        </div>
       </div>
+
+      {hydrated && status ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginTop: 16,
+            paddingTop: 14,
+            borderTop: '1px solid var(--border)',
+            fontSize: 12,
+            color: 'var(--text-muted)',
+          }}
+        >
+          <StatusBadge status={status.status} />
+          <span>·</span>
+          <span>
+            {status.steps} of {status.total} steps configured
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function HeroStat({ label, value }) {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5">
-      <span className="text-[11px] font-medium text-zinc-500">{label}:</span>
-      <span className="text-[13px] font-bold text-zinc-900 tabular-nums">
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '6px 10px',
+        borderRadius: 999,
+        border: '1px solid var(--border)',
+        background: 'var(--surface-2)',
+      }}
+    >
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
+        {label}:
+      </span>
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: 'var(--text-bright)',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
         {value}
       </span>
     </div>
@@ -299,31 +309,74 @@ function HeroStat({ label, value }) {
 }
 
 // ---------------------------------------------------------------------------
-// Pillar section
+// Pillar
 // ---------------------------------------------------------------------------
 
-function PillarSection({ pillar }) {
-  const accent = ACCENT[pillar.accent];
-
+function PillarSection({ pillar, configs, hydrated }) {
   return (
-    <section className="space-y-4">
-      {/* Pillar header: colored left border + pillar name in that color */}
+    <section>
+      {/* Pillar header */}
       <div
-        className={`border-l-4 ${accent.leftBorder} pl-4`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          paddingLeft: 12,
+          borderLeft: `3px solid ${pillar.color}`,
+          marginBottom: 14,
+        }}
       >
-        <h2
-          className={`text-sm font-bold uppercase tracking-[0.2em] ${accent.text}`}
-        >
-          {pillar.label}
-        </h2>
+        <div>
+          <div
+            style={{
+              fontSize: 10,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              color: pillar.color,
+              marginBottom: 2,
+            }}
+          >
+            {pillar.eyebrow}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+            }}
+          >
+            {pillar.description}
+          </div>
+        </div>
       </div>
 
-      {/* 2-column grid of agent cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {/* Agent cards */}
+      <div
+        className="ag-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+        }}
+      >
         {pillar.agents.map((agent) => (
-          <AgentCard key={agent.id} agent={agent} accent={accent} />
+          <AgentCard
+            key={agent.id}
+            agent={agent}
+            status={hydrated ? agentConfigStatus(configs[agent.id]) : null}
+            hydrated={hydrated}
+          />
         ))}
       </div>
+
+      <style jsx>{`
+        @media (max-width: 780px) {
+          :global(.ag-grid) {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -332,63 +385,163 @@ function PillarSection({ pillar }) {
 // Agent card
 // ---------------------------------------------------------------------------
 
-function AgentCard({ agent, accent }) {
+function AgentCard({ agent, status, hydrated }) {
   const Icon = agent.icon;
-  const isActive = agent.status === 'active';
+  const isConfigured = hydrated && status && status.steps > 0;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300">
-      {/* Top row: icon + name + status badge */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+    <div
+      className="dark-card"
+      style={{
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}
+    >
+      {/* Top row: icon + name + status */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            minWidth: 0,
+          }}
+        >
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${accent.iconBg} ring-1 ring-inset ${accent.border}`}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: `color-mix(in srgb, ${agent.color} 18%, transparent)`,
+              color: agent.color,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
           >
-            <Icon size={18} className={accent.icon} />
+            <Icon size={18} />
           </div>
-          <h3 className="truncate text-[15px] font-semibold text-zinc-900">
-            {agent.name}
-          </h3>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {agent.name}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: 'var(--text-muted)',
+                fontWeight: 500,
+              }}
+            >
+              {agent.description}
+            </div>
+          </div>
         </div>
-        {isActive ? <ActiveBadge /> : <PausedBadge />}
+        {hydrated ? <StatusBadge status={status.status} /> : null}
       </div>
 
-      {/* Description */}
-      <p className="text-sm text-zinc-500">{agent.description}</p>
+      {/* Middle row: progress */}
+      {hydrated ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            paddingTop: 4,
+          }}
+        >
+          <ProgressRing
+            value={status.completeness}
+            size={34}
+            stroke={3}
+            label={`${status.completeness}%`}
+          />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--text-muted)',
+                fontWeight: 700,
+                marginBottom: 2,
+              }}
+            >
+              Configuration
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: 'var(--text-body)',
+                fontWeight: 500,
+              }}
+            >
+              {status.steps} of {status.total} steps
+              {status.completeness === 100 ? ' · ready' : ''}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
-      {/* Stat pills */}
-      <div className="flex flex-wrap gap-1.5 pt-1">
-        {agent.stats.map((s) => (
-          <StatPill key={s.label} label={s.label} value={s.value} />
-        ))}
+      {/* Bottom row: actions */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          paddingTop: 6,
+          borderTop: '1px solid var(--border)',
+          marginTop: 'auto',
+        }}
+      >
+        <Link
+          href={`/dashboard/agents/${agent.id}`}
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: 'var(--text-muted)',
+            textDecoration: 'none',
+          }}
+        >
+          Overview
+        </Link>
+        <span style={{ color: 'var(--border)' }}>·</span>
+        <Link
+          href={`/dashboard/agents/${agent.id}/configure`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 12,
+            fontWeight: 700,
+            color: 'var(--emerald-bright)',
+            textDecoration: 'none',
+            marginLeft: 'auto',
+          }}
+        >
+          <Settings size={12} />
+          {isConfigured ? 'Edit config' : 'Configure'}
+          <ArrowRight size={12} />
+        </Link>
       </div>
     </div>
-  );
-}
-
-function StatPill({ label, value }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px]">
-      <span className="text-zinc-500">{label}:</span>
-      <span className="font-semibold text-zinc-900 tabular-nums">{value}</span>
-    </span>
-  );
-}
-
-function ActiveBadge() {
-  return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-inset ring-emerald-500/30">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-      Active
-    </span>
-  );
-}
-
-function PausedBadge() {
-  return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 ring-1 ring-inset ring-zinc-200">
-      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-      Paused
-    </span>
   );
 }

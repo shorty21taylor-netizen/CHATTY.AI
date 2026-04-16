@@ -1,87 +1,71 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
-  Phone,
-  MessageSquare,
-  Mail,
   ArrowLeft,
-  PhoneCall,
-  Clock,
-  Smile,
-  TrendingUp,
+  ArrowRight,
+  Settings,
+  Play,
+  BookOpen,
+  Activity,
+  Sparkles,
 } from 'lucide-react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import { getAgentById } from '@/lib/agents/registry';
 import {
-  getVoiceAgentById,
-  getAgentPerformanceSeries,
-  getRecentCallLog,
-  VOICE_AGENT_STATUS,
-} from '@/lib/voiceAgents';
-import { VoiceConfigPanel } from '@/components/agent/VoiceConfigPanel';
+  loadAgentConfig,
+  agentConfigStatus,
+} from '@/lib/agents/storage';
+import { StatusBadge, ProgressRing } from '@/components/agent/FormPrimitives';
+import { AgentTabs } from '@/components/agent/AgentTabs';
 
-const TYPE_ICON = {
-  voice: Phone,
-  sms: MessageSquare,
-  email: Mail,
-};
+const PERF_SERIES = Array.from({ length: 30 }, (_, i) => ({
+  day: `D${i + 1}`,
+  messages: 12 + Math.round(Math.sin(i / 3) * 6 + Math.random() * 6),
+  replies: 4 + Math.round(Math.sin(i / 2.5) * 3 + Math.random() * 3),
+}));
 
-const OUTCOME_PALETTE = {
-  emerald: {
-    bg: 'var(--emerald-tint)',
-    color: 'var(--emerald-bright)',
-    border: 'rgba(16,185,129,0.3)',
-  },
-  indigo: {
-    bg: 'rgba(99,102,241,0.12)',
-    color: '#818cf8',
-    border: 'rgba(99,102,241,0.3)',
-  },
-  amber: {
-    bg: 'rgba(245,158,11,0.12)',
-    color: '#fbbf24',
-    border: 'rgba(245,158,11,0.3)',
-  },
-  muted: {
-    bg: 'var(--surface-2)',
-    color: 'var(--text-muted)',
-    border: 'var(--border)',
-  },
-};
+const ACTIVITY = [
+  { id: 1, at: '10:42 AM', action: 'Sent SMS', target: 'Patricia Williams', outcome: 'Delivered', color: 'var(--emerald-bright)' },
+  { id: 2, at: '10:38 AM', action: 'Draft queued', target: 'Marcus Miller', outcome: 'Awaiting approval', color: '#f59e0b' },
+  { id: 3, at: '10:31 AM', action: 'Escalated', target: 'James Rodriguez', outcome: 'Notified Telegram EA', color: '#3b82f6' },
+  { id: 4, at: '10:12 AM', action: 'Sent SMS', target: 'Sarah Chen', outcome: 'Replied', color: 'var(--emerald-bright)' },
+  { id: 5, at: '9:47 AM', action: 'Booked appointment', target: 'Kevin Park', outcome: 'Thu 2pm', color: 'var(--emerald-bright)' },
+  { id: 6, at: '9:33 AM', action: 'Tagged contact', target: 'Jennifer Davis', outcome: 'Tag: price-sensitive', color: 'var(--text-muted)' },
+  { id: 7, at: '9:17 AM', action: 'Sent SMS', target: 'Robert Thompson', outcome: 'Replied', color: 'var(--emerald-bright)' },
+  { id: 8, at: '9:02 AM', action: 'Updated status', target: 'Linda Martinez', outcome: 'Status: qualified', color: 'var(--text-muted)' },
+];
 
 export default function AgentDetailPage({ params }) {
   const { id } = use(params);
-  const agent = getVoiceAgentById(id);
+  const agent = getAgentById(id);
   if (!agent) return notFound();
 
-  const Icon = TYPE_ICON[agent.type] || Phone;
-  const [status, setStatus] = useState(agent.status);
-  const statusMeta = VOICE_AGENT_STATUS[status] || VOICE_AGENT_STATUS.draft;
-  const perfSeries = getAgentPerformanceSeries();
-  const callLog = getRecentCallLog();
+  const [hydrated, setHydrated] = useState(false);
+  const [config, setConfig] = useState(null);
 
-  function toggleStatus() {
-    setStatus((s) => (s === 'active' ? 'paused' : 'active'));
-  }
+  useEffect(() => {
+    setConfig(loadAgentConfig(id));
+    setHydrated(true);
+  }, [id]);
+
+  const status = useMemo(() => agentConfigStatus(config), [config]);
+  const Icon = agent.icon;
+
+  const isConfigured = hydrated && status.steps > 0;
 
   return (
     <div>
-      {/* Back link */}
       <Link
         href="/dashboard/agents"
         style={{
@@ -102,474 +86,384 @@ export default function AgentDetailPage({ params }) {
       <div
         style={{
           display: 'flex',
-          alignItems: 'flex-start',
-          gap: 18,
-          marginBottom: 28,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+          marginBottom: 18,
         }}
       >
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 14,
-            background: 'var(--emerald-tint)',
-            border: '1px solid rgba(16,185,129,0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon size={24} style={{ color: 'var(--emerald-bright)' }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           <div
-            className="t-eyebrow"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              background: `color-mix(in srgb, ${agent.color} 18%, transparent)`,
+              color: agent.color,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
           >
-            <span>{agent.type === 'voice' ? 'Voice agent' : agent.type}</span>
-            <span
-              style={{
-                display: 'inline-block',
-                width: 3,
-                height: 3,
-                borderRadius: '50%',
-                background: 'var(--text-subtle)',
-              }}
-            />
-            <span>Powered by ElevenLabs</span>
+            <Icon size={22} />
           </div>
-          <h1 className="t-h1" style={{ margin: '6px 0 6px' }}>
-            {agent.name}
-          </h1>
-          <p
-            className="t-body"
-            style={{ color: 'var(--text-muted)', margin: 0, maxWidth: 620 }}
-          >
-            {agent.description}
-          </p>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            alignItems: 'flex-end',
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '4px 12px',
-              borderRadius: 999,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              background: statusMeta.bg,
-              color: statusMeta.color,
-              border: `1px solid ${statusMeta.border}`,
-            }}
-          >
-            {statusMeta.dot ? (
-              <motion.span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: statusMeta.color,
-                  display: 'inline-block',
-                }}
-                animate={{ opacity: [1, 0.35, 1] }}
-                transition={{ duration: 1.8, repeat: Infinity }}
-              />
-            ) : null}
-            {statusMeta.label}
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={status === 'active'}
-            onClick={toggleStatus}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 14px',
-              borderRadius: 999,
-              background: status === 'active' ? 'var(--emerald-bright)' : 'var(--surface-2)',
-              color: status === 'active' ? '#ffffff' : 'var(--text-muted)',
-              border:
-                '1px solid ' +
-                (status === 'active' ? 'var(--emerald-bright)' : 'var(--border)'),
-              fontWeight: 600,
-              fontSize: 12,
-              cursor: 'pointer',
-              transition: 'all .15s',
-            }}
-          >
-            {status === 'active' ? 'Pause agent' : 'Activate agent'}
-          </button>
-        </div>
-      </div>
-
-      {/* Voice config */}
-      <div style={{ marginBottom: 26 }}>
-        <VoiceConfigPanel defaultOpen agentName={agent.name} />
-      </div>
-
-      {/* Performance mini-charts */}
-      <div style={{ marginBottom: 26 }}>
-        <div className="t-eyebrow" style={{ marginBottom: 4 }}>
-          Performance
-        </div>
-        <h2 className="t-h2" style={{ margin: '0 0 14px' }}>
-          Last 7 days
-        </h2>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 14,
-          }}
-        >
-          <PerfCard
-            label="Calls handled"
-            value={perfSeries.reduce((sum, d) => sum + d.calls, 0)}
-            suffix=""
-            icon={PhoneCall}
-            color="#10b981"
-          >
-            <ResponsiveContainer width="100%" height={90}>
-              <LineChart
-                data={perfSeries}
-                margin={{ top: 6, right: 4, left: 4, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--grid-line)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 10, fill: 'var(--text-subtle)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis hide />
-                <Tooltip content={<MiniTooltip unit="calls" />} />
-                <Line
-                  type="monotone"
-                  dataKey="calls"
-                  stroke="var(--emerald-bright)"
-                  strokeWidth={2}
-                  dot={{ r: 2.5, fill: 'var(--emerald-bright)' }}
-                  activeDot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </PerfCard>
-
-          <PerfCard
-            label="Satisfaction"
-            value={Math.round(
-              perfSeries.reduce((s, d) => s + d.satisfaction, 0) /
-                perfSeries.length
-            )}
-            suffix="%"
-            icon={Smile}
-            color="#818cf8"
-          >
-            <ResponsiveContainer width="100%" height={90}>
-              <BarChart
-                data={perfSeries}
-                margin={{ top: 6, right: 4, left: 4, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--grid-line)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 10, fill: 'var(--text-subtle)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis hide domain={[80, 100]} />
-                <Tooltip content={<MiniTooltip unit="%" />} />
-                <Bar
-                  dataKey="satisfaction"
-                  fill="#818cf8"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={22}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </PerfCard>
-
-          <PerfCard
-            label="Avg duration"
-            value={(
-              perfSeries.reduce((s, d) => s + d.avgDuration, 0) /
-              perfSeries.length
-            ).toFixed(1)}
-            suffix="m"
-            icon={Clock}
-            color="#fbbf24"
-          >
-            <ResponsiveContainer width="100%" height={90}>
-              <AreaChart
-                data={perfSeries}
-                margin={{ top: 6, right: 4, left: 4, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="dur-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#fbbf24" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--grid-line)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 10, fill: 'var(--text-subtle)' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis hide />
-                <Tooltip content={<MiniTooltip unit="min" />} />
-                <Area
-                  type="monotone"
-                  dataKey="avgDuration"
-                  stroke="#fbbf24"
-                  strokeWidth={2}
-                  fill="url(#dur-gradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </PerfCard>
-        </div>
-      </div>
-
-      {/* Recent Call Log */}
-      <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
           <div>
-            <div className="t-h3">Recent call log</div>
-            <div className="t-body-sm" style={{ color: 'var(--text-muted)' }}>
-              Last 5 calls handled by this agent
+            <div className="t-eyebrow" style={{ color: 'var(--text-muted)' }}>
+              Agent
+            </div>
+            <h1
+              className="t-h1"
+              style={{
+                margin: '4px 0 6px',
+                fontFamily: "'Playfair Display', Georgia, serif",
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {agent.name}
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+              {agent.description}
+            </p>
+          </div>
+        </div>
+        {hydrated ? (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+            <StatusBadge status={status.status} />
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 12,
+                color: 'var(--text-muted)',
+                fontWeight: 500,
+              }}
+            >
+              <ProgressRing
+                value={status.completeness}
+                size={30}
+                stroke={3}
+                label={`${status.completeness}%`}
+              />
+              <span>
+                {status.steps} of {status.total} steps
+              </span>
             </div>
           </div>
+        ) : null}
+      </div>
+
+      <AgentTabs agentId={id} active="overview" />
+
+      {hydrated && !isConfigured ? (
+        // Not configured — big CTA
+        <div
+          className="dark-card"
+          style={{
+            padding: 36,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
+            borderColor:
+              'color-mix(in srgb, var(--emerald-bright) 30%, var(--border))',
+            background:
+              'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--emerald-bright) 5%, transparent) 100%)',
+          }}
+        >
           <div
-            className="t-body-sm"
             style={{
+              width: 56,
+              height: 56,
+              borderRadius: 14,
+              background:
+                'color-mix(in srgb, var(--emerald-bright) 18%, transparent)',
               color: 'var(--emerald-bright)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 4,
-              fontWeight: 600,
+              justifyContent: 'center',
             }}
           >
-            <TrendingUp size={12} />
-            +18% vs last week
+            <Sparkles size={24} />
           </div>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: 13,
-            }}
+          <div
+            style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)' }}
           >
-            <thead>
-              <tr
-                style={{
-                  textAlign: 'left',
-                  color: 'var(--text-subtle)',
-                  fontSize: 10.5,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  background: 'var(--surface-2)',
-                }}
-              >
-                <th style={{ padding: '10px 20px', fontWeight: 700 }}>Caller</th>
-                <th style={{ padding: '10px 12px', fontWeight: 700 }}>Phone</th>
-                <th style={{ padding: '10px 12px', fontWeight: 700 }}>Duration</th>
-                <th style={{ padding: '10px 12px', fontWeight: 700 }}>Outcome</th>
-                <th
-                  style={{
-                    padding: '10px 20px',
-                    fontWeight: 700,
-                    textAlign: 'right',
-                  }}
-                >
-                  Date
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {callLog.map((row) => {
-                const palette =
-                  OUTCOME_PALETTE[row.outcomeColor] || OUTCOME_PALETTE.muted;
-                return (
-                  <tr
-                    key={row.id}
-                    style={{ borderTop: '1px solid var(--border)' }}
-                  >
-                    <td
-                      style={{
-                        padding: '14px 20px',
-                        fontWeight: 600,
-                        color: 'var(--text-bright)',
-                      }}
-                    >
-                      {row.caller}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 12px',
-                        color: 'var(--text-muted)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {row.phone}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 12px',
-                        color: 'var(--text-muted)',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {row.duration}
-                    </td>
-                    <td style={{ padding: '14px 12px' }}>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '3px 10px',
-                          borderRadius: 999,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          background: palette.bg,
-                          color: palette.color,
-                          border: `1px solid ${palette.border}`,
-                        }}
-                      >
-                        {row.outcome}
-                      </span>
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 20px',
-                        textAlign: 'right',
-                        color: 'var(--text-subtle)',
-                      }}
-                    >
-                      {row.date}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PerfCard({ label, value, suffix, icon: Icon, color, children }) {
-  return (
-    <div className="dark-card" style={{ padding: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 8,
-        }}
-      >
-        <div
-          className="t-eyebrow"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-        >
-          <Icon size={11} style={{ color }} />
-          {label}
-        </div>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 4,
-          marginBottom: 8,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            color: 'var(--text-bright)',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {value}
-        </div>
-        {suffix ? (
+            Let's configure {agent.name}
+          </div>
           <div
             style={{
               fontSize: 13,
               color: 'var(--text-muted)',
-              fontWeight: 600,
+              maxWidth: 480,
+              lineHeight: 1.6,
             }}
           >
-            {suffix}
+            11 quick steps: mission, triggers, context, tone, templates,
+            knowledge, tools, guardrails, escalation, simulation, activation.
+            You can save drafts along the way.
           </div>
-        ) : null}
-      </div>
-      {children}
+          <Link
+            href={`/dashboard/agents/${id}/configure`}
+            className="btn-primary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 6,
+            }}
+          >
+            Start Configuration
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      ) : null}
+
+      {hydrated && isConfigured ? (
+        <>
+          {/* Quick stats */}
+          <div
+            className="ad-stat-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 12,
+              marginBottom: 16,
+            }}
+          >
+            <QuickStat label="Messages today" value="42" />
+            <QuickStat label="Replies" value="28" hint="67% reply rate" accent />
+            <QuickStat label="Outcomes" value="11" hint="booked / resolved" />
+          </div>
+
+          {/* Action row */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              flexWrap: 'wrap',
+              marginBottom: 20,
+            }}
+          >
+            <ActionButton
+              href={`/dashboard/agents/${id}/configure`}
+              icon={Settings}
+              label="Edit Configuration"
+              primary
+            />
+            <ActionButton
+              href={`/dashboard/agents/${id}/simulate`}
+              icon={Play}
+              label="Run Simulation"
+            />
+            <ActionButton
+              href={`/dashboard/agents/${id}/knowledge`}
+              icon={BookOpen}
+              label="View Knowledge Base"
+            />
+            <ActionButton
+              href={`/dashboard/agents/${id}/activity`}
+              icon={Activity}
+              label="Activity Log"
+            />
+          </div>
+
+          {/* 30-day performance chart */}
+          <div style={{ marginBottom: 24 }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+                marginBottom: 4,
+              }}
+            >
+              30-day performance
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+              Messages sent and replies received per day.
+            </div>
+            <div className="dark-card" style={{ padding: 16 }}>
+              <div style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={PERF_SERIES}>
+                    <CartesianGrid stroke="var(--grid-line)" vertical={false} />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                      stroke="var(--border)"
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                      stroke="var(--border)"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--surface-1)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="messages"
+                      stroke="var(--emerald-bright)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="replies"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Activity feed */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--text-bright)',
+                  }}
+                >
+                  Recent activity
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  Last 8 actions taken by this agent.
+                </div>
+              </div>
+              <Link
+                href={`/dashboard/agents/${id}/activity`}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--emerald-bright)',
+                  textDecoration: 'none',
+                }}
+              >
+                View full log →
+              </Link>
+            </div>
+            <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Outcome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ACTIVITY.map((a) => (
+                    <tr key={a.id}>
+                      <td style={{ color: 'var(--text-muted)' }}>{a.at}</td>
+                      <td style={{ fontWeight: 500, color: 'var(--text-bright)' }}>
+                        {a.action}
+                      </td>
+                      <td>{a.target}</td>
+                      <td style={{ color: a.color }}>{a.outcome}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      <style jsx>{`
+        @media (max-width: 760px) {
+          :global(.ad-stat-grid) {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-function MiniTooltip({ active, payload, unit }) {
-  if (!active || !payload || !payload.length) return null;
-  const p = payload[0];
+function QuickStat({ label, value, hint, accent }) {
   return (
-    <div
-      style={{
-        background: 'var(--surface-1)',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        padding: '6px 10px',
-        fontSize: 11,
-        color: 'var(--text-bright)',
-        boxShadow: 'var(--shadow-card)',
-      }}
-    >
-      <div style={{ color: 'var(--text-subtle)', marginBottom: 2 }}>
-        {p.payload.day}
+    <div className="dark-card" style={{ padding: 16 }}>
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          fontWeight: 600,
+          marginBottom: 4,
+        }}
+      >
+        {label}
       </div>
-      <div style={{ fontWeight: 700 }}>
-        {p.value} {unit}
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 700,
+          color: accent ? 'var(--emerald-bright)' : 'var(--text-bright)',
+          fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.01em',
+        }}
+      >
+        {value}
       </div>
+      {hint ? (
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+          {hint}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function ActionButton({ href, icon: Icon, label, primary }) {
+  return (
+    <Link
+      href={href}
+      className={primary ? 'btn-primary' : undefined}
+      style={
+        primary
+          ? { display: 'inline-flex', alignItems: 'center', gap: 8 }
+          : {
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 14px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--text-body)',
+              textDecoration: 'none',
+              background: 'var(--surface-1)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              transition: 'all 120ms ease',
+            }
+      }
+    >
+      <Icon size={14} />
+      {label}
+    </Link>
   );
 }
