@@ -20,6 +20,7 @@
 
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   customType,
   date,
@@ -935,6 +936,53 @@ export const voiceCalls = pgTable(
   ],
 );
 
+// ===========================================================================
+// 22. telegram_sessions — linked Telegram chats for EA
+// ===========================================================================
+
+export const telegramSessions = pgTable(
+  "telegram_sessions",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    userId: text("user_id").notNull(),
+    chatId: bigint("chat_id", { mode: "number" }).notNull().unique(),
+    username: text("username"),
+    linkedAt: timestamp("linked_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
+    preferences: jsonb("preferences").notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("idx_telegram_sessions_org").on(t.orgId, t.createdAt),
+    index("idx_telegram_sessions_chat").on(t.chatId),
+  ],
+);
+
+// ===========================================================================
+// 23. telegram_messages — EA message history
+// ===========================================================================
+
+export const telegramMessages = pgTable(
+  "telegram_messages",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    chatId: bigint("chat_id", { mode: "number" }).notNull(),
+    direction: text("direction").notNull(),
+    messageType: text("message_type"),
+    text: text("text"),
+    payload: jsonb("payload"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("idx_telegram_messages_org").on(t.orgId, t.createdAt),
+    index("idx_telegram_messages_chat").on(t.chatId, t.createdAt),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -983,6 +1031,10 @@ export type OrgFormConfig = typeof orgFormConfigs.$inferSelect;
 export type NewOrgFormConfig = typeof orgFormConfigs.$inferInsert;
 export type VoiceCall = typeof voiceCalls.$inferSelect;
 export type NewVoiceCall = typeof voiceCalls.$inferInsert;
+export type TelegramSession = typeof telegramSessions.$inferSelect;
+export type NewTelegramSession = typeof telegramSessions.$inferInsert;
+export type TelegramMessage = typeof telegramMessages.$inferSelect;
+export type NewTelegramMessage = typeof telegramMessages.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1014,6 +1066,8 @@ export const RLS_TABLES = [
   "review_request_links",
   "org_form_configs",
   "voice_calls",
+  "telegram_sessions",
+  "telegram_messages",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
