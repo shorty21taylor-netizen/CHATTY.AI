@@ -100,3 +100,41 @@ export function buildAgentSystemPrompt(
 
   return parts.join("\n");
 }
+
+export interface ConversationMessage {
+  role: "assistant" | "user";
+  content: string;
+}
+
+/**
+ * Build a continuation system prompt and messages array for an ongoing
+ * SMS conversation. The system prompt is the same as the initial one
+ * with an extra instruction about conversation context. The history
+ * becomes Claude messages rather than being stuffed into the system prompt.
+ */
+export function buildContinuationPrompt(
+  agentConfig: Record<string, any>,
+  businessProfile: Record<string, any> | null,
+  agentMeta: AgentTypeMeta,
+  conversationHistory: ConversationMessage[],
+): { system: string; messages: Array<{ role: "user" | "assistant"; content: string }> } {
+  const base = buildAgentSystemPrompt(agentConfig, businessProfile, agentMeta);
+
+  const system = [
+    base,
+    "",
+    "## Conversation Context",
+    "This is an active SMS conversation. The customer has replied to your previous message.",
+    "Read the full thread below and compose the next reply.",
+    "Stay consistent with what you already said. Don't repeat yourself.",
+    "If they ask to schedule, try to suggest 2-3 time slots.",
+    "If they seem uninterested, be gracious and brief.",
+  ].join("\n");
+
+  const messages = conversationHistory.map((m) => ({
+    role: m.role,
+    content: m.content,
+  }));
+
+  return { system, messages };
+}

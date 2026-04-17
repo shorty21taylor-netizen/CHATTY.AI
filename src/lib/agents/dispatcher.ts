@@ -1,6 +1,6 @@
 import { withOrgContext } from "@/lib/db/drizzle";
 import { eq, and, sql, inArray, gte } from "drizzle-orm";
-import { agentConfigs, agentRuns, businessProfile } from "@/db/schema";
+import { agentConfigs, agentRuns, businessProfile, contactSuppressions } from "@/db/schema";
 import { inngest } from "@/inngest/client";
 
 interface DispatchInput {
@@ -51,6 +51,22 @@ export async function dispatchAgentsForEvent(
         .limit(1);
       return row ?? null;
     });
+
+    // Check contact suppression (STOP, not_interested, etc.)
+    const contactId = data.contact_id || entityId;
+    if (contactId) {
+      const suppressed = await withOrgContext(orgId, async (tx) => {
+        const [row] = await tx
+          .select({ id: contactSuppressions.id })
+          .from(contactSuppressions)
+          .where(eq(contactSuppressions.contactId, contactId))
+          .limit(1);
+        return !!row;
+      });
+      if (suppressed) {
+        return { dispatched: 0, skipped: ["contact_suppressed"] };
+      }
+    }
 
     for (const agent of candidates) {
       try {

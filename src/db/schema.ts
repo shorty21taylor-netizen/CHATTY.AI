@@ -165,6 +165,13 @@ export const insuranceExperienceEnum = pgEnum("insurance_experience", [
   "primary_focus",
 ]);
 
+export const suppressionReasonEnum = pgEnum("suppression_reason", [
+  "sms_stop",
+  "email_unsubscribe",
+  "manual",
+  "not_interested",
+]);
+
 // ---------------------------------------------------------------------------
 // Shared columns
 // ---------------------------------------------------------------------------
@@ -667,6 +674,82 @@ export const businessProfile = pgTable(
   (t) => [index("business_profile_org_idx").on(t.orgId)],
 );
 
+// ===========================================================================
+// 16. orphan_sms — inbound SMS from unmatched phone numbers
+// ===========================================================================
+
+export const orphanSms = pgTable(
+  "orphan_sms",
+  {
+    id: pk(),
+    fromPhone: text("from_phone").notNull(),
+    toPhone: text("to_phone").notNull(),
+    body: text("body").notNull().default(""),
+    messageSid: text("message_sid"),
+    matchedContactId: uuid("matched_contact_id"),
+    receivedAt: timestamp("received_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("orphan_sms_from_phone_idx").on(t.fromPhone),
+    index("orphan_sms_received_at_idx").on(t.receivedAt),
+  ],
+);
+
+// ===========================================================================
+// 17. contact_suppressions — opt-out / suppression records
+// ===========================================================================
+
+export const contactSuppressions = pgTable(
+  "contact_suppressions",
+  {
+    id: pk(),
+    orgId: orgId(),
+    contactId: uuid("contact_id")
+      .notNull()
+      .references(() => contacts.id, { onDelete: "cascade" }),
+    reason: suppressionReasonEnum("reason").notNull(),
+    source: text("source"),
+    suppressedAt: timestamp("suppressed_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("contact_suppressions_org_idx").on(t.orgId),
+    index("contact_suppressions_org_contact_idx").on(t.orgId, t.contactId),
+  ],
+);
+
+// ===========================================================================
+// 18. agent_escalations — human escalation records
+// ===========================================================================
+
+export const agentEscalations = pgTable(
+  "agent_escalations",
+  {
+    id: pk(),
+    orgId: orgId(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    contactId: uuid("contact_id").references(() => contacts.id, {
+      onDelete: "set null",
+    }),
+    reason: text("reason").notNull(),
+    notifiedVia: text("notified_via"),
+    notifiedAt: timestamp("notified_at", { withTimezone: true }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("agent_escalations_org_idx").on(t.orgId),
+    index("agent_escalations_org_run_idx").on(t.orgId, t.runId),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -696,6 +779,12 @@ export type Deal = typeof deals.$inferSelect;
 export type NewDeal = typeof deals.$inferInsert;
 export type BusinessProfile = typeof businessProfile.$inferSelect;
 export type NewBusinessProfile = typeof businessProfile.$inferInsert;
+export type OrphanSms = typeof orphanSms.$inferSelect;
+export type NewOrphanSms = typeof orphanSms.$inferInsert;
+export type ContactSuppression = typeof contactSuppressions.$inferSelect;
+export type NewContactSuppression = typeof contactSuppressions.$inferInsert;
+export type AgentEscalation = typeof agentEscalations.$inferSelect;
+export type NewAgentEscalation = typeof agentEscalations.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -719,6 +808,8 @@ export const RLS_TABLES = [
   "proposals",
   "deals",
   "business_profile",
+  "contact_suppressions",
+  "agent_escalations",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
