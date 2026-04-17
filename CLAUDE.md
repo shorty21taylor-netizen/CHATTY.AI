@@ -273,6 +273,34 @@ Input: Pass 1 output + previous_briefs | Output: decision framework with top 3-5
 Claude drafts the Daily Brief: 3-5 bullet points max, each with action + why + expected impact, plus voice-friendly summary for TTS.
 Input: Pass 2 output | Output: brief_id with full decision_engine_trace logged
 
+## Agent Simulation Runtime
+
+Dry-run regression harness for all agents. Operators trigger simulations against
+canned or custom signals; the runner dispatches to a pure (side-effect-free)
+dry-run handler from the registry, captures simulated output, and optionally
+compares against a golden `actual_output` to produce a `comparison_score`
+(0.0–1.0).
+
+**Flow:** Dashboard or API `POST /api/simulations/trigger` → creates
+`agent_simulations` row (status=pending) → dispatches Inngest event
+`simulation/run` → `simulationRunWorkflow` calls `runSimulation()` →
+registry dry-run handler returns `{ reply_preview, actions_planned, confidence }`
+→ scoring engine computes `comparison_score` → row updated to
+status=completed|failed with duration_ms.
+
+**Files:**
+- `src/lib/simulations/runner.ts` — orchestrates create → dispatch → score → update
+- `src/lib/simulations/registry.ts` — maps agent_type → dry-run handler (10 agents)
+- `src/lib/simulations/scoring.ts` — field-level comparison (deep-equal=1.0, partial=weighted)
+- `src/lib/simulations/scenarios.ts` — 6 canned scenarios covering main agent types
+- `src/inngest/workflows/simulation-run.ts` — Inngest function for async execution
+- `src/app/api/simulations/trigger/route.ts` — POST trigger endpoint (Clerk-authed)
+- `src/app/api/simulations/[id]/route.ts` — GET single simulation (org-filtered)
+- `src/app/api/simulations/list/route.ts` — GET last 50 simulations for org
+- `src/app/dashboard/agents/simulations/page.js` — Dashboard UI with run modal
+- `db/migrations/011_agent_simulations.sql` — agent_simulations table with RLS
+- `db/seed/simulations.ts` — Seed canned scenarios for demo org
+
 ## Signal Adapters
 
 Adapters normalize inbound data into `NormalizedEvent` rows in `signal_events`
