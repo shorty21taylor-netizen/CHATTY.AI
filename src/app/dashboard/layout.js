@@ -68,6 +68,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/dashboard/agents', label: 'All Agents', icon: Bot },
       { href: '/dashboard/agents/voice-receptionist', label: 'Voice Receptionist', icon: Mic },
+      { href: '/dashboard/agents/telegram-ea', label: 'Telegram EA', icon: MessageSquare },
     ],
   },
   {
