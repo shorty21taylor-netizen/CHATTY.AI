@@ -1,84 +1,63 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Rocket,
   CreditCard,
   MessageSquare,
   Mic,
   Bot,
-  Download,
   ArrowUpRight,
   CheckCircle2,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 
-const USAGE = [
-  {
-    icon: MessageSquare,
-    label: 'SMS sent',
-    used: 2147,
-    limit: 5000,
-    color: '#3b82f6',
-  },
-  {
-    icon: Mic,
-    label: 'Voice minutes',
-    used: 289,
-    limit: 500,
-    color: '#8b5cf6',
-  },
-  {
-    icon: Bot,
-    label: 'Voice agents',
-    used: 3,
-    limit: 3,
-    color: '#f59e0b',
-    amber: true,
-  },
-];
-
-const INVOICES = [
-  { id: 'INV-2026-04', date: 'Apr 15, 2026', amount: '$497.00', status: 'Paid' },
-  { id: 'INV-2026-03', date: 'Mar 15, 2026', amount: '$497.00', status: 'Paid' },
-  { id: 'INV-2026-02', date: 'Feb 15, 2026', amount: '$497.00', status: 'Paid' },
-  { id: 'INV-2026-01', date: 'Jan 15, 2026', amount: '$497.00', status: 'Paid' },
-  { id: 'INV-2025-12', date: 'Dec 15, 2025', amount: '$497.00', status: 'Paid' },
-  { id: 'INV-2025-11', date: 'Nov 15, 2025', amount: '$497.00', status: 'Paid' },
-];
-
-const PLAN_TIERS = [
-  {
+const PLAN_DISPLAY = {
+  starter: {
     name: 'Starter',
-    price: '$197',
+    price: '$199',
     hint: 'Solo operator',
-    features: ['2,000 SMS', '200 voice minutes', '1 voice agent', 'Daily brief'],
+    features: ['2,000 SMS', '200 voice minutes', '3 AI agents', '1 team seat', 'Daily Brief'],
   },
-  {
-    name: 'Growth',
-    price: '$497',
-    hint: 'Current plan',
-    features: [
-      '5,000 SMS',
-      '500 voice minutes',
-      '3 voice agents',
-      'All 11 AI agents',
-      '5 team seats',
-    ],
-    current: true,
+  pro: {
+    name: 'Pro',
+    price: '$499',
+    hint: 'Growing team',
+    features: ['5,000 SMS', '500 voice minutes', 'All 11 AI agents', '5 team seats', 'Telegram EA'],
   },
-  {
+  scale: {
     name: 'Scale',
     price: '$1,497',
     hint: 'Multi-crew',
     features: [
       '20,000 SMS',
       '2,000 voice minutes',
-      '10 voice agents',
-      'Priority Decision Engine',
+      'All 11 AI agents',
       'Unlimited team seats',
       'Voice Lab cloning',
+      'Priority Decision Engine',
     ],
   },
-];
+};
+
+const USAGE_ICONS = {
+  sms: MessageSquare,
+  voiceMinutes: Mic,
+  agents: Bot,
+};
+
+const USAGE_LABELS = {
+  sms: 'SMS sent',
+  voiceMinutes: 'Voice minutes',
+  agents: 'Active agents',
+};
+
+const USAGE_COLORS = {
+  sms: '#3b82f6',
+  voiceMinutes: '#8b5cf6',
+  agents: '#f59e0b',
+};
 
 function Pill({ color, children }) {
   return (
@@ -101,10 +80,14 @@ function Pill({ color, children }) {
   );
 }
 
-function UsageCard({ icon, label, used, limit, color, amber }) {
-  const Icon = icon;
-  const pct = Math.min(100, Math.round((used / limit) * 100));
-  const barColor = amber ? '#f59e0b' : color;
+function UsageCard({ resource, current, limit, color }) {
+  const Icon = USAGE_ICONS[resource];
+  const label = USAGE_LABELS[resource];
+  const isUnlimited = limit === -1;
+  const pct = isUnlimited ? 0 : Math.min(100, Math.round((current / limit) * 100));
+  const isHigh = !isUnlimited && pct >= 90;
+  const barColor = isHigh ? '#f59e0b' : color;
+
   return (
     <div
       className="dark-card"
@@ -113,7 +96,7 @@ function UsageCard({ icon, label, used, limit, color, amber }) {
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
-        borderColor: amber
+        borderColor: isHigh
           ? 'color-mix(in srgb, #f59e0b 40%, var(--border))'
           : 'var(--border)',
       }}
@@ -154,7 +137,7 @@ function UsageCard({ icon, label, used, limit, color, amber }) {
           </span>
           {label}
         </div>
-        {amber ? <Pill color="#f59e0b">LIMIT</Pill> : null}
+        {isHigh && <Pill color="#f59e0b">LIMIT</Pill>}
       </div>
       <div
         style={{
@@ -172,10 +155,10 @@ function UsageCard({ icon, label, used, limit, color, amber }) {
             letterSpacing: '-0.02em',
           }}
         >
-          {used.toLocaleString('en-US')}
+          {current.toLocaleString('en-US')}
         </span>
         <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-          / {limit.toLocaleString('en-US')}
+          / {isUnlimited ? '\u221E' : limit.toLocaleString('en-US')}
         </span>
       </div>
       <div
@@ -196,13 +179,98 @@ function UsageCard({ icon, label, used, limit, color, amber }) {
         />
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-        {pct}% used · resets May 15
+        {isUnlimited ? 'Unlimited' : `${pct}% used`}
       </div>
     </div>
   );
 }
 
 export default function BillingPage() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/stripe/status')
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setError('Failed to load billing data'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const openPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const json = await res.json();
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        setError(json.error || 'Could not open billing portal');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>
+        <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
+        <div style={{ marginTop: 12, fontSize: 13 }}>Loading billing&hellip;</div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div style={{ padding: 60, textAlign: 'center', color: '#ef4444' }}>
+        <AlertTriangle size={24} />
+        <div style={{ marginTop: 12, fontSize: 13 }}>{error}</div>
+      </div>
+    );
+  }
+
+  const plan = data?.plan || 'starter';
+  const planInfo = PLAN_DISPLAY[plan] || PLAN_DISPLAY.starter;
+  const status = data?.status || 'none';
+  const isActive = data?.isActive ?? false;
+  const cancelAtPeriodEnd = data?.cancelAtPeriodEnd ?? false;
+  const periodEnd = data?.currentPeriodEnd
+    ? new Date(data.currentPeriodEnd).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null;
+
+  const usage = data?.usage || {};
+  const usageEntries = ['sms', 'voiceMinutes', 'agents'].map((key) => ({
+    resource: key,
+    current: usage[key]?.current ?? 0,
+    limit: usage[key]?.limit ?? 0,
+    color: USAGE_COLORS[key],
+  }));
+
+  const statusColor = isActive
+    ? 'var(--primary)'
+    : status === 'past_due'
+      ? '#f59e0b'
+      : '#ef4444';
+  const statusLabel = isActive
+    ? cancelAtPeriodEnd
+      ? 'CANCELING'
+      : 'ACTIVE'
+    : status === 'past_due'
+      ? 'PAST DUE'
+      : status === 'none'
+        ? 'NO PLAN'
+        : status.toUpperCase();
+
   return (
     <div>
       <div>
@@ -211,9 +279,25 @@ export default function BillingPage() {
           Plan &amp; billing
         </h1>
         <p className="t-body-sm" style={{ margin: 0 }}>
-          Your current plan, usage, and invoice history.
+          Your current plan, usage, and billing management.
         </p>
       </div>
+
+      {error && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: '10px 14px',
+            borderRadius: 8,
+            background: 'color-mix(in srgb, #ef4444 12%, transparent)',
+            border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)',
+            color: '#ef4444',
+            fontSize: 12,
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {/* Plan hero */}
       <div
@@ -226,9 +310,8 @@ export default function BillingPage() {
           justifyContent: 'space-between',
           gap: 20,
           flexWrap: 'wrap',
-          borderColor:
-            'color-mix(in srgb, var(--primary) 40%, var(--border))',
-          boxShadow: '0 0 24px rgba(16,185,129,0.12)',
+          borderColor: `color-mix(in srgb, ${statusColor} 40%, var(--border))`,
+          boxShadow: isActive ? '0 0 24px rgba(16,185,129,0.12)' : 'none',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -237,9 +320,8 @@ export default function BillingPage() {
               width: 52,
               height: 52,
               borderRadius: 12,
-              background:
-                'color-mix(in srgb, var(--primary) 18%, transparent)',
-              color: 'var(--primary)',
+              background: `color-mix(in srgb, ${statusColor} 18%, transparent)`,
+              color: statusColor,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -256,12 +338,12 @@ export default function BillingPage() {
                 fontSize: 11,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--primary)',
+                color: statusColor,
                 fontWeight: 600,
               }}
             >
               Current plan
-              <Pill color="var(--primary)">ACTIVE</Pill>
+              <Pill color={statusColor}>{statusLabel}</Pill>
             </div>
             <div
               style={{
@@ -272,27 +354,50 @@ export default function BillingPage() {
                 letterSpacing: '-0.02em',
               }}
             >
-              Growth · $497 / month
+              {planInfo.name} &middot; {planInfo.price} / month
             </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: 'var(--text-muted)',
-                marginTop: 2,
-              }}
-            >
-              Next invoice: May 15, 2026 · Visa •••• 4242
-            </div>
+            {periodEnd && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'var(--text-muted)',
+                  marginTop: 2,
+                }}
+              >
+                {cancelAtPeriodEnd
+                  ? `Cancels on ${periodEnd}`
+                  : `Next invoice: ${periodEnd}`}
+              </div>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" className="filter-pill">
-            Change plan
-          </button>
-          <button type="button" className="btn-primary">
-            <ArrowUpRight size={14} />
-            Upgrade to Scale
-          </button>
+          {data?.hasSubscription && (
+            <button
+              type="button"
+              className="filter-pill"
+              onClick={openPortal}
+              disabled={portalLoading}
+              style={{ cursor: portalLoading ? 'wait' : 'pointer' }}
+            >
+              {portalLoading ? 'Opening...' : 'Manage billing'}
+            </button>
+          )}
+          {plan !== 'scale' && (
+            <a
+              href={`/checkout?plan=${plan === 'starter' ? 'pro' : 'scale'}`}
+              className="btn-primary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                textDecoration: 'none',
+              }}
+            >
+              <ArrowUpRight size={14} />
+              Upgrade to {plan === 'starter' ? 'Pro' : 'Scale'}
+            </a>
+          )}
         </div>
       </div>
 
@@ -316,158 +421,86 @@ export default function BillingPage() {
             gap: 16,
           }}
         >
-          {USAGE.map((u) => (
-            <UsageCard key={u.label} {...u} />
+          {usageEntries.map((u) => (
+            <UsageCard key={u.resource} {...u} />
           ))}
         </div>
       </div>
 
-      {/* Payment method */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 12,
-          }}
-        >
-          Payment method
-        </div>
-        <div
-          className="dark-card"
-          style={{
-            padding: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: 'color-mix(in srgb, #635bff 18%, transparent)',
-                color: '#635bff',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <CreditCard size={18} />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--text-bright)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                Visa ending in 4242
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: 'var(--text-muted)',
-                  marginTop: 2,
-                }}
-              >
-                Expires 08/2028 · Billing to anthony@taylorroofing.com
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="filter-pill"
-            disabled
-            style={{ opacity: 0.6, cursor: 'not-allowed' }}
-            title="Update card from Stripe Customer Portal (coming soon)"
+      {/* Payment method — opens Stripe portal */}
+      {data?.hasSubscription && (
+        <div style={{ marginTop: 28 }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'var(--text-bright)',
+              marginBottom: 12,
+            }}
           >
-            Update card
-          </button>
-        </div>
-      </div>
-
-      {/* Invoices */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 12,
-          }}
-        >
-          Invoice history
-        </div>
-        <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Invoice</th>
-                  <th>Date</th>
-                  <th style={{ textAlign: 'right' }}>Amount</th>
-                  <th style={{ textAlign: 'center' }}>Status</th>
-                  <th style={{ textAlign: 'right', width: 110 }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {INVOICES.map((inv) => (
-                  <tr key={inv.id}>
-                    <td
-                      style={{
-                        color: 'var(--text-bright)',
-                        fontWeight: 500,
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {inv.id}
-                    </td>
-                    <td style={{ color: 'var(--text-muted)' }}>{inv.date}</td>
-                    <td
-                      style={{
-                        textAlign: 'right',
-                        fontVariantNumeric: 'tabular-nums',
-                        color: 'var(--text-bright)',
-                      }}
-                    >
-                      {inv.amount}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <Pill color="var(--primary)">
-                        {inv.status.toUpperCase()}
-                      </Pill>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        type="button"
-                        className="filter-pill"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                        }}
-                      >
-                        <Download size={12} />
-                        PDF
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            Payment method
+          </div>
+          <div
+            className="dark-card"
+            style={{
+              padding: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: 'color-mix(in srgb, #635bff 18%, transparent)',
+                  color: '#635bff',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <CreditCard size={18} />
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--text-bright)',
+                  }}
+                >
+                  Managed by Stripe
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text-muted)',
+                    marginTop: 2,
+                  }}
+                >
+                  Update your payment method via the billing portal
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="filter-pill"
+              onClick={openPortal}
+              disabled={portalLoading}
+              style={{ cursor: portalLoading ? 'wait' : 'pointer' }}
+            >
+              {portalLoading ? 'Opening...' : 'Update card'}
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Plan comparison teaser */}
+      {/* Plan comparison */}
       <div style={{ marginTop: 28 }}>
         <div
           style={{
@@ -480,7 +513,7 @@ export default function BillingPage() {
           Compare plans
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-          Upgrade anytime — usage carries over within the cycle.
+          Upgrade anytime &mdash; usage carries over within the cycle.
         </div>
         <div
           className="billing-plan-grid"
@@ -490,112 +523,154 @@ export default function BillingPage() {
             gap: 16,
           }}
         >
-          {PLAN_TIERS.map((p) => (
-            <div
-              key={p.name}
-              className="dark-card"
-              style={{
-                padding: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
-                borderColor: p.current
-                  ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
-                  : 'var(--border)',
-                boxShadow: p.current ? '0 0 24px rgba(16,185,129,0.10)' : 'none',
-              }}
-            >
+          {Object.entries(PLAN_DISPLAY).map(([key, p]) => {
+            const isCurrent = key === plan;
+            return (
               <div
+                key={key}
+                className="dark-card"
                 style={{
+                  padding: 20,
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 8,
+                  flexDirection: 'column',
+                  gap: 12,
+                  borderColor: isCurrent
+                    ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
+                    : 'var(--border)',
+                  boxShadow: isCurrent ? '0 0 24px rgba(16,185,129,0.10)' : 'none',
                 }}
               >
                 <div
                   style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: 'var(--text-bright)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
                   }}
                 >
-                  {p.name}
-                </div>
-                {p.current ? (
-                  <Pill color="var(--primary)">CURRENT</Pill>
-                ) : null}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: 4,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    color: 'var(--text-bright)',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {p.price}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  / month
-                </span>
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                {p.hint}
-              </div>
-              <ul
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  listStyle: 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 8,
-                  marginTop: 4,
-                }}
-              >
-                {p.features.map((f) => (
-                  <li
-                    key={f}
+                  <div
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: 12,
-                      color: 'var(--text-body)',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: 'var(--text-bright)',
                     }}
                   >
-                    <CheckCircle2
-                      size={13}
-                      style={{ color: 'var(--primary)', flexShrink: 0 }}
-                    />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                className={p.current ? 'filter-pill' : 'btn-primary'}
-                disabled={p.current}
-                style={{
-                  marginTop: 'auto',
-                  opacity: p.current ? 0.6 : 1,
-                  cursor: p.current ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {p.current ? 'Current plan' : `Switch to ${p.name}`}
-              </button>
-            </div>
-          ))}
+                    {p.name}
+                  </div>
+                  {isCurrent && <Pill color="var(--primary)">CURRENT</Pill>}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 4,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 28,
+                      fontWeight: 700,
+                      color: 'var(--text-bright)',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {p.price}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    / month
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {p.hint}
+                </div>
+                <ul
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    listStyle: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    marginTop: 4,
+                  }}
+                >
+                  {p.features.map((f) => (
+                    <li
+                      key={f}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 12,
+                        color: 'var(--text-body)',
+                      }}
+                    >
+                      <CheckCircle2
+                        size={13}
+                        style={{ color: 'var(--primary)', flexShrink: 0 }}
+                      />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {isCurrent ? (
+                  <button
+                    type="button"
+                    className="filter-pill"
+                    disabled
+                    style={{
+                      marginTop: 'auto',
+                      opacity: 0.6,
+                      cursor: 'not-allowed',
+                    }}
+                  >
+                    Current plan
+                  </button>
+                ) : (
+                  <a
+                    href={`/checkout?plan=${key}`}
+                    className="btn-primary"
+                    style={{
+                      marginTop: 'auto',
+                      textDecoration: 'none',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Switch to {p.name}
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* No subscription CTA */}
+      {!data?.hasSubscription && (
+        <div
+          className="dark-card"
+          style={{
+            padding: 24,
+            marginTop: 28,
+            textAlign: 'center',
+            borderColor: 'color-mix(in srgb, var(--primary) 30%, var(--border))',
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-bright)', marginBottom: 8 }}>
+            No active subscription
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+            Choose a plan to unlock all Chatty.AI features.
+          </div>
+          <a
+            href="/checkout?plan=starter"
+            className="btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Get started
+          </a>
+        </div>
+      )}
 
       <style jsx>{`
         @media (max-width: 1100px) {

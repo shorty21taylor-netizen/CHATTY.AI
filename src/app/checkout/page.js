@@ -1,37 +1,74 @@
 'use client';
 
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import MacWindow from "@/components/MacWindow";
 
+const PLANS = {
+  starter: {
+    name: "Starter",
+    monthly: 199,
+    annual: 169,
+    features: [
+      "2,000 SMS / month",
+      "200 voice minutes",
+      "3 AI agents",
+      "1 team seat",
+      "Daily Brief SMS",
+    ],
+  },
+  pro: {
+    name: "Pro",
+    monthly: 499,
+    annual: 419,
+    features: [
+      "5,000 SMS / month",
+      "500 voice minutes",
+      "All 11 AI agents",
+      "5 team seats",
+      "Telegram EA included",
+      "Priority support",
+    ],
+  },
+};
+
 function CheckoutInner() {
   const searchParams = useSearchParams();
-  const plan = searchParams.get("plan") || "inbound";
+  const router = useRouter();
+  const planKey = searchParams.get("plan") || "starter";
+  const canceled = searchParams.get("canceled") === "true";
 
-  const isBoth = plan === "both";
-  const name = isBoth ? "Inbound + Outbound" : "Inbound";
-  const price = isBoth ? 157 : 97;
-  const features = isBoth
-    ? [
-        "Unlimited inbound calls",
-        "Outbound dialer & lead lists",
-        "Lead qualification",
-        "Calendar booking",
-        "Telegram EA included",
-        "Priority support",
-      ]
-    : [
-        "Unlimited inbound calls",
-        "Lead qualification",
-        "Calendar booking",
-        "Call recordings & transcripts",
-        "Telegram EA included",
-      ];
+  const plan = PLANS[planKey] || PLANS.starter;
+  const [cycle, setCycle] = useState("monthly");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleContinue = () => {
-    console.log("[stub] Continue to Stripe — plan:", plan, "price:", price);
-    alert("Stripe integration comes in the next prompt. (Stub)");
+  const price = cycle === "annual" ? plan.annual : plan.monthly;
+  const savings = cycle === "annual" ? (plan.monthly - plan.annual) * 12 : 0;
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stripe/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planKey, billing_cycle: cycle }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to create checkout session");
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +90,7 @@ function CheckoutInner() {
             fontWeight: 500,
           }}
         >
-          ← Back to home
+          &larr; Back to home
         </Link>
 
         <h1
@@ -77,6 +114,40 @@ function CheckoutInner() {
         >
           Review your plan and continue to secure payment.
         </p>
+
+        {canceled && (
+          <div
+            style={{
+              padding: "12px 16px",
+              marginBottom: 20,
+              borderRadius: 8,
+              background: "color-mix(in srgb, #f59e0b 12%, transparent)",
+              border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+              color: "#f59e0b",
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+          >
+            Checkout was canceled. You can try again whenever you&apos;re ready.
+          </div>
+        )}
+
+        {error && (
+          <div
+            style={{
+              padding: "12px 16px",
+              marginBottom: 20,
+              borderRadius: 8,
+              background: "color-mix(in srgb, #ef4444 12%, transparent)",
+              border: "1px solid color-mix(in srgb, #ef4444 30%, transparent)",
+              color: "#ef4444",
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <MacWindow title="plan summary">
           <div
@@ -107,7 +178,7 @@ function CheckoutInner() {
                   marginTop: 4,
                 }}
               >
-                {name}
+                {plan.name}
               </div>
             </div>
             <div
@@ -118,11 +189,7 @@ function CheckoutInner() {
                 letterSpacing: "-0.02em",
               }}
             >
-              <span
-                style={{ fontSize: 20, color: "var(--ink-soft)" }}
-              >
-                $
-              </span>
+              <span style={{ fontSize: 20, color: "var(--ink-soft)" }}>$</span>
               {price}
               <span
                 style={{
@@ -132,10 +199,49 @@ function CheckoutInner() {
                   fontWeight: 500,
                 }}
               >
-                {" "}
-                / mo
+                {" "}/ mo
               </span>
             </div>
+          </div>
+
+          {/* Billing cycle toggle */}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 18,
+            }}
+          >
+            {["monthly", "annual"].map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCycle(c)}
+                style={{
+                  flex: 1,
+                  padding: "10px 0",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  border: cycle === c
+                    ? "1.5px solid var(--green)"
+                    : "1px solid var(--ink-faint, #333)",
+                  borderRadius: 8,
+                  background: cycle === c
+                    ? "color-mix(in srgb, var(--green) 10%, transparent)"
+                    : "transparent",
+                  color: cycle === c ? "var(--green)" : "var(--ink-soft)",
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                }}
+              >
+                {c}
+                {c === "annual" && savings > 0 && (
+                  <span style={{ fontSize: 11, marginLeft: 6, opacity: 0.8 }}>
+                    Save ${savings}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
 
           <div className="soft-divider" style={{ margin: "12px 0 18px" }} />
@@ -150,7 +256,7 @@ function CheckoutInner() {
               gap: 11,
             }}
           >
-            {features.map((f) => (
+            {plan.features.map((f) => (
               <li
                 key={f}
                 style={{
@@ -161,7 +267,7 @@ function CheckoutInner() {
                 }}
               >
                 <span className="gold-accent" style={{ fontWeight: 700 }}>
-                  ✓
+                  &#10003;
                 </span>
                 {f}
               </li>
@@ -192,7 +298,7 @@ function CheckoutInner() {
             }}
           >
             <span>Billed</span>
-            <span>Monthly</span>
+            <span style={{ textTransform: "capitalize" }}>{cycle}</span>
           </div>
           <div
             style={{
@@ -203,20 +309,23 @@ function CheckoutInner() {
             }}
           >
             <span>Total today</span>
-            <span>${price}.00</span>
+            <span>${cycle === "annual" ? price * 12 : price}.00</span>
           </div>
 
           <button
-            onClick={handleContinue}
+            onClick={handleCheckout}
+            disabled={loading}
             className="mac-btn"
             style={{
               width: "100%",
               marginTop: 22,
               border: "none",
               fontSize: 15,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "wait" : "pointer",
             }}
           >
-            Continue to Stripe →
+            {loading ? "Redirecting..." : "Continue to Stripe \u2192"}
           </button>
 
           <div
@@ -227,7 +336,7 @@ function CheckoutInner() {
               marginTop: 14,
             }}
           >
-            Secure checkout · Cancel anytime · No setup fee
+            Secure checkout &middot; Cancel anytime &middot; No setup fee
           </div>
         </MacWindow>
 
@@ -239,12 +348,12 @@ function CheckoutInner() {
             textAlign: "center",
           }}
         >
-          Already paid?{" "}
+          Already subscribed?{" "}
           <Link
-            href="/onboarding"
+            href="/dashboard/billing"
             style={{ color: "var(--green)", fontWeight: 600 }}
           >
-            Skip to onboarding →
+            Go to billing &rarr;
           </Link>
         </div>
       </div>
@@ -256,7 +365,7 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div style={{ padding: 60, textAlign: "center" }}>Loading…</div>
+        <div style={{ padding: 60, textAlign: "center" }}>Loading&hellip;</div>
       }
     >
       <CheckoutInner />
