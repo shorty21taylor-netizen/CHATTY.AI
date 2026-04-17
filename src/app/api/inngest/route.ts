@@ -13,6 +13,7 @@ import { cadenceStepExecuteWorkflow } from "@/inngest/workflows/cadence-step-exe
 import { reclaimSweeperDispatcher } from "@/inngest/workflows/reclaim-sweeper-dispatcher";
 import { reclaimSweepOrg } from "@/inngest/workflows/reclaim-sweep-org";
 import { simulationRunWorkflow } from "@/inngest/workflows/simulation-run";
+import { briefScheduler } from "@/inngest/workflows/brief-scheduler";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -28,5 +29,6 @@ export const { GET, POST, PUT } = serve({
     reclaimSweeperDispatcher,
     reclaimSweepOrg,
     simulationRunWorkflow,
+    briefScheduler,
   ],
 });
