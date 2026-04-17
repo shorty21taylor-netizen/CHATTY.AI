@@ -27,6 +27,7 @@ import {
   Menu,
   X,
   Sparkles,
+  FlaskConical,
 } from 'lucide-react';
 import { getAdminSession, clearAdminSession } from '@/lib/admin';
 import { hydrateFromServer } from '@/lib/agents/storage';
@@ -69,6 +70,7 @@ const NAV_GROUPS = [
       { href: '/dashboard/agents', label: 'All Agents', icon: Bot },
       { href: '/dashboard/agents/voice-receptionist', label: 'Voice Receptionist', icon: Mic },
       { href: '/dashboard/agents/telegram-ea', label: 'Telegram EA', icon: MessageSquare },
+      { href: '/dashboard/agents/simulations', label: 'Simulations', icon: FlaskConical },
     ],
   },
   {
