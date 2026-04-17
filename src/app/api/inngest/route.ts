@@ -10,6 +10,8 @@ import { feedbackProcess } from "@/inngest/workflows/feedback-process";
 import { agentRunWorkflow } from "@/inngest/workflows/agent-run";
 import { agentInboundReply } from "@/inngest/workflows/agent-inbound-reply";
 import { cadenceStepExecuteWorkflow } from "@/inngest/workflows/cadence-step-execute";
+import { reclaimSweeperDispatcher } from "@/inngest/workflows/reclaim-sweeper-dispatcher";
+import { reclaimSweepOrg } from "@/inngest/workflows/reclaim-sweep-org";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -22,5 +24,7 @@ export const { GET, POST, PUT } = serve({
     agentRunWorkflow,
     agentInboundReply,
     cadenceStepExecuteWorkflow,
+    reclaimSweeperDispatcher,
+    reclaimSweepOrg,
   ],
 });

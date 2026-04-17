@@ -250,6 +250,126 @@ export async function emitJobCompleted(orgId: string, job: Job) {
   });
 }
 
+// ============================================================================
+// Reclaim emit helpers — called by the reclaim sweeper
+// ============================================================================
+
+interface ReclaimLeadData {
+  id: string;
+  contact_id: string;
+  title?: string | null;
+  service_type?: string | null;
+  status: string;
+  priority?: string | null;
+  estimated_value?: string | null;
+}
+
+export async function emitLeadDormant(orgId: string, lead: ReclaimLeadData) {
+  const signalData = {
+    lead_id: lead.id,
+    contact_id: lead.contact_id,
+    title: lead.title,
+    service_type: lead.service_type,
+    status: lead.status,
+    priority: lead.priority,
+    estimated_value: lead.estimated_value,
+    reclaim_type: "dead_lead_reactivation",
+  };
+
+  await persistSignal(orgId, {
+    event_type: "lead_dormant",
+    entity_type: "lead",
+    entity_id: lead.id,
+    data: signalData,
+    source_id: lead.id,
+    timestamp: new Date().toISOString(),
+  });
+
+  dispatchAgentsForEvent({
+    orgId,
+    eventType: "lead_dormant",
+    entityType: "contact",
+    entityId: lead.contact_id,
+    data: signalData,
+  }).catch((err) => console.error("[emitLeadDormant] dispatch failed:", err));
+}
+
+interface ReclaimEstimateData {
+  id: string;
+  contact_id: string;
+  title?: string | null;
+  total?: string | null;
+  estimate_number?: string | null;
+  sent_at?: string | null;
+}
+
+export async function emitEstimateGhosted(orgId: string, est: ReclaimEstimateData) {
+  const signalData = {
+    estimate_id: est.id,
+    contact_id: est.contact_id,
+    title: est.title,
+    total: est.total,
+    estimate_number: est.estimate_number,
+    sent_at: est.sent_at,
+    reclaim_type: "ghosted_bid_follow_up",
+  };
+
+  await persistSignal(orgId, {
+    event_type: "estimate_ghosted",
+    entity_type: "estimate",
+    entity_id: est.id,
+    data: signalData,
+    source_id: est.id,
+    timestamp: new Date().toISOString(),
+  });
+
+  dispatchAgentsForEvent({
+    orgId,
+    eventType: "estimate_ghosted",
+    entityType: "contact",
+    entityId: est.contact_id,
+    data: signalData,
+  }).catch((err) => console.error("[emitEstimateGhosted] dispatch failed:", err));
+}
+
+interface ReclaimJobData {
+  id: string;
+  contact_id: string;
+  title?: string | null;
+  service_type?: string | null;
+  job_value?: string | null;
+  completed_at?: string | null;
+}
+
+export async function emitCustomerDormant(orgId: string, job: ReclaimJobData) {
+  const signalData = {
+    job_id: job.id,
+    contact_id: job.contact_id,
+    title: job.title,
+    service_type: job.service_type,
+    job_value: job.job_value,
+    completed_at: job.completed_at,
+    reclaim_type: "past_customer_reengagement",
+  };
+
+  await persistSignal(orgId, {
+    event_type: "customer_dormant",
+    entity_type: "job",
+    entity_id: job.id,
+    data: signalData,
+    source_id: job.id,
+    timestamp: new Date().toISOString(),
+  });
+
+  dispatchAgentsForEvent({
+    orgId,
+    eventType: "customer_dormant",
+    entityType: "contact",
+    entityId: job.contact_id,
+    data: signalData,
+  }).catch((err) => console.error("[emitCustomerDormant] dispatch failed:", err));
+}
+
 export async function emitInteractionLogged(
   orgId: string,
   interaction: Interaction

@@ -37,9 +37,20 @@ const PILLARS = [
   },
 ];
 
+function formatSweepAge(isoStr) {
+  if (!isoStr) return null;
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const hours = Math.floor(diff / 3_600_000);
+  if (hours < 1) return 'just now';
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export default function AgentsPage() {
   const [hydrated, setHydrated] = useState(false);
   const [configs, setConfigs] = useState({});
+  const [lastSweepAt, setLastSweepAt] = useState(null);
 
   useEffect(() => {
     const all = {};
@@ -48,6 +59,15 @@ export default function AgentsPage() {
     }
     setConfigs(all);
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/reclaim/state')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.lastSweepAt) setLastSweepAt(data.lastSweepAt);
+      })
+      .catch(() => {});
   }, []);
 
   const telegramEa = AGENT_TYPES.find((a) => a.id === 'telegram-ea');
@@ -102,6 +122,7 @@ export default function AgentsPage() {
             pillar={pillar}
             configs={configs}
             hydrated={hydrated}
+            lastSweepAt={pillar.id === 'reclaim' ? lastSweepAt : null}
           />
         ))}
       </div>
@@ -312,7 +333,7 @@ function HeroStat({ label, value }) {
 // Pillar
 // ---------------------------------------------------------------------------
 
-function PillarSection({ pillar, configs, hydrated }) {
+function PillarSection({ pillar, configs, hydrated, lastSweepAt }) {
   return (
     <section>
       {/* Pillar header */}
@@ -347,6 +368,11 @@ function PillarSection({ pillar, configs, hydrated }) {
             }}
           >
             {pillar.description}
+            {lastSweepAt ? (
+              <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--text-muted)', opacity: 0.7 }}>
+                Last swept: {formatSweepAge(lastSweepAt)}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

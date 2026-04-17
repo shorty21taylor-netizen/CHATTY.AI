@@ -201,7 +201,7 @@ export const AGENT_TYPES = [
       { id: 'reply_rate', label: 'Reply rate (%)' },
       { id: 'revenue_recovered', label: 'Revenue recovered' },
     ],
-    defaultEventType: 'no_contact_30d',
+    defaultEventType: 'lead_dormant',
     simulationScenarios: [
       'Dormant Hot Lead',
       'Unsubscribe Request',
@@ -225,7 +225,7 @@ export const AGENT_TYPES = [
       { id: 'reply_rate', label: 'Reply rate (%)' },
       { id: 'revenue_recovered', label: 'Revenue recovered' },
     ],
-    defaultEventType: 'quote_no_reply_7d',
+    defaultEventType: 'estimate_ghosted',
     simulationScenarios: [
       'Forgot to Reply',
       'Chose Competitor',
@@ -249,7 +249,7 @@ export const AGENT_TYPES = [
       { id: 'referral_rate', label: 'Referral rate (%)' },
       { id: 'revenue_generated', label: 'Revenue generated' },
     ],
-    defaultEventType: 'past_customer_12mo',
+    defaultEventType: 'customer_dormant',
     simulationScenarios: [
       'Loyal Repeat',
       'Referral Source',

@@ -840,6 +840,18 @@ export const cadenceRuns = pgTable(
   ],
 );
 
+// ===========================================================================
+// 22. org_reclaim_state — per-org reclaim sweeper state
+// ===========================================================================
+
+export const orgReclaimState = pgTable("org_reclaim_state", {
+  orgId: uuid("org_id").primaryKey(),
+  lastSweepAt: timestamp("last_sweep_at", { withTimezone: true }),
+  sweepResults: jsonb("sweep_results").notNull().default({}),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -881,6 +893,7 @@ export type CadenceStep = typeof cadenceSteps.$inferSelect;
 export type NewCadenceStep = typeof cadenceSteps.$inferInsert;
 export type CadenceRun = typeof cadenceRuns.$inferSelect;
 export type NewCadenceRun = typeof cadenceRuns.$inferInsert;
+export type OrgReclaimState = typeof orgReclaimState.$inferSelect;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -908,6 +921,7 @@ export const RLS_TABLES = [
   "agent_escalations",
   "agent_cadences",
   "cadence_runs",
+  "org_reclaim_state",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
