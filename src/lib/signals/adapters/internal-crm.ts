@@ -4,6 +4,7 @@ import type {
 } from "@/lib/db/types";
 import { insertSignalEvent } from "@/lib/db/queries";
 import { generateEmbedding, eventToEmbeddingText } from "@/lib/utils/embedding";
+import { dispatchAgentsForEvent } from "@/lib/agents/dispatcher";
 
 /**
  * Internal CRM Signal Adapter
@@ -82,27 +83,37 @@ export async function emitContactCreated(orgId: string, contact: Contact) {
 }
 
 export async function emitLeadCreated(orgId: string, lead: Lead) {
-  return persistSignal(orgId, {
+  const signalData = {
+    lead_id: lead.id,
+    contact_id: lead.contact_id,
+    title: lead.title,
+    service_type: lead.service_type,
+    status: lead.status,
+    priority: lead.priority,
+    estimated_value: lead.estimated_value,
+    assigned_to: lead.assigned_to,
+    source: lead.source,
+    source_detail: lead.source_detail,
+    follow_up_date: lead.follow_up_date,
+    appointment_date: lead.appointment_date,
+  };
+
+  await persistSignal(orgId, {
     event_type: "lead_created",
     entity_type: "lead",
     entity_id: lead.id,
-    data: {
-      lead_id: lead.id,
-      contact_id: lead.contact_id,
-      title: lead.title,
-      service_type: lead.service_type,
-      status: lead.status,
-      priority: lead.priority,
-      estimated_value: lead.estimated_value,
-      assigned_to: lead.assigned_to,
-      source: lead.source,
-      source_detail: lead.source_detail,
-      follow_up_date: lead.follow_up_date,
-      appointment_date: lead.appointment_date,
-    },
+    data: signalData,
     source_id: lead.id,
     timestamp: new Date().toISOString(),
   });
+
+  dispatchAgentsForEvent({
+    orgId,
+    eventType: "lead_received",
+    entityType: "lead",
+    entityId: lead.id,
+    data: signalData,
+  }).catch((err) => console.error("[emitLeadCreated] dispatch failed:", err));
 }
 
 export async function emitLeadStatusChanged(

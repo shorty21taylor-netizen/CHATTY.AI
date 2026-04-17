@@ -1,70 +1,36 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Loader2 } from 'lucide-react';
 import { getAgentById } from '@/lib/agents/registry';
 import { loadAgentConfig, agentConfigStatus } from '@/lib/agents/storage';
 import { StatusBadge, ProgressRing } from '@/components/agent/FormPrimitives';
 import { AgentTabs } from '@/components/agent/AgentTabs';
 
-// 30-row mock audit log
-const ACTIONS = [
-  'Sent SMS',
-  'Draft queued',
-  'Escalated',
-  'Booked appointment',
-  'Tagged contact',
-  'Updated status',
-  'Logged call',
-  'Sent email',
-];
-const TARGETS = [
-  'Patricia Williams',
-  'Marcus Miller',
-  'James Rodriguez',
-  'Sarah Chen',
-  'Kevin Park',
-  'Jennifer Davis',
-  'Robert Thompson',
-  'Linda Martinez',
-  'Daniel Kim',
-  'Emily Nguyen',
-  'Carlos Ramirez',
-  'Angela Foster',
-];
-const OUTCOMES = [
-  { text: 'Delivered', color: 'var(--primary)' },
-  { text: 'Replied', color: 'var(--primary)' },
-  { text: 'Awaiting approval', color: '#f59e0b' },
-  { text: 'Notified Telegram EA', color: '#3b82f6' },
-  { text: 'Tag: price-sensitive', color: 'var(--text-muted)' },
-  { text: 'Status: qualified', color: 'var(--text-muted)' },
-  { text: 'Thu 2pm', color: 'var(--primary)' },
-  { text: 'No reply', color: 'var(--text-muted)' },
-  { text: 'Failed to deliver', color: 'var(--negative)' },
-];
+const ACTION_LABELS = {
+  send_sms: 'Sent SMS',
+  send_email: 'Sent email',
+  book_appointment: 'Booked appointment',
+  update_contact_status: 'Updated status',
+  tag_contact: 'Tagged contact',
+  escalate_to_human: 'Escalated',
+  query_database: 'Queried DB',
+  create_proposal_draft: 'Draft proposal',
+  send_existing_proposal: 'Sent proposal',
+  outbound_voice_call: 'Voice call',
+};
 
-function buildMockLog() {
-  const now = new Date();
-  return Array.from({ length: 30 }, (_, i) => {
-    // stagger ~12–55 min apart
-    const minsAgo = i * 17 + (i % 3) * 8;
-    const d = new Date(now.getTime() - minsAgo * 60 * 1000);
-    const action = ACTIONS[i % ACTIONS.length];
-    const target = TARGETS[(i * 3) % TARGETS.length];
-    const outcome = OUTCOMES[(i * 5) % OUTCOMES.length];
-    return {
-      id: i + 1,
-      at: d,
-      action,
-      target,
-      outcome: outcome.text,
-      outcomeColor: outcome.color,
-    };
-  });
-}
+const STATUS_COLORS = {
+  sent: 'var(--primary)',
+  shadow_skipped: '#8b5cf6',
+  send_skipped_no_twilio: '#f59e0b',
+  skipped_no_phone: '#f59e0b',
+  pending: 'var(--text-muted)',
+  failed: 'var(--negative)',
+  success: 'var(--primary)',
+};
 
 function formatTs(d) {
   const today = new Date();
@@ -83,6 +49,45 @@ function formatTs(d) {
   })} · ${time}`;
 }
 
+function normalizeRows(data) {
+  if (!data?.activities?.length && !data?.runs?.length) return [];
+
+  if (data.activities?.length) {
+    return data.activities.map((row) => {
+      const a = row.activity ?? row;
+      const r = row.run ?? {};
+      const result = a.result ?? {};
+      const payload = a.actionPayload ?? {};
+      return {
+        id: a.id,
+        at: new Date(a.createdAt),
+        action: ACTION_LABELS[a.actionType] || a.actionType,
+        actionType: a.actionType,
+        target: payload.to || r.contactId || '—',
+        outcome: result.status || 'unknown',
+        outcomeColor: STATUS_COLORS[result.status] || 'var(--text-muted)',
+        body: payload.body || null,
+        runStatus: r.status || null,
+      };
+    });
+  }
+
+  return data.runs.map((r) => {
+    const trace = r.reasoningTrace ?? {};
+    return {
+      id: r.id,
+      at: new Date(r.createdAt),
+      action: trace.eventType || 'Run',
+      actionType: 'run',
+      target: trace.entityId || r.contactId || '—',
+      outcome: trace.sendStatus || r.status,
+      outcomeColor: STATUS_COLORS[r.status] || 'var(--text-muted)',
+      body: trace.smsBody || null,
+      runStatus: r.status,
+    };
+  });
+}
+
 export default function ActivityAgentPage({ params }) {
   const { id } = use(params);
   const agent = getAgentById(id);
@@ -92,20 +97,37 @@ export default function ActivityAgentPage({ params }) {
   const [config, setConfig] = useState(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
-
-  const log = useMemo(() => buildMockLog(), []);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setConfig(loadAgentConfig(id));
     setHydrated(true);
   }, [id]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/agents/${id}/activity`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) {
+          setRows(normalizeRows(data));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [id]);
+
   const status = useMemo(() => agentConfigStatus(config), [config]);
   const Icon = agent.icon;
 
   const filtered = useMemo(() => {
-    return log.filter((row) => {
-      if (filter !== 'all' && row.action !== filter) return false;
+    return rows.filter((row) => {
+      if (filter !== 'all' && row.actionType !== filter) return false;
       if (query) {
         const q = query.toLowerCase();
         return (
@@ -116,9 +138,9 @@ export default function ActivityAgentPage({ params }) {
       }
       return true;
     });
-  }, [log, query, filter]);
+  }, [rows, query, filter]);
 
-  const uniqueActions = Array.from(new Set(log.map((r) => r.action)));
+  const uniqueActions = Array.from(new Set(rows.map((r) => r.actionType)));
 
   return (
     <div>
@@ -172,7 +194,6 @@ export default function ActivityAgentPage({ params }) {
               className="t-h1"
               style={{
                 margin: '4px 0 6px',
-                letterSpacing: '-0.02em',
                 letterSpacing: '-0.01em',
               }}
             >
@@ -274,7 +295,7 @@ export default function ActivityAgentPage({ params }) {
           <option value="all">All actions</option>
           {uniqueActions.map((a) => (
             <option key={a} value={a}>
-              {a}
+              {ACTION_LABELS[a] || a}
             </option>
           ))}
         </select>
@@ -286,53 +307,69 @@ export default function ActivityAgentPage({ params }) {
             marginLeft: 'auto',
           }}
         >
-          Showing {filtered.length} of {log.length}
+          {loading ? 'Loading…' : `Showing ${filtered.length} of ${rows.length}`}
         </div>
       </div>
 
       {/* Table */}
       <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Action</th>
-              <th>Target</th>
-              <th>Outcome</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((row) => (
-              <tr key={row.id}>
-                <td style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                  {formatTs(row.at)}
-                </td>
-                <td style={{ fontWeight: 500, color: 'var(--text-bright)' }}>
-                  {row.action}
-                </td>
-                <td>{row.target}</td>
-                <td style={{ color: row.outcomeColor, fontWeight: 500 }}>
-                  {row.outcome}
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 ? (
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: 40,
+              color: 'var(--text-muted)',
+              fontSize: 13,
+            }}
+          >
+            <Loader2 size={16} className="animate-spin" /> Loading activity…
+          </div>
+        ) : (
+          <table className="data-table">
+            <thead>
               <tr>
-                <td
-                  colSpan={4}
-                  style={{
-                    color: 'var(--text-muted)',
-                    fontSize: 13,
-                    textAlign: 'center',
-                    padding: 24,
-                  }}
-                >
-                  No activity matches that filter.
-                </td>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Outcome</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((row) => (
+                <tr key={row.id}>
+                  <td style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    {formatTs(row.at)}
+                  </td>
+                  <td style={{ fontWeight: 500, color: 'var(--text-bright)' }}>
+                    {row.action}
+                  </td>
+                  <td>{row.target}</td>
+                  <td style={{ color: row.outcomeColor, fontWeight: 500 }}>
+                    {row.outcome}
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    style={{
+                      color: 'var(--text-muted)',
+                      fontSize: 13,
+                      textAlign: 'center',
+                      padding: 24,
+                    }}
+                  >
+                    No activity yet. Agent runs will appear here once triggered.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
