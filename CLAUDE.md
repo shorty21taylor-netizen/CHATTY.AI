@@ -232,6 +232,33 @@ and status, fetches the conversation transcript from ElevenLabs, emits a
 and dispatches downstream agents. Optionally ElevenLabs posts to
 `/api/voice/elevenlabs-webhook` with outcome analysis to enrich the row.
 
+### Telegram Executive Assistant
+Personal EA for the operator, accessible via Telegram bot.
+
+**Link Flow:** Dashboard → `POST /api/telegram/link` (Clerk-authed) → generates
+6-digit code stored in Redis with 10min TTL → returns `https://t.me/{bot}?start={code}`.
+User opens the link in Telegram → bot receives `/start {code}` → webhook at
+`/api/webhooks/telegram` looks up the code in Redis, creates a `telegram_sessions`
+row linking `chat_id` ↔ `org_id`, deletes the code.
+
+**Message Flow:** Inbound Telegram message → webhook verifies
+`X-Telegram-Bot-Api-Secret-Token` → persists to `telegram_messages` →
+dispatches to `ea-agent.ts`:
+- `/brief` — fetches today's Daily Brief via `briefQueries.today()`
+- `/metrics` — fetches `crm_daily_activity` view
+- `/pipeline` — fetches `crm_pipeline_summary` + top 5 open leads
+- `/help` — static command reference
+- Plain text — Claude Haiku (`claude-haiku-4-5-20251001`) with org metrics context
+
+**Files:**
+- `src/lib/telegram/client.ts` — Telegram Bot API wrapper (sendMessage, setWebhook, etc.)
+- `src/lib/telegram/ea-agent.ts` — Command dispatcher + Claude Haiku NL fallback
+- `src/app/api/webhooks/telegram/route.ts` — Webhook handler
+- `src/app/api/telegram/link/route.ts` — Link code generation (Clerk-authed)
+- `src/app/api/telegram/messages/route.ts` — Messages + sessions API (Clerk-authed)
+- `src/app/dashboard/agents/telegram-ea/page.js` — Dashboard UI
+- `db/migrations/010_telegram_ea.sql` — telegram_sessions + telegram_messages tables
+
 ## Decision Engine: 3-Pass Claude Chain
 
 ### Pass 1: Signal Analysis
@@ -325,6 +352,11 @@ INNGEST_SIGNING_KEY=...
 # Meta DMs (Messenger / Instagram)
 META_APP_SECRET=...
 META_VERIFY_TOKEN=...
+
+# Telegram EA Bot
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_WEBHOOK_SECRET=...
+TELEGRAM_BOT_USERNAME=ChattyOpsBot
 
 # Application
 NEXT_PUBLIC_APP_URL=https://chattyai-production.up.railway.app
