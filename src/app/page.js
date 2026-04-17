@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Button } from '@/components/ui/Button';
@@ -21,6 +21,8 @@ import { TrustSection } from '@/components/landing/TrustSection';
 import { Pricing } from '@/components/landing/Pricing';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
+import { StackCompatibility } from '@/components/landing/StackCompatibility';
+import { ResultsStrip } from '@/components/landing/ResultsStrip';
 
 function ScrollProgress() {
   const { scrollYProgress } = useScroll();
@@ -129,42 +131,27 @@ export default function Landing() {
               <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                 <AnimatedGroup variants={transitionVariants}>
                   {/* Eyebrow pill */}
-                  <a
-                    href="#features"
-                    className="hover:bg-white/5 group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 transition-all duration-300"
+                  <div
+                    className="mx-auto flex w-fit items-center gap-2 rounded-full border px-4 py-1.5"
                     style={{ borderColor: 'var(--dark-border)', background: 'rgba(16,185,129,0.05)' }}
                   >
-                    <span className="text-sm" style={{ color: 'var(--text-bright)' }}>
-                      <span style={{ color: 'var(--emerald-bright)' }}>{'\u25CF'}</span> Built for roofers, HVAC, remodelers &amp; GCs
+                    <span className="text-xs font-medium tracking-wide" style={{ color: 'var(--emerald-bright)' }}>
+                      For roofing, HVAC, solar, exteriors, remodeling
                     </span>
-                    <span className="block h-4 w-0.5" style={{ background: 'var(--dark-border)' }} />
-                    <div
-                      className="size-6 overflow-hidden rounded-full duration-500"
-                      style={{ background: 'var(--emerald-bright)' }}
-                    >
-                      <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                        <span className="flex size-6">
-                          <ArrowRight className="m-auto size-3" style={{ color: '#06140e' }} />
-                        </span>
-                        <span className="flex size-6">
-                          <ArrowRight className="m-auto size-3" style={{ color: '#06140e' }} />
-                        </span>
-                      </div>
-                    </div>
-                  </a>
+                  </div>
 
                   {/* Headline */}
                   <h1
-                    className="mt-8 max-w-5xl mx-auto text-balance font-bold tracking-tight text-5xl md:text-6xl lg:mt-16 xl:text-7xl"
-                    style={{ color: 'var(--text-bright)', lineHeight: 1.02, letterSpacing: '-0.04em' }}
+                    className="mt-8 max-w-5xl mx-auto text-balance font-bold text-5xl md:text-6xl lg:mt-16 xl:text-7xl"
+                    style={{ color: 'var(--text-bright)', lineHeight: 1.02, letterSpacing: '-0.05em' }}
                   >
-                    Close more bids. Chase fewer leads.{' '}
-                    <span style={{ color: 'var(--emerald-bright)' }}>The sales OS for home services.</span>
+                    Close more bids.{' '}
+                    <span style={{ color: 'var(--emerald-bright)' }}>Chase fewer leads.</span>
                   </h1>
 
                   {/* Subhead */}
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg" style={{ color: 'var(--text-muted)' }}>
-                    Every lead answered. Every estimate followed up. Every dead lead worked. Chatty is the AI sales team built for general contractors, remodelers, roofers, and HVAC pros &mdash; we close the leaks in your funnel so you close more jobs.
+                    Contractors using Chatty AI book 3&ndash;5 more jobs a week on the same lead volume. One daily brief tells you which leads to call, which bids to chase, and what to skip.
                   </p>
                 </AnimatedGroup>
 
@@ -180,11 +167,11 @@ export default function Landing() {
                     className="rounded-[14px] border p-0.5"
                     style={{ borderColor: 'var(--dark-border)', background: 'rgba(16,185,129,0.1)' }}
                   >
-                    <Button size="lg" className="rounded-xl px-5 text-base" onClick={() => handleGetStarted('convert')}>
+                    <Button size="lg" className="rounded-xl px-6 py-3 text-base font-semibold" onClick={() => handleGetStarted('convert')}>
                       See Your Funnel
                     </Button>
                   </div>
-                  <Button size="lg" variant="ghost" className="rounded-xl px-5">
+                  <Button size="lg" variant="ghost" className="rounded-xl px-5 text-sm">
                     Book a demo
                   </Button>
                 </AnimatedGroup>
@@ -214,6 +201,14 @@ export default function Landing() {
             </AnimatedGroup>
           </div>
         </section>
+
+        <ScrollReveal variant="fadeUp" amount={0.3}>
+          <StackCompatibility />
+        </ScrollReveal>
+
+        <ScrollReveal variant="fadeUp" amount={0.3}>
+          <ResultsStrip />
+        </ScrollReveal>
 
         <ScrollReveal variant="fadeUp" amount={0.2}>
           <Pillars />

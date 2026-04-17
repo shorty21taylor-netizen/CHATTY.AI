@@ -7,57 +7,69 @@ import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 
 const TIERS = [
   {
-    name: 'Capture',
-    priceMonthly: 297,
-    tagline: 'Never miss a lead.',
+    name: 'Starter',
+    priceMonthly: 199,
+    tagline: 'Get your first Daily Brief tomorrow.',
     features: [
-      'Inbound Call Qualifier',
-      'Speed-to-Lead (web / Angi / LSA / FB)',
-      'SMS Concierge',
-      'Telegram EA included',
+      'Up to 500 leads/mo',
+      '3 agents included',
+      'Daily Brief via SMS',
+      'Built-in CRM',
+      'Telegram EA',
     ],
-    cta: 'Start with Capture',
-    plan: 'capture',
+    cta: 'Start with Starter',
+    plan: 'starter',
     popular: false,
   },
   {
-    name: 'Convert',
-    priceMonthly: 597,
-    tagline: 'Turn estimates into contracts.',
+    name: 'Pro',
+    priceMonthly: 499,
+    tagline: 'The full AI sales team.',
     features: [
-      'Everything in Capture',
-      'Appointment Confirmation',
-      'No-Show Rescue',
-      'Estimate Follow-Up',
-      'Objection Handler',
+      'Unlimited leads',
+      'All 11 agents',
+      'Voice agent (ElevenLabs)',
+      'Per-vertical playbooks',
+      'Priority support',
+      'Advanced analytics',
     ],
-    cta: 'Start with Convert',
-    plan: 'convert',
+    cta: 'Go Pro',
+    plan: 'pro',
     popular: true,
   },
   {
-    name: 'Full Funnel',
-    priceMonthly: 997,
-    tagline: 'Capture, convert, reclaim.',
+    name: 'Scale',
+    priceMonthly: null,
+    tagline: 'Multi-location, white-glove.',
     features: [
-      'Everything in Convert',
-      'Dead Lead Reactivation',
-      'Ghosted Bid Reopener',
-      'Old Customer Re-engagement',
-      'AI Voice Notes',
-      'Custom industry playbooks',
+      'Everything in Pro',
+      'Multi-location support',
+      'Sub-accounts',
+      'Dedicated CS manager',
+      'Custom integrations',
+      'SLA guarantee',
     ],
-    cta: 'Go Full Funnel',
-    plan: 'full',
+    cta: 'Talk to Sales',
+    plan: 'scale',
     popular: false,
   },
 ];
 
 export function Pricing({ onGetStarted }) {
   const [annual, setAnnual] = useState(false);
+  const [roiLeads, setRoiLeads] = useState(200);
+  const [roiCloseRate, setRoiCloseRate] = useState(15);
+  const [roiDealSize, setRoiDealSize] = useState(8000);
 
-  const priceFor = (m) => (annual ? Math.round((m * 10) / 12) : m);
+  const priceFor = (m) => {
+    if (m === null) return null;
+    return annual ? Math.round((m * 10) / 12) : m;
+  };
   const period = annual ? '/ mo, billed annually' : '/ mo';
+
+  const dailyRevenue = (roiLeads * (roiCloseRate / 100) * roiDealSize * 0.15) / 30;
+  const paybackRaw = dailyRevenue > 0 ? Math.round(499 / dailyRevenue) : 999;
+  const paybackDays = Math.max(1, Math.min(60, paybackRaw));
 
   return (
     <section id="pricing" className="py-20 md:py-28">
@@ -137,23 +149,37 @@ export function Pricing({ onGetStarted }) {
               style={{
                 padding: 32,
                 boxShadow: tier.popular ? '0 0 60px rgba(16,185,129,0.15)' : undefined,
+                borderLeft: tier.popular ? '4px solid var(--emerald-bright)' : undefined,
               }}
             >
               {tier.popular && (
-                <div
-                  className="lime-pill"
-                  style={{
-                    position: 'absolute',
-                    top: -16,
-                    right: 24,
-                    padding: '5px 14px',
-                    fontSize: 10.5,
-                    fontWeight: 800,
-                    letterSpacing: '0.1em',
-                  }}
-                >
-                  MOST POPULAR
-                </div>
+                <>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 3,
+                      background: 'var(--emerald-bright)',
+                      borderRadius: '12px 12px 0 0',
+                    }}
+                  />
+                  <div
+                    className="lime-pill"
+                    style={{
+                      position: 'absolute',
+                      top: -16,
+                      right: 24,
+                      padding: '5px 14px',
+                      fontSize: 10.5,
+                      fontWeight: 800,
+                      letterSpacing: '0.1em',
+                    }}
+                  >
+                    MOST POPULAR
+                  </div>
+                </>
               )}
 
               <div
@@ -169,20 +195,37 @@ export function Pricing({ onGetStarted }) {
               </div>
 
               <div style={{ marginTop: 14, lineHeight: 1 }}>
-                <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-muted)' }}>$</span>
-                <span
-                  style={{
-                    fontSize: 52,
-                    fontWeight: 800,
-                    letterSpacing: '-0.03em',
-                    color: 'var(--text-bright)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {priceFor(tier.priceMonthly)}
-                </span>
+                {tier.priceMonthly !== null ? (
+                  <>
+                    <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-muted)' }}>$</span>
+                    <span
+                      style={{
+                        fontSize: 52,
+                        fontWeight: 800,
+                        letterSpacing: '-0.03em',
+                        color: 'var(--text-bright)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {priceFor(tier.priceMonthly)}
+                    </span>
+                  </>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: 40,
+                      fontWeight: 800,
+                      letterSpacing: '-0.03em',
+                      color: 'var(--text-bright)',
+                    }}
+                  >
+                    Custom
+                  </span>
+                )}
               </div>
-              <div style={{ marginTop: 6, fontSize: 13, color: 'var(--text-muted)' }}>{period}</div>
+              <div style={{ marginTop: 6, fontSize: 13, color: 'var(--text-muted)' }}>
+                {tier.priceMonthly !== null ? period : 'Contact us'}
+              </div>
 
               <div style={{ marginTop: 10, color: 'var(--text-muted)', fontSize: 14.5 }}>
                 {tier.tagline}
@@ -220,6 +263,134 @@ export function Pricing({ onGetStarted }) {
             </div>
           ))}
         </AnimatedGroup>
+
+        {/* ROI Calculator */}
+        <div
+          className="glow-card mt-12 mx-auto max-w-2xl"
+          style={{ padding: '28px 32px' }}
+        >
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: 'var(--text-bright)',
+              marginBottom: 4,
+            }}
+          >
+            ROI Calculator
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 20px' }}>
+            Plug in your numbers — see how fast Chatty AI pays for itself.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  color: 'var(--text-muted)',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}
+              >
+                Leads / mo
+              </label>
+              <input
+                type="number"
+                value={roiLeads}
+                onChange={(e) => setRoiLeads(Number(e.target.value) || 0)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--dark-border)',
+                  background: 'var(--dark-surface-2)',
+                  color: 'var(--text-bright)',
+                  fontSize: 14,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              />
+            </div>
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  color: 'var(--text-muted)',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}
+              >
+                Close rate %
+              </label>
+              <input
+                type="number"
+                value={roiCloseRate}
+                onChange={(e) => setRoiCloseRate(Number(e.target.value) || 0)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--dark-border)',
+                  background: 'var(--dark-surface-2)',
+                  color: 'var(--text-bright)',
+                  fontSize: 14,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              />
+            </div>
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  color: 'var(--text-muted)',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}
+              >
+                Avg deal size $
+              </label>
+              <input
+                type="number"
+                value={roiDealSize}
+                onChange={(e) => setRoiDealSize(Number(e.target.value) || 0)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--dark-border)',
+                  background: 'var(--dark-surface-2)',
+                  color: 'var(--text-bright)',
+                  fontSize: 14,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px 18px',
+              borderRadius: 10,
+              background: 'var(--emerald-tint)',
+              border: '1px solid rgba(16,185,129,0.25)',
+              fontSize: 15,
+              fontWeight: 600,
+              color: 'var(--emerald-bright)',
+              textAlign: 'center',
+            }}
+          >
+            At your numbers, Chatty AI pays for itself in ~{paybackDays} day{paybackDays !== 1 ? 's' : ''}.
+          </div>
+        </div>
       </div>
     </section>
   );

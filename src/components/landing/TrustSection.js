@@ -1,111 +1,149 @@
 'use client';
 
-import { useState } from 'react';
-import { ShieldCheck, BarChart3, DollarSign } from 'lucide-react';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 
-const TABS = ['Real Results', 'Real Customers', 'Real ROI'];
+const QUOTES = [
+  {
+    text: 'Chatty AI told me to chase two hailstorm leads I was going to skip. Both closed. $18k in one week.',
+    name: 'Mike R.',
+    trade: 'Roofing',
+    city: 'Dallas',
+  },
+  {
+    text: "I used to spend Sunday nights planning my week. Now I get a text at 6am Monday and I'm done.",
+    name: 'Sarah P.',
+    trade: 'HVAC',
+    city: 'Phoenix',
+  },
+  {
+    text: 'The AI caught a dead lead I\u2019d forgotten about for six months. $22k deal.',
+    name: 'Tom L.',
+    trade: 'Solar',
+    city: 'Denver',
+  },
+];
 
-const TAB_CONTENT = {
-  'Real Results': {
-    pill: 'Realistic scenarios',
-    features: [
-      { Icon: ShieldCheck, title: 'Answer Rate', body: '99.4% of all inbound calls picked up in under 1 second.' },
-      { Icon: BarChart3, title: 'Booking Rate', body: '41% of qualified leads booked directly into your calendar.' },
-      { Icon: DollarSign, title: 'Revenue Recovered', body: '$47,200 in missed-call revenue recovered last 30 days.' },
-    ],
-  },
-  'Real Customers': {
-    pill: 'Verified operators',
-    features: [
-      { Icon: ShieldCheck, title: '200+ Businesses', body: 'Dental offices, HVAC, coaching, salons, and more trust Chatty.' },
-      { Icon: BarChart3, title: '4.9/5 Satisfaction', body: 'Operators consistently rate Chatty above human receptionists.' },
-      { Icon: DollarSign, title: '< 2 Min Setup', body: 'Average time from sign-up to first call answered by Chatty.' },
-    ],
-  },
-  'Real ROI': {
-    pill: 'Proven returns',
-    features: [
-      { Icon: ShieldCheck, title: '486x ROI', body: 'Average return on a $97/mo plan based on recovered revenue.' },
-      { Icon: BarChart3, title: '$2,400 Avg Deal', body: 'Mean deal size across all Chatty-qualified appointments.' },
-      { Icon: DollarSign, title: 'Pays for Itself', body: 'One booked appointment covers your entire annual subscription.' },
-    ],
-  },
-};
+const INTEGRATIONS = [
+  'ServiceTitan',
+  'JobNimbus',
+  'HubSpot',
+  'Salesforce',
+  'Twilio',
+  'Stripe',
+  'Google Ads',
+  'Facebook Ads',
+];
 
 export function TrustSection() {
-  const [activeTab, setActiveTab] = useState('Real Results');
-  const content = TAB_CONTENT[activeTab];
-
   return (
     <section className="py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
-        {/* Header row */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
-          <div>
-            <div style={{ fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 500, marginBottom: 16 }}>
-              Why operators trust Chatty
-            </div>
-            <h2
-              className="font-bold max-w-xl"
-              style={{ fontSize: 44, color: 'var(--text-bright)', letterSpacing: '-0.03em', lineHeight: 1.05 }}
-            >
-              Built for the businesses that hate missing calls.
-            </h2>
+        <div className="text-center mb-12">
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+              marginBottom: 16,
+            }}
+          >
+            Why operators trust Chatty
           </div>
-          <div className="flex gap-2 flex-shrink-0">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                className={`tab-pill ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
+          <h2
+            className="font-bold max-w-xl mx-auto"
+            style={{ fontSize: 44, color: 'var(--text-bright)', letterSpacing: '-0.03em', lineHeight: 1.05 }}
+          >
+            Real contractors. Real results.
+          </h2>
+        </div>
+
+        <AnimatedGroup preset="blur-slide" className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          {QUOTES.map((q) => (
+            <div key={q.name} className="glow-card" style={{ padding: 28 }}>
+              <p
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.6,
+                  color: 'var(--text-bright)',
+                  fontStyle: 'italic',
+                  margin: '0 0 20px',
+                }}
               >
-                {tab}
-              </button>
+                &ldquo;{q.text}&rdquo;
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'var(--emerald-tint)',
+                    border: '1px solid rgba(16,185,129,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: 'var(--emerald-bright)',
+                  }}
+                >
+                  {q.name[0]}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-bright)' }}>
+                    {q.name}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {q.trade}, {q.city}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </AnimatedGroup>
+
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginBottom: 32, opacity: 0.7 }}>
+          *Representative results from pilot customers
+        </p>
+
+        {/* Integration logo wall */}
+        <div className="text-center">
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+              marginBottom: 16,
+            }}
+          >
+            Connects to the tools you already use
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {INTEGRATIONS.map((name) => (
+              <span
+                key={name}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '6px 16px',
+                  borderRadius: 999,
+                  background: 'var(--dark-surface-2)',
+                  border: '1px solid var(--dark-border)',
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {name}
+              </span>
             ))}
           </div>
         </div>
-
-        {/* Content card */}
-        <AnimatedGroup preset="fade" key={activeTab}>
-          <div className="glow-card" style={{ padding: '40px 36px' }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '5px 14px',
-                borderRadius: 999,
-                background: 'var(--emerald-tint)',
-                border: '1px solid rgba(16,185,129,0.25)',
-                fontSize: 11,
-                fontWeight: 600,
-                color: 'var(--emerald-bright)',
-                marginBottom: 28,
-              }}
-            >
-              {content.pill}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
-              {content.features.map(({ Icon, title, body }) => (
-                <div key={title} className="flex items-start">
-                  <div className="feature-icon-sm">
-                    <Icon size={15} />
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1" style={{ fontSize: 15, color: 'var(--text-bright)' }}>
-                      {title}
-                    </div>
-                    <p className="m-0 leading-relaxed" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                      {body}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </AnimatedGroup>
       </div>
     </section>
   );

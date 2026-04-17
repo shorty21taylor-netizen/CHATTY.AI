@@ -1,15 +1,15 @@
 'use client';
 
-import { Stethoscope, Wrench, Scissors, Hammer, Sparkles, Building2 } from 'lucide-react';
+import { Home, Wrench, Hammer, Sun, CloudRain, Droplets } from 'lucide-react';
 import { AnimatedGroup } from '@/components/ui/AnimatedGroup';
 
 const ORBIT_ICONS = [
-  { Icon: Stethoscope, angle: 0 },
+  { Icon: Home, angle: 0 },
   { Icon: Wrench, angle: 60 },
-  { Icon: Scissors, angle: 120 },
-  { Icon: Hammer, angle: 180 },
-  { Icon: Sparkles, angle: 240 },
-  { Icon: Building2, angle: 300 },
+  { Icon: Hammer, angle: 120 },
+  { Icon: Sun, angle: 180 },
+  { Icon: CloudRain, angle: 240 },
+  { Icon: Droplets, angle: 300 },
 ];
 
 export function CapabilityCards() {
@@ -74,7 +74,7 @@ export function CapabilityCards() {
               Built for any business
             </h3>
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-muted)', maxWidth: 380 }}>
-              Whether you&apos;re a dental office, plumber, or coach &mdash; Chatty learns your script and qualifies your way.
+              Whether you&apos;re a roofer, HVAC pro, or solar installer &mdash; Chatty learns your script and qualifies your way.
             </p>
 
             {/* Orbital diagram */}
