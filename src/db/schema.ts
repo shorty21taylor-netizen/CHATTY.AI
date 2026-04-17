@@ -1037,6 +1037,61 @@ export const briefPreferences = pgTable(
   ],
 );
 
+// ===========================================================================
+// 26. stripe_customers — Stripe subscription tracking
+// ===========================================================================
+
+export const stripeCustomers = pgTable(
+  "stripe_customers",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull().unique(),
+    stripeCustomerId: text("stripe_customer_id").notNull().unique(),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    stripeSubscriptionStatus: text("stripe_subscription_status").default("incomplete"),
+    currentPlan: text("current_plan").notNull().default("starter"),
+    currentPriceMonthly: numeric("current_price_monthly"),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+    trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+    paymentMethodLast4: text("payment_method_last4"),
+    paymentMethodBrand: text("payment_method_brand"),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (t) => [
+    index("idx_stripe_customers_org").on(t.orgId),
+    index("idx_stripe_customers_stripe_id").on(t.stripeCustomerId),
+  ],
+);
+
+// ===========================================================================
+// 27. billing_usage — per-period usage tracking
+// ===========================================================================
+
+export const billingUsage = pgTable(
+  "billing_usage",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    periodStart: date("period_start").notNull(),
+    periodEnd: date("period_end").notNull(),
+    smsSent: integer("sms_sent").notNull().default(0),
+    voiceMinutes: integer("voice_minutes").notNull().default(0),
+    agentsActive: integer("agents_active").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (t) => [
+    unique("billing_usage_org_period_uq").on(t.orgId, t.periodStart),
+    index("idx_billing_usage_org").on(t.orgId, t.periodStart),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1093,6 +1148,10 @@ export type AgentSimulation = typeof agentSimulations.$inferSelect;
 export type NewAgentSimulation = typeof agentSimulations.$inferInsert;
 export type BriefPreference = typeof briefPreferences.$inferSelect;
 export type NewBriefPreference = typeof briefPreferences.$inferInsert;
+export type StripeCustomer = typeof stripeCustomers.$inferSelect;
+export type NewStripeCustomer = typeof stripeCustomers.$inferInsert;
+export type BillingUsageRow = typeof billingUsage.$inferSelect;
+export type NewBillingUsage = typeof billingUsage.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1128,6 +1187,8 @@ export const RLS_TABLES = [
   "telegram_messages",
   "agent_simulations",
   "brief_preferences",
+  "stripe_customers",
+  "billing_usage",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
