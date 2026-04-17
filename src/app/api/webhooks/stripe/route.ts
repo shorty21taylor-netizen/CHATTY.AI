@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-
-let stripeClient: InstanceType<typeof Stripe> | null = null;
-function getStripe() {
-  if (!stripeClient) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
-    stripeClient = new Stripe(key);
-  }
-  return stripeClient;
-}
+import { getStripe } from "@/lib/stripe/client";
+import { db } from "@/lib/db/drizzle";
+import { stripeCustomers } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -20,44 +13,97 @@ export async function POST(req: Request) {
     let event;
     try {
       event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err: any) {
-      console.error("[Stripe Webhook] Signature verification failed:", err.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[Stripe Webhook] Signature verification failed:", msg);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     switch (event.type) {
       case "checkout.session.completed": {
-        const session: any = event.data.object;
-        console.log(`[Stripe] Checkout completed for customer: ${session.customer}`);
-        // TODO: Activate subscription in database, update org status
+        const session = event.data.object as Record<string, unknown>;
+        const customerId = session.customer as string;
+        const subscriptionId = session.subscription as string;
+        const plan = (session.metadata as Record<string, string>)?.plan || "starter";
+
+        console.log(`[Stripe] Checkout completed for customer: ${customerId}`);
+
+        await db
+          .update(stripeCustomers)
+          .set({
+            stripeSubscriptionId: subscriptionId,
+            stripeSubscriptionStatus: "active",
+            currentPlan: plan,
+            updatedAt: new Date(),
+          })
+          .where(eq(stripeCustomers.stripeCustomerId, customerId));
         break;
       }
 
       case "invoice.paid": {
-        const invoice: any = event.data.object;
+        const invoice = event.data.object as Record<string, unknown>;
+        const customerId = invoice.customer as string;
         console.log(`[Stripe] Invoice paid: ${invoice.id}`);
-        // TODO: Record successful payment, extend subscription
+
+        await db
+          .update(stripeCustomers)
+          .set({
+            stripeSubscriptionStatus: "active",
+            updatedAt: new Date(),
+          })
+          .where(eq(stripeCustomers.stripeCustomerId, customerId));
         break;
       }
 
       case "invoice.payment_failed": {
-        const invoice: any = event.data.object;
+        const invoice = event.data.object as Record<string, unknown>;
+        const customerId = invoice.customer as string;
         console.log(`[Stripe] Payment failed: ${invoice.id}`);
-        // TODO: Notify org owner, mark subscription at risk
+
+        await db
+          .update(stripeCustomers)
+          .set({
+            stripeSubscriptionStatus: "past_due",
+            updatedAt: new Date(),
+          })
+          .where(eq(stripeCustomers.stripeCustomerId, customerId));
         break;
       }
 
       case "customer.subscription.updated": {
-        const subscription: any = event.data.object;
-        console.log(`[Stripe] Subscription updated: ${subscription.id}, status: ${subscription.status}`);
-        // TODO: Update subscription tier in database
+        const sub = event.data.object as Record<string, unknown>;
+        const customerId = sub.customer as string;
+        const status = sub.status as string;
+        const cancelAtEnd = sub.cancel_at_period_end as boolean;
+        const periodEnd = sub.current_period_end as number;
+
+        console.log(`[Stripe] Subscription updated: ${sub.id}, status: ${status}`);
+
+        await db
+          .update(stripeCustomers)
+          .set({
+            stripeSubscriptionStatus: status,
+            cancelAtPeriodEnd: cancelAtEnd || false,
+            currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+            updatedAt: new Date(),
+          })
+          .where(eq(stripeCustomers.stripeCustomerId, customerId));
         break;
       }
 
       case "customer.subscription.deleted": {
-        const subscription: any = event.data.object;
-        console.log(`[Stripe] Subscription canceled: ${subscription.id}`);
-        // TODO: Deactivate org, stop workflows
+        const sub = event.data.object as Record<string, unknown>;
+        const customerId = sub.customer as string;
+        console.log(`[Stripe] Subscription canceled: ${sub.id}`);
+
+        await db
+          .update(stripeCustomers)
+          .set({
+            stripeSubscriptionStatus: "canceled",
+            stripeSubscriptionId: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(stripeCustomers.stripeCustomerId, customerId));
         break;
       }
 
