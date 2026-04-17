@@ -46,6 +46,7 @@ const NAV_GROUPS = [
       { href: '/dashboard', label: 'Today', icon: Home, exact: true },
       { href: '/dashboard/business-profile', label: 'Business Profile', icon: Briefcase },
       { href: '/dashboard/brief', label: 'Daily Brief', icon: Zap, pulse: true },
+      { href: '/dashboard/brief/preferences', label: 'Brief Preferences', icon: Settings },
     ],
   },
   {

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crosshair } from 'lucide-react';
+import { Crosshair, Play, Settings } from 'lucide-react';
+import Link from 'next/link';
 import TodayBriefCard from '@/components/brief/TodayBriefCard';
 import SignalFeed from '@/components/brief/SignalFeed';
 import MetricsStrip from '@/components/brief/MetricsStrip';
@@ -13,6 +14,7 @@ export default function MissionControlPage() {
   const [signals, setSignals] = useState([]);
   const [recent, setRecent] = useState([]);
   const [metrics, setMetrics] = useState([]);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +51,17 @@ export default function MissionControlPage() {
     };
   }, []);
 
+  async function handleGenerate() {
+    setGenerating(true);
+    try {
+      await fetch('/api/brief/trigger', { method: 'POST' });
+    } catch (err) {
+      console.error('Failed to trigger brief:', err);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -57,27 +70,71 @@ export default function MissionControlPage() {
       className="space-y-8"
     >
       {/* Page header */}
-      <header className="flex items-center gap-3">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl border"
-          style={{
-            background: 'rgba(16,185,129,0.1)',
-            borderColor: 'rgba(16,185,129,0.3)',
-            color: 'var(--primary)',
-          }}
-        >
-          <Crosshair size={18} />
-        </div>
-        <div>
-          <h1
-            className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] sm:text-3xl"
-            style={{ letterSpacing: '-0.02em' }}
+      <header className="flex items-center gap-3" style={{ justifyContent: 'space-between' }}>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-xl border"
+            style={{
+              background: 'rgba(16,185,129,0.1)',
+              borderColor: 'rgba(16,185,129,0.3)',
+              color: 'var(--primary)',
+            }}
           >
-            Mission Control
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Your Daily Brief, signal stream, and KPIs — one pane of glass.
-          </p>
+            <Crosshair size={18} />
+          </div>
+          <div>
+            <h1
+              className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] sm:text-3xl"
+              style={{ letterSpacing: '-0.02em' }}
+            >
+              Mission Control
+            </h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Your Daily Brief, signal stream, and KPIs — one pane of glass.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: 'var(--emerald-bright)',
+              color: '#fff',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: generating ? 'wait' : 'pointer',
+              opacity: generating ? 0.7 : 1,
+            }}
+          >
+            <Play size={14} />
+            {generating ? 'Generating...' : 'Generate brief now'}
+          </button>
+          <Link
+            href="/dashboard/brief/preferences"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: '1px solid var(--dark-border)',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: 'none',
+            }}
+          >
+            <Settings size={14} />
+            Preferences
+          </Link>
         </div>
       </header>
 
