@@ -67,6 +67,7 @@ const NAV_GROUPS = [
     defaultOpen: true,
     items: [
       { href: '/dashboard/agents', label: 'All Agents', icon: Bot },
+      { href: '/dashboard/agents/voice-receptionist', label: 'Voice Receptionist', icon: Mic },
     ],
   },
   {
