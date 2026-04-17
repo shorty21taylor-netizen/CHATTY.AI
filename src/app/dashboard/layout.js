@@ -99,6 +99,7 @@ const NAV_GROUPS = [
       { href: '/dashboard/voice', label: 'Voice Library', icon: Mic },
       { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
       { href: '/dashboard/admin', label: 'Admin', icon: Settings },
+      { href: '/dashboard/admin/forms', label: 'Forms', icon: FileText },
     ],
   },
 ];

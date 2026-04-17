@@ -880,6 +880,28 @@ export const reviewRequestLinks = pgTable(
   ],
 );
 
+export const orgFormConfigs = pgTable(
+  "org_form_configs",
+  {
+    id: pk(),
+    orgId: orgId(),
+    slug: text("slug").notNull().unique(),
+    name: text("name"),
+    isActive: boolean("is_active").notNull().default(true),
+    fieldMapping: jsonb("field_mapping").notNull().default({}),
+    redirectUrl: text("redirect_url"),
+    honeypotField: text("honeypot_field").notNull().default("website_url"),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("org_form_configs_slug_idx").on(t.slug),
+    index("org_form_configs_org_active_idx").on(t.orgId, t.isActive),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -924,6 +946,8 @@ export type NewCadenceRun = typeof cadenceRuns.$inferInsert;
 export type OrgReclaimState = typeof orgReclaimState.$inferSelect;
 export type ReviewRequestLink = typeof reviewRequestLinks.$inferSelect;
 export type NewReviewRequestLink = typeof reviewRequestLinks.$inferInsert;
+export type OrgFormConfig = typeof orgFormConfigs.$inferSelect;
+export type NewOrgFormConfig = typeof orgFormConfigs.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -953,6 +977,7 @@ export const RLS_TABLES = [
   "cadence_runs",
   "org_reclaim_state",
   "review_request_links",
+  "org_form_configs",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

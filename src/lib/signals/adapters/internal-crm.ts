@@ -34,7 +34,7 @@ export class InternalCrmAdapter implements SignalAdapter {
 // Core helper — build NormalizedEvent, generate embedding, persist row
 // ============================================================================
 
-async function persistSignal(
+export async function persistSignal(
   orgId: string,
   event: NormalizedEvent
 ): Promise<unknown> {
