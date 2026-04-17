@@ -676,6 +676,8 @@ export const businessProfile = pgTable(
       .notNull()
       .default(false),
     quietHours: jsonb("quiet_hours").notNull().default({}),
+    googleReviewUrl: text("google_review_url"),
+    facebookReviewUrl: text("facebook_review_url"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -852,6 +854,32 @@ export const orgReclaimState = pgTable("org_reclaim_state", {
   updatedAt: updatedAt(),
 });
 
+// ===========================================================================
+// 23. review_request_links — tokenized redirect links with click tracking
+// ===========================================================================
+
+export const reviewRequestLinks = pgTable(
+  "review_request_links",
+  {
+    id: pk(),
+    orgId: orgId(),
+    contactId: uuid("contact_id").notNull(),
+    agentRunId: uuid("agent_run_id").references(() => agentRuns.id, {
+      onDelete: "set null",
+    }),
+    token: text("token").notNull().unique(),
+    destinationUrl: text("destination_url").notNull(),
+    clicksCount: integer("clicks_count").notNull().default(0),
+    firstClickedAt: timestamp("first_clicked_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("review_request_links_org_idx").on(t.orgId),
+    index("review_request_links_token_idx").on(t.token),
+    index("review_request_links_org_created_idx").on(t.orgId, t.createdAt),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -894,6 +922,8 @@ export type NewCadenceStep = typeof cadenceSteps.$inferInsert;
 export type CadenceRun = typeof cadenceRuns.$inferSelect;
 export type NewCadenceRun = typeof cadenceRuns.$inferInsert;
 export type OrgReclaimState = typeof orgReclaimState.$inferSelect;
+export type ReviewRequestLink = typeof reviewRequestLinks.$inferSelect;
+export type NewReviewRequestLink = typeof reviewRequestLinks.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -922,6 +952,7 @@ export const RLS_TABLES = [
   "agent_cadences",
   "cadence_runs",
   "org_reclaim_state",
+  "review_request_links",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

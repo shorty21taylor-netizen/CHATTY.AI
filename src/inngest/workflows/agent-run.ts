@@ -6,11 +6,13 @@ import {
   agentActivity,
   contacts,
   businessProfile,
+  reviewRequestLinks,
 } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { buildAgentSystemPrompt } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { getLeadById } from "@/lib/db/queries";
+import { nanoid } from "nanoid";
 
 const AGENT_META: Record<string, { id: string; name: string; description: string; missionDefault: string }> = {
   "instant-lead-response": {
@@ -246,7 +248,36 @@ export const agentRunWorkflow = inngest.createFunction(
       return applyGuardrails(rawSmsBody, cfg);
     });
 
-    // Step 7: Log activity as pending
+    // Step 7: Review-request link replacement
+    const finalSmsBody = await step.run("resolve-review-link", async () => {
+      if (agentTypeId !== "review-request" || !smsBody.includes("{{review_link}}")) {
+        return smsBody;
+      }
+
+      const reviewUrl = (bp as any)?.googleReviewUrl || (bp as any)?.facebookReviewUrl;
+      if (!reviewUrl) {
+        return smsBody.replace(/\{\{review_link\}\}/g, "").trim();
+      }
+
+      const token = nanoid(10);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://chattyai-production.up.railway.app";
+      const shortUrl = `${appUrl}/r/${token}`;
+
+      const contactId = signalData?.contact_id || entityId;
+      await withOrgContext(orgId, async (tx) => {
+        await tx.insert(reviewRequestLinks).values({
+          orgId,
+          contactId,
+          agentRunId: run.id,
+          token,
+          destinationUrl: reviewUrl,
+        });
+      });
+
+      return smsBody.replace(/\{\{review_link\}\}/g, shortUrl);
+    });
+
+    // Step 8: Log activity as pending
     const activity = await step.run("log-activity", async () => {
       const { contact } = entityContext;
       return withOrgContext(orgId, async (tx) => {
@@ -256,7 +287,7 @@ export const agentRunWorkflow = inngest.createFunction(
             orgId,
             agentRunId: run.id,
             actionType: "send_sms",
-            actionPayload: { to: contact?.phone || "unknown", body: smsBody },
+            actionPayload: { to: contact?.phone || "unknown", body: finalSmsBody },
             result: { status: "pending" },
           })
           .returning();
@@ -264,7 +295,7 @@ export const agentRunWorkflow = inngest.createFunction(
       });
     });
 
-    // Step 8: Send SMS (or shadow-skip)
+    // Step 9: Send SMS (or shadow-skip)
     const sendResult = await step.run("send-sms", async () => {
       const { contact } = entityContext;
 
@@ -286,7 +317,7 @@ export const agentRunWorkflow = inngest.createFunction(
       }
 
       try {
-        const results = await sendSms({ to: contact.phone, body: smsBody });
+        const results = await sendSms({ to: contact.phone, body: finalSmsBody });
         return { status: "sent" as const, sid: results[0]?.sid ?? null };
       } catch (err: any) {
         return { status: "failed" as const, sid: null, error: err.message };
@@ -326,7 +357,7 @@ export const agentRunWorkflow = inngest.createFunction(
               eventType,
               entityType,
               entityId,
-              smsBody,
+              smsBody: finalSmsBody,
               sendStatus: sendResult.status,
               shadowMode,
               startedAt: (run.reasoningTrace as any)?.startedAt,

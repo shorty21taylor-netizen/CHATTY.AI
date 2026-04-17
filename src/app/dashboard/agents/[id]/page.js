@@ -54,6 +54,7 @@ export default function AgentDetailPage({ params }) {
   const [hydrated, setHydrated] = useState(false);
   const [config, setConfig] = useState(null);
   const [cadenceInfo, setCadenceInfo] = useState(null);
+  const [reviewClicks, setReviewClicks] = useState(null);
 
   useEffect(() => {
     setConfig(loadAgentConfig(id));
@@ -72,6 +73,14 @@ export default function AgentDetailPage({ params }) {
         }
       })
       .catch(() => {});
+    if (id === 'review-request') {
+      fetch(`/api/agents/${id}/review-clicks`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.totalClicks != null) setReviewClicks(data.totalClicks);
+        })
+        .catch(() => {});
+    }
   }, [id]);
 
   const status = useMemo(() => agentConfigStatus(config), [config]);
@@ -269,7 +278,11 @@ export default function AgentDetailPage({ params }) {
           >
             <QuickStat label="Messages today" value="42" />
             <QuickStat label="Replies" value="28" hint="67% reply rate" accent />
-            <QuickStat label="Outcomes" value="11" hint="booked / resolved" />
+            {id === 'review-request' && reviewClicks != null ? (
+              <QuickStat label="Review link clicks (30d)" value={String(reviewClicks)} hint="tracked clicks" />
+            ) : (
+              <QuickStat label="Outcomes" value="11" hint="booked / resolved" />
+            )}
           </div>
 
           {/* Action row */}

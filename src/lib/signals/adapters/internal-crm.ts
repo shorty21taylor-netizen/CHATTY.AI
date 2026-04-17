@@ -220,34 +220,44 @@ export async function emitJobStatusChanged(
 }
 
 export async function emitJobCompleted(orgId: string, job: Job) {
-  return persistSignal(orgId, {
+  const signalData = {
+    job_id: job.id,
+    contact_id: job.contact_id,
+    lead_id: job.lead_id,
+    estimate_id: job.estimate_id,
+    service_type: job.service_type,
+    job_value: job.job_value,
+    cost: job.cost,
+    profit_margin: job.profit_margin,
+    start_date: job.start_date,
+    end_date: job.end_date,
+    completed_at: job.completed_at,
+    duration_days:
+      job.start_date && job.completed_at
+        ? Math.round(
+            (new Date(job.completed_at).getTime() -
+              new Date(job.start_date).getTime()) /
+              86_400_000
+          )
+        : null,
+  };
+
+  await persistSignal(orgId, {
     event_type: "job_completed",
     entity_type: "job",
     entity_id: job.id,
-    data: {
-      job_id: job.id,
-      contact_id: job.contact_id,
-      lead_id: job.lead_id,
-      estimate_id: job.estimate_id,
-      service_type: job.service_type,
-      job_value: job.job_value,
-      cost: job.cost,
-      profit_margin: job.profit_margin,
-      start_date: job.start_date,
-      end_date: job.end_date,
-      completed_at: job.completed_at,
-      duration_days:
-        job.start_date && job.completed_at
-          ? Math.round(
-              (new Date(job.completed_at).getTime() -
-                new Date(job.start_date).getTime()) /
-                86_400_000
-            )
-          : null,
-    },
+    data: signalData,
     source_id: job.id,
     timestamp: new Date().toISOString(),
   });
+
+  dispatchAgentsForEvent({
+    orgId,
+    eventType: "job_completed",
+    entityType: "contact",
+    entityId: job.contact_id,
+    data: signalData,
+  }).catch((err) => console.error("[emitJobCompleted] dispatch failed:", err));
 }
 
 // ============================================================================

@@ -57,6 +57,8 @@ export const DEFAULT_BUSINESS_PROFILE = {
   bbb_rating: 'A+',
   competitors: ['', '', ''],
   customers_love: ['', '', ''],
+  google_review_url: '',
+  facebook_review_url: '',
 
   // Voice of the Business
   owner_first_name: '',
@@ -275,6 +277,8 @@ function serverProfileToLocal(p) {
     bbb_rating: p.bbbRating || 'A+',
     competitors: p.competitors || ['', '', ''],
     customers_love: p.customerThemes || ['', '', ''],
+    google_review_url: p.googleReviewUrl || '',
+    facebook_review_url: p.facebookReviewUrl || '',
     owner_first_name: p.ownerFirstName || '',
     voice_formality: p.voiceFormalCasual ?? 5,
     voice_verbosity: p.voiceConciseDetailed ?? 5,

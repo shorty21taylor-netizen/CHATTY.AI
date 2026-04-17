@@ -482,6 +482,26 @@ export default function BusinessProfilePage() {
               </div>
             ))}
           </Field>
+
+          <div
+            className="bp-grid-2"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}
+          >
+            <Field label="Google Review URL" hint="Direct link for customers to leave a Google review">
+              <TextInput
+                value={profile.google_review_url || ''}
+                onChange={(v) => set('google_review_url', v)}
+                placeholder="https://g.page/r/..."
+              />
+            </Field>
+            <Field label="Facebook Review URL" hint="Direct link for customers to leave a Facebook review">
+              <TextInput
+                value={profile.facebook_review_url || ''}
+                onChange={(v) => set('facebook_review_url', v)}
+                placeholder="https://facebook.com/..."
+              />
+            </Field>
+          </div>
         </Section>
 
         <Section

@@ -94,6 +94,18 @@ export function buildAgentSystemPrompt(
     parts.push(`- NEVER discuss: ${bannedTopics.join(", ")}`);
   }
 
+  if (agentMeta.id === "review-request") {
+    const reviewUrl = bp?.googleReviewUrl || bp?.facebookReviewUrl;
+    parts.push("");
+    parts.push(`## Review Request`);
+    parts.push(`You are asking a satisfied customer to leave a review.`);
+    if (reviewUrl) {
+      parts.push(`Include the placeholder {{review_link}} exactly once in your message — it will be replaced with a short tracking URL.`);
+    } else {
+      parts.push(`No review URL is configured. Ask the customer to leave a review on Google but do not include a link.`);
+    }
+  }
+
   parts.push("");
   parts.push(`## Output Format`);
   parts.push(`Compose a single SMS message. Keep it under 320 characters when possible. Be conversational, not robotic. Use the contact's first name if available.`);

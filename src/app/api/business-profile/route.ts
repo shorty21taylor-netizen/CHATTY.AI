@@ -75,6 +75,8 @@ export async function PUT(req: Request) {
   if (p.bbb_rating != null) dbData.bbbRating = p.bbb_rating;
   if (p.competitors != null) dbData.competitors = (Array.isArray(p.competitors) ? p.competitors : []).filter(Boolean);
   if (p.customers_love != null) dbData.customerThemes = (Array.isArray(p.customers_love) ? p.customers_love : []).filter(Boolean);
+  if (p.google_review_url != null) dbData.googleReviewUrl = p.google_review_url || null;
+  if (p.facebook_review_url != null) dbData.facebookReviewUrl = p.facebook_review_url || null;
   if (p.owner_first_name != null) dbData.ownerFirstName = p.owner_first_name;
   if (p.voice_formality != null) dbData.voiceFormalCasual = Number(p.voice_formality);
   if (p.voice_verbosity != null) dbData.voiceConciseDetailed = Number(p.voice_verbosity);
