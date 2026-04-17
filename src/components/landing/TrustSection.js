@@ -23,15 +23,15 @@ const QUOTES = [
   },
 ];
 
-const INTEGRATIONS = [
-  'ServiceTitan',
-  'JobNimbus',
-  'HubSpot',
-  'Salesforce',
-  'Twilio',
-  'Stripe',
+const CHANNELS = [
+  'Web Forms',
+  'Inbound SMS',
+  'Voice (ElevenLabs)',
+  'Meta DMs',
+  'Email',
   'Google Ads',
   'Facebook Ads',
+  'Weather Signals',
 ];
 
 export function TrustSection() {
@@ -108,7 +108,7 @@ export function TrustSection() {
           *Representative results from pilot customers
         </p>
 
-        {/* Integration logo wall */}
+        {/* Native capture channels */}
         <div className="text-center">
           <div
             style={{
@@ -120,10 +120,10 @@ export function TrustSection() {
               marginBottom: 16,
             }}
           >
-            Connects to the tools you already use
+            Captures leads from every channel
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            {INTEGRATIONS.map((name) => (
+            {CHANNELS.map((name) => (
               <span
                 key={name}
                 style={{

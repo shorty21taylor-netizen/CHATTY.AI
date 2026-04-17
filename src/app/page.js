@@ -21,7 +21,6 @@ import { TrustSection } from '@/components/landing/TrustSection';
 import { Pricing } from '@/components/landing/Pricing';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
-import { StackCompatibility } from '@/components/landing/StackCompatibility';
 import { ResultsStrip } from '@/components/landing/ResultsStrip';
 
 function ScrollProgress() {
@@ -201,10 +200,6 @@ export default function Landing() {
             </AnimatedGroup>
           </div>
         </section>
-
-        <ScrollReveal variant="fadeUp" amount={0.3}>
-          <StackCompatibility />
-        </ScrollReveal>
 
         <ScrollReveal variant="fadeUp" amount={0.3}>
           <ResultsStrip />

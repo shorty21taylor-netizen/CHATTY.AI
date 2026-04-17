@@ -26,7 +26,7 @@ export function CapabilityCards() {
               Plug &amp; Play
             </h3>
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-muted)', maxWidth: 380 }}>
-              Connects to your existing phone number, calendar, and CRM in under 5 minutes. Zero engineering.
+              Connects to your phone number and calendar in under 5 minutes. Captures leads from web forms, SMS, voice, and email. Zero engineering.
             </p>
 
             {/* Mini SVG chart */}
