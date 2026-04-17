@@ -220,6 +220,18 @@ activity.
 ### Webhooks: Verify Before Processing
 All webhook handlers verify signatures (Twilio X-Twilio-Signature, Stripe stripe-signature, CRM hmac-signature).
 
+### Voice Call Flow (ElevenLabs Conversational AI)
+Inbound call → Twilio → `/api/voice/twilio-inbound` → inserts `voice_calls`
+row → returns TwiML `<Connect><Stream>` pointing to ElevenLabs ConvAI WebSocket
+(`wss://api.elevenlabs.io/v1/convai/conversation?agent_id=...`). ElevenLabs
+agent qualifies the caller using an industry-aware system prompt built from
+the org's `business_profile`. On call completion Twilio hits
+`/api/voice/twilio-status` which updates the `voice_calls` row with duration
+and status, fetches the conversation transcript from ElevenLabs, emits a
+`signal_event` (`source_type='voice_call'`, `event_type='inbound_call_completed'`),
+and dispatches downstream agents. Optionally ElevenLabs posts to
+`/api/voice/elevenlabs-webhook` with outcome analysis to enrich the row.
+
 ## Decision Engine: 3-Pass Claude Chain
 
 ### Pass 1: Signal Analysis
@@ -294,6 +306,8 @@ VOYAGE_MODEL=voyage-3
 
 # Voice (ElevenLabs ONLY -- NO VAPI)
 ELEVENLABS_API_KEY=...
+ELEVENLABS_AGENT_ID=...
+ELEVENLABS_WEBHOOK_SECRET=...
 
 # SMS (Twilio)
 TWILIO_ACCOUNT_SID=...
