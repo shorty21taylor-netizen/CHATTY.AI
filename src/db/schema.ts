@@ -678,6 +678,8 @@ export const businessProfile = pgTable(
     quietHours: jsonb("quiet_hours").notNull().default({}),
     googleReviewUrl: text("google_review_url"),
     facebookReviewUrl: text("facebook_review_url"),
+    elevenlabsAgentId: text("elevenlabs_agent_id"),
+    twilioPhoneNumber: text("twilio_phone_number"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -902,6 +904,37 @@ export const orgFormConfigs = pgTable(
   ],
 );
 
+// ===========================================================================
+// 21. voice_calls — inbound/outbound voice call tracking
+// ===========================================================================
+
+export const voiceCalls = pgTable(
+  "voice_calls",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    callSid: text("call_sid").notNull().unique(),
+    elevenlabsConversationId: text("elevenlabs_conversation_id"),
+    callerNumber: text("caller_number").notNull(),
+    calledNumber: text("called_number").notNull(),
+    direction: text("direction").notNull(),
+    status: text("status").notNull().default("ringing"),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    durationSeconds: integer("duration_seconds"),
+    transcript: jsonb("transcript"),
+    outcome: text("outcome"),
+    outcomeData: jsonb("outcome_data"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("idx_voice_calls_org_started").on(t.orgId, t.startedAt),
+    index("idx_voice_calls_call_sid").on(t.callSid),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -948,6 +981,8 @@ export type ReviewRequestLink = typeof reviewRequestLinks.$inferSelect;
 export type NewReviewRequestLink = typeof reviewRequestLinks.$inferInsert;
 export type OrgFormConfig = typeof orgFormConfigs.$inferSelect;
 export type NewOrgFormConfig = typeof orgFormConfigs.$inferInsert;
+export type VoiceCall = typeof voiceCalls.$inferSelect;
+export type NewVoiceCall = typeof voiceCalls.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -978,6 +1013,7 @@ export const RLS_TABLES = [
   "org_reclaim_state",
   "review_request_links",
   "org_form_configs",
+  "voice_calls",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
