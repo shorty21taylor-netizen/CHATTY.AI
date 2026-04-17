@@ -1010,6 +1010,33 @@ export const agentSimulations = pgTable(
   ],
 );
 
+// ===========================================================================
+// 25. brief_preferences — per-org Daily Brief delivery settings
+// ===========================================================================
+
+export const briefPreferences = pgTable(
+  "brief_preferences",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull().unique(),
+    enabled: boolean("enabled").notNull().default(true),
+    deliveryTime: text("delivery_time").notNull().default("06:00"),
+    timezone: text("timezone").notNull().default("America/New_York"),
+    smsEnabled: boolean("sms_enabled").notNull().default(true),
+    voiceEnabled: boolean("voice_enabled").notNull().default(true),
+    phoneNumber: text("phone_number"),
+    voiceId: text("voice_id"),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (t) => [
+    index("idx_brief_preferences_org").on(t.orgId),
+    index("idx_brief_preferences_enabled").on(t.enabled, t.deliveryTime),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1064,6 +1091,8 @@ export type TelegramMessage = typeof telegramMessages.$inferSelect;
 export type NewTelegramMessage = typeof telegramMessages.$inferInsert;
 export type AgentSimulation = typeof agentSimulations.$inferSelect;
 export type NewAgentSimulation = typeof agentSimulations.$inferInsert;
+export type BriefPreference = typeof briefPreferences.$inferSelect;
+export type NewBriefPreference = typeof briefPreferences.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1098,6 +1127,7 @@ export const RLS_TABLES = [
   "telegram_sessions",
   "telegram_messages",
   "agent_simulations",
+  "brief_preferences",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
