@@ -2,6 +2,7 @@ import { withOrgContext } from "@/lib/db/drizzle";
 import { eq, and, sql, inArray, gte } from "drizzle-orm";
 import { agentConfigs, agentRuns, businessProfile, contactSuppressions } from "@/db/schema";
 import { inngest } from "@/inngest/client";
+import { startCadence } from "@/lib/agents/cadence";
 
 interface DispatchInput {
   orgId: string;
@@ -100,19 +101,33 @@ export async function dispatchAgentsForEvent(
           }
         }
 
-        await inngest.send({
-          name: "agent/run",
-          data: {
+        if (agent.cadenceId) {
+          const cadenceRun = await startCadence({
             orgId,
-            agentConfigId: agent.id,
-            agentTypeId: agent.agentType,
-            eventType,
+            cadenceId: agent.cadenceId,
             entityType,
             entityId,
-            signalData: data,
-          },
-        });
-        dispatched++;
+          });
+          if (cadenceRun) {
+            dispatched++;
+          } else {
+            skipped.push(`${agent.agentType}:cadence_inactive`);
+          }
+        } else {
+          await inngest.send({
+            name: "agent/run",
+            data: {
+              orgId,
+              agentConfigId: agent.id,
+              agentTypeId: agent.agentType,
+              eventType,
+              entityType,
+              entityId,
+              signalData: data,
+            },
+          });
+          dispatched++;
+        }
       } catch (err) {
         console.error(`[dispatcher] failed for agent ${agent.agentType}:`, err);
         skipped.push(`${agent.agentType}:dispatch_error`);

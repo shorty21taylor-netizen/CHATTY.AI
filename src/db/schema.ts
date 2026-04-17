@@ -172,6 +172,13 @@ export const suppressionReasonEnum = pgEnum("suppression_reason", [
   "not_interested",
 ]);
 
+export const cadenceRunStatusEnum = pgEnum("cadence_run_status", [
+  "running",
+  "completed",
+  "exited",
+  "failed",
+]);
+
 // ---------------------------------------------------------------------------
 // Shared columns
 // ---------------------------------------------------------------------------
@@ -358,6 +365,7 @@ export const agentConfigs = pgTable(
     completenessPct: integer("completeness_pct").notNull().default(0),
     activationMode: agentActivationModeEnum("activation_mode"),
     lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+    cadenceId: uuid("cadence_id"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -750,6 +758,88 @@ export const agentEscalations = pgTable(
   ],
 );
 
+// ===========================================================================
+// 19. agent_cadences — multi-step cadence definitions
+// ===========================================================================
+
+export const agentCadences = pgTable(
+  "agent_cadences",
+  {
+    id: pk(),
+    orgId: orgId(),
+    agentConfigId: uuid("agent_config_id")
+      .notNull()
+      .references(() => agentConfigs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    totalSteps: integer("total_steps").notNull().default(1),
+    exitConditions: jsonb("exit_conditions")
+      .notNull()
+      .default({ reply_received: true, booked: true, opted_out: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("agent_cadences_org_idx").on(t.orgId),
+    index("agent_cadences_org_agent_idx").on(t.orgId, t.agentConfigId),
+  ],
+);
+
+// ===========================================================================
+// 20. cadence_steps — ordered steps within a cadence
+// ===========================================================================
+
+export const cadenceSteps = pgTable(
+  "cadence_steps",
+  {
+    id: pk(),
+    cadenceId: uuid("cadence_id")
+      .notNull()
+      .references(() => agentCadences.id, { onDelete: "cascade" }),
+    stepIndex: integer("step_index").notNull(),
+    delaySeconds: integer("delay_seconds").notNull().default(0),
+    channel: text("channel").notNull().default("sms"),
+    promptOverride: text("prompt_override"),
+    templateSnippet: text("template_snippet"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("cadence_steps_cadence_idx_uq").on(t.cadenceId, t.stepIndex),
+    index("cadence_steps_cadence_idx").on(t.cadenceId),
+  ],
+);
+
+// ===========================================================================
+// 21. cadence_runs — tracks a cadence execution per entity
+// ===========================================================================
+
+export const cadenceRuns = pgTable(
+  "cadence_runs",
+  {
+    id: pk(),
+    orgId: orgId(),
+    cadenceId: uuid("cadence_id")
+      .notNull()
+      .references(() => agentCadences.id, { onDelete: "cascade" }),
+    entityType: text("entity_type").notNull(),
+    entityId: uuid("entity_id").notNull(),
+    currentStepIndex: integer("current_step_index").notNull().default(0),
+    status: cadenceRunStatusEnum("status").notNull().default("running"),
+    exitReason: text("exit_reason"),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    nextStepAt: timestamp("next_step_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("cadence_runs_org_status_next_idx").on(t.orgId, t.status, t.nextStepAt),
+    index("cadence_runs_org_entity_idx").on(t.orgId, t.entityType, t.entityId),
+    index("cadence_runs_cadence_idx").on(t.cadenceId),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -785,6 +875,12 @@ export type ContactSuppression = typeof contactSuppressions.$inferSelect;
 export type NewContactSuppression = typeof contactSuppressions.$inferInsert;
 export type AgentEscalation = typeof agentEscalations.$inferSelect;
 export type NewAgentEscalation = typeof agentEscalations.$inferInsert;
+export type AgentCadence = typeof agentCadences.$inferSelect;
+export type NewAgentCadence = typeof agentCadences.$inferInsert;
+export type CadenceStep = typeof cadenceSteps.$inferSelect;
+export type NewCadenceStep = typeof cadenceSteps.$inferInsert;
+export type CadenceRun = typeof cadenceRuns.$inferSelect;
+export type NewCadenceRun = typeof cadenceRuns.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -810,6 +906,8 @@ export const RLS_TABLES = [
   "business_profile",
   "contact_suppressions",
   "agent_escalations",
+  "agent_cadences",
+  "cadence_runs",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

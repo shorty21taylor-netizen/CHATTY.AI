@@ -16,6 +16,7 @@ import {
   type ConversationMessage,
 } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
+import { exitRunningCadencesForEntity } from "@/lib/agents/cadence";
 
 const PROHIBITED_PATTERNS = [
   /\$\d/i,
@@ -140,6 +141,11 @@ export const agentInboundReply = inngest.createFunction(
           result: { status: "received" },
         });
       });
+    });
+
+    // Exit any running cadences for this contact (reply received = exit condition)
+    await step.run("exit-cadences-on-reply", async () => {
+      await exitRunningCadencesForEntity(orgId, contactId, "reply_received");
     });
 
     // Step 3: Load conversation history
@@ -330,6 +336,9 @@ export const agentInboundReply = inngest.createFunction(
             source: "agent_inbound_reply",
           });
         });
+      });
+      await step.run("exit-cadences-not-interested", async () => {
+        await exitRunningCadencesForEntity(orgId, contactId, "opted_out");
       });
       return { status: "not_interested", runId, contactId };
     }

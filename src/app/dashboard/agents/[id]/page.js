@@ -53,10 +53,25 @@ export default function AgentDetailPage({ params }) {
 
   const [hydrated, setHydrated] = useState(false);
   const [config, setConfig] = useState(null);
+  const [cadenceInfo, setCadenceInfo] = useState(null);
 
   useEffect(() => {
     setConfig(loadAgentConfig(id));
     setHydrated(true);
+  }, [id]);
+
+  useEffect(() => {
+    fetch(`/api/agents/${id}/cadences`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.cadences?.length > 0) {
+          const active = data.cadences.find((c) => c.isActive);
+          if (active) {
+            setCadenceInfo({ totalSteps: active.totalSteps, name: active.name });
+          }
+        }
+      })
+      .catch(() => {});
   }, [id]);
 
   const status = useMemo(() => agentConfigStatus(config), [config]);
@@ -129,8 +144,26 @@ export default function AgentDetailPage({ params }) {
           </div>
         </div>
         {hydrated ? (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <StatusBadge status={status.status} />
+            {cadenceInfo ? (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '3px 10px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#3b82f6',
+                  background: 'color-mix(in srgb, #3b82f6 12%, transparent)',
+                  borderRadius: 999,
+                  letterSpacing: '0.01em',
+                }}
+              >
+                {cadenceInfo.totalSteps}-step cadence active
+              </span>
+            ) : null}
             <div
               style={{
                 display: 'inline-flex',
