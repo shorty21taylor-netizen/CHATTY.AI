@@ -308,6 +308,10 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
 INNGEST_EVENT_KEY=...
 INNGEST_SIGNING_KEY=...
 
+# Meta DMs (Messenger / Instagram)
+META_APP_SECRET=...
+META_VERIFY_TOKEN=...
+
 # Application
 NEXT_PUBLIC_APP_URL=https://chattyai-production.up.railway.app
 NODE_ENV=production
@@ -342,6 +346,8 @@ CRM integrations.
    + push-driven signal emission + 3-pass Decision Engine + Daily Brief SMS.
 2. **Next:** Mission Control dashboard tightening, voice-note briefs via
    ElevenLabs TTS, SMS feedback loop, richer pipeline analytics and benchmarks.
+   Native capture channels: Forms, SMS, Voice (ElevenLabs), Meta DMs
+   (Messenger/Instagram), Email.
 3. **Later:** ElevenLabs Conversational AI agents for inbound/outbound calls
    that auto-log interactions, voice-clone branded agents, Stripe-powered
    billing tiers.
