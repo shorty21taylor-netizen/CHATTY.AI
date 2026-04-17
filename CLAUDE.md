@@ -259,6 +259,56 @@ dispatches to `ea-agent.ts`:
 - `src/app/dashboard/agents/telegram-ea/page.js` — Dashboard UI
 - `db/migrations/010_telegram_ea.sql` — telegram_sessions + telegram_messages tables
 
+## Stripe Billing & Usage Gating
+
+### Checkout Flow
+`/checkout?plan=starter&billing=monthly` → shows plan summary → user clicks
+"Continue to Stripe" → `POST /api/stripe/create-session` creates a Stripe
+Checkout Session (upserts `stripe_customers` row if first checkout) → redirects
+to `session.url`. On success Stripe redirects to `/dashboard?checkout=success`;
+on cancel to `/checkout?canceled=true`.
+
+### Webhook Flow
+`POST /api/webhooks/stripe` verifies `stripe-signature` via
+`getStripe().webhooks.constructEvent()`. Handled events:
+- `checkout.session.completed` — activates subscription, sets plan from metadata
+- `invoice.paid` — marks subscription active
+- `invoice.payment_failed` — marks past_due
+- `customer.subscription.updated` — syncs status, cancel_at_period_end, current_period_end
+- `customer.subscription.deleted` — marks canceled, clears subscription ID
+
+### Billing Gate
+`src/lib/stripe/billing-gate.ts` exposes:
+- `getBillingStatus(orgId)` — returns plan, status, isActive, cancelAtPeriodEnd, etc.
+- `checkUsageLimit(orgId, resource)` — checks current usage vs plan limit
+- `incrementUsage(orgId, resource, amount)` — atomic increment via ON CONFLICT
+
+### Plan Limits (defined in `src/lib/stripe/client.ts`)
+| | Starter | Pro | Scale |
+|---|---|---|---|
+| SMS/mo | 2,000 | 5,000 | 20,000 |
+| Voice min | 200 | 500 | 2,000 |
+| Agents | 3 | 11 | 11 |
+| Team seats | 1 | 5 | Unlimited |
+| Voice Lab | No | No | Yes |
+| Priority Engine | No | No | Yes |
+
+### Dashboard
+- `/dashboard/billing` — fetches `GET /api/stripe/status` (plan + usage + limits),
+  shows plan hero, usage bars, payment method card, plan comparison grid.
+  "Manage billing" button → `POST /api/stripe/portal` → Stripe Customer Portal.
+
+### Files
+- `db/migrations/013_stripe_billing.sql` — stripe_customers + billing_usage tables
+- `src/lib/stripe/client.ts` — Stripe singleton, plan limits, price mapping
+- `src/lib/stripe/billing-gate.ts` — getBillingStatus, checkUsageLimit, incrementUsage
+- `src/app/api/stripe/create-session/route.ts` — Checkout session creation
+- `src/app/api/stripe/portal/route.ts` — Billing portal session creation
+- `src/app/api/stripe/status/route.ts` — GET billing status + usage + limits
+- `src/app/api/webhooks/stripe/route.ts` — Webhook handler with DB writes
+- `src/app/checkout/page.js` — Checkout page with plan/cycle selection
+- `src/app/dashboard/billing/page.js` — Billing dashboard with live data
+
 ## Decision Engine: 3-Pass Claude Chain
 
 ### Pass 1: Signal Analysis
@@ -387,6 +437,11 @@ TWILIO_PHONE_NUMBER=+1...
 # Payments (Stripe)
 STRIPE_SECRET_KEY=sk_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_STARTER_MONTHLY=price_...
+STRIPE_PRICE_STARTER_ANNUAL=price_...
+STRIPE_PRICE_PRO_MONTHLY=price_...
+STRIPE_PRICE_PRO_ANNUAL=price_...
 
 # Background Jobs (Inngest)
 INNGEST_EVENT_KEY=...
