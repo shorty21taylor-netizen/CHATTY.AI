@@ -983,6 +983,33 @@ export const telegramMessages = pgTable(
   ],
 );
 
+// ===========================================================================
+// 24. agent_simulations — dry-run agent testing
+// ===========================================================================
+
+export const agentSimulations = pgTable(
+  "agent_simulations",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    agentType: text("agent_type").notNull(),
+    scenarioName: text("scenario_name"),
+    inputSignal: jsonb("input_signal").notNull(),
+    simulatedOutput: jsonb("simulated_output"),
+    actualOutput: jsonb("actual_output"),
+    comparisonScore: numeric("comparison_score"),
+    status: text("status").notNull().default("pending"),
+    error: text("error"),
+    durationMs: integer("duration_ms"),
+    createdAt: createdAt(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("idx_agent_simulations_org_created").on(t.orgId, t.createdAt),
+    index("idx_agent_simulations_org_type").on(t.orgId, t.agentType),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1035,6 +1062,8 @@ export type TelegramSession = typeof telegramSessions.$inferSelect;
 export type NewTelegramSession = typeof telegramSessions.$inferInsert;
 export type TelegramMessage = typeof telegramMessages.$inferSelect;
 export type NewTelegramMessage = typeof telegramMessages.$inferInsert;
+export type AgentSimulation = typeof agentSimulations.$inferSelect;
+export type NewAgentSimulation = typeof agentSimulations.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1068,6 +1097,7 @@ export const RLS_TABLES = [
   "voice_calls",
   "telegram_sessions",
   "telegram_messages",
+  "agent_simulations",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
