@@ -69,6 +69,71 @@
   --green-deep: #0f2620;
   --green-soft: #2d5a47;
   --shadow-mac: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(26, 58, 46, 0.08);
+
+  /* ---- Sidebar: Irish green background, white active boxes ---- */
+  --sidebar-bg: #0f6b3a;
+  --sidebar-bg-deep: #0b5a30;
+  --sidebar-text: rgba(255, 255, 255, 0.75);
+  --sidebar-text-bright: #ffffff;
+  --sidebar-text-muted: rgba(255, 255, 255, 0.45);
+  --sidebar-section-label: rgba(255, 255, 255, 0.4);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #0f6b3a;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-icon: rgba(255, 255, 255, 0.55);
+  --sidebar-icon-active: #0f6b3a;
+  --sidebar-dot: #34d399;
+  --sidebar-badge-bg: rgba(255, 255, 255, 0.15);
+  --sidebar-badge-text: #ffffff;
+  --sidebar-chevron: rgba(255, 255, 255, 0.35);
+  --sidebar-user-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-user-border: rgba(255, 255, 255, 0.1);
+  --sidebar-signout-border: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="light"] {
+  --sidebar-bg: #0f6b3a;
+  --sidebar-bg-deep: #0b5a30;
+  --sidebar-text: rgba(255, 255, 255, 0.75);
+  --sidebar-text-bright: #ffffff;
+  --sidebar-text-muted: rgba(255, 255, 255, 0.45);
+  --sidebar-section-label: rgba(255, 255, 255, 0.4);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #0f6b3a;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-icon: rgba(255, 255, 255, 0.55);
+  --sidebar-icon-active: #0f6b3a;
+  --sidebar-dot: #34d399;
+  --sidebar-badge-bg: rgba(255, 255, 255, 0.15);
+  --sidebar-badge-text: #ffffff;
+  --sidebar-chevron: rgba(255, 255, 255, 0.35);
+  --sidebar-user-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-user-border: rgba(255, 255, 255, 0.1);
+  --sidebar-signout-border: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] {
+  --sidebar-bg: #0b5a30;
+  --sidebar-bg-deep: #084523;
+  --sidebar-text: rgba(255, 255, 255, 0.7);
+  --sidebar-text-bright: #ffffff;
+  --sidebar-text-muted: rgba(255, 255, 255, 0.4);
+  --sidebar-section-label: rgba(255, 255, 255, 0.35);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.95);
+  --sidebar-active-text: #0b5a30;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-icon: rgba(255, 255, 255, 0.5);
+  --sidebar-icon-active: #0b5a30;
+  --sidebar-dot: #34d399;
+  --sidebar-badge-bg: rgba(255, 255, 255, 0.12);
+  --sidebar-badge-text: #ffffff;
+  --sidebar-chevron: rgba(255, 255, 255, 0.3);
+  --sidebar-user-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-user-border: rgba(255, 255, 255, 0.08);
+  --sidebar-signout-border: rgba(255, 255, 255, 0.1);
 }
 
 /* ================================================== */

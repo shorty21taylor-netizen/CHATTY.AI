@@ -310,8 +310,9 @@ function Sidebar({
         top: 0,
         bottom: 0,
         left: 0,
-        background: 'var(--bg)',
-        borderRight: '1px solid var(--border)',
+        background:
+          'linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-deep) 100%)',
+        borderRight: 'none',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width .2s ease, transform .2s ease',
@@ -325,8 +326,8 @@ function Sidebar({
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'space-between',
-          padding: collapsed ? '18px 0' : '18px 18px',
-          borderBottom: '1px solid var(--border)',
+          padding: collapsed ? '20px 0 16px' : '20px 18px 16px',
+          borderBottom: `1px solid var(--sidebar-border)`,
           gap: 8,
         }}
       >
@@ -343,29 +344,44 @@ function Sidebar({
         >
           <span
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              background: 'var(--primary)',
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.15)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <Sparkles size={14} style={{ color: '#ffffff' }} />
+            <Sparkles size={15} style={{ color: '#ffffff' }} />
           </span>
           {collapsed ? null : (
-            <span
-              style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: 'var(--text-heading)',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Chatty AI
-            </span>
+            <>
+              <span
+                style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: 'var(--sidebar-text-bright)',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Chatty AI
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  background: 'var(--sidebar-badge-bg)',
+                  color: 'var(--sidebar-badge-text)',
+                }}
+              >
+                AI OS
+              </span>
+            </>
           )}
         </Link>
         {/* Mobile close button */}
@@ -378,7 +394,7 @@ function Sidebar({
             display: 'none',
             background: 'transparent',
             border: 'none',
-            color: 'var(--text-muted)',
+            color: 'var(--sidebar-text-muted)',
             cursor: 'pointer',
             padding: 4,
           }}
@@ -392,10 +408,10 @@ function Sidebar({
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '14px 10px',
+          padding: '6px 0 10px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 4,
+          gap: 0,
         }}
       >
         {NAV_GROUPS.map((group) => (
@@ -413,7 +429,7 @@ function Sidebar({
       {/* Bottom section */}
       <div
         style={{
-          borderTop: '1px solid var(--border)',
+          borderTop: '1px solid var(--sidebar-border)',
           padding: collapsed ? 10 : 14,
           display: 'flex',
           flexDirection: 'column',
@@ -426,10 +442,10 @@ function Sidebar({
             display: 'flex',
             alignItems: 'center',
             gap: collapsed ? 0 : 10,
-            padding: collapsed ? '8px 0' : '10px 8px',
+            padding: collapsed ? '8px 0' : '10px 12px',
             borderRadius: 10,
-            background: 'var(--bg-subtle)',
-            border: '1px solid var(--border)',
+            background: 'var(--sidebar-user-bg)',
+            border: '1px solid var(--sidebar-user-border)',
             justifyContent: collapsed ? 'center' : 'flex-start',
           }}
           title="Marcus Johnson · Summit Roofing"
@@ -439,8 +455,8 @@ function Sidebar({
               width: 32,
               height: 32,
               borderRadius: '50%',
-              background: 'var(--primary)',
-              color: '#ffffff',
+              background: 'rgba(255,255,255,0.95)',
+              color: 'var(--sidebar-active-text)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -456,9 +472,9 @@ function Sidebar({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: 600,
-                  color: 'var(--text-heading)',
+                  color: 'var(--sidebar-text-bright)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -468,8 +484,8 @@ function Sidebar({
               </div>
               <div
                 style={{
-                  fontSize: 10.5,
-                  color: 'var(--text-muted)',
+                  fontSize: 11,
+                  color: 'var(--sidebar-text-muted)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -487,14 +503,15 @@ function Sidebar({
             type="button"
             onClick={onSignOut}
             style={{
-              padding: '7px 10px',
+              padding: '8px 0',
               borderRadius: 8,
               background: 'transparent',
-              border: '1px solid var(--border)',
-              color: 'var(--text-muted)',
-              fontSize: 11.5,
-              fontWeight: 600,
+              border: '1px solid var(--sidebar-signout-border)',
+              color: 'var(--sidebar-text)',
+              fontSize: 12,
+              fontWeight: 500,
               cursor: 'pointer',
+              transition: 'all .12s',
             }}
           >
             Sign out (Admin)
@@ -515,9 +532,9 @@ function Sidebar({
             padding: collapsed ? '8px 0' : '8px 10px',
             borderRadius: 8,
             background: 'transparent',
-            border: '1px solid var(--border)',
-            color: 'var(--text-muted)',
-            fontSize: 11.5,
+            border: 'none',
+            color: 'var(--sidebar-text-muted)',
+            fontSize: 12,
             fontWeight: 500,
             cursor: 'pointer',
           }}
@@ -583,16 +600,16 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '6px 12px',
+          padding: '20px 18px 8px',
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
           color: hasActiveChild
-            ? 'var(--text-heading)'
-            : 'var(--text-muted)',
-          fontSize: 11,
+            ? 'var(--sidebar-text-bright)'
+            : 'var(--sidebar-section-label)',
+          fontSize: 10,
           fontWeight: 600,
-          letterSpacing: '0.06em',
+          letterSpacing: '0.14em',
           textTransform: 'uppercase',
         }}
       >
@@ -600,7 +617,7 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
         <motion.span
           animate={{ rotate: open ? 0 : -90 }}
           transition={{ duration: 0.15 }}
-          style={{ display: 'inline-flex' }}
+          style={{ display: 'inline-flex', color: 'var(--sidebar-chevron)' }}
         >
           <ChevronDown size={12} />
         </motion.span>
@@ -646,25 +663,43 @@ function NavGroup({ group, open, onToggle, pathname, collapsed }) {
 function NavLink({ item, pathname, collapsed }) {
   const Icon = item.icon;
   const active = isActive(pathname, item.href, item.exact);
+  const [hover, setHover] = useState(false);
+
+  const background = active
+    ? 'var(--sidebar-active-bg)'
+    : hover
+    ? 'var(--sidebar-hover-bg)'
+    : 'transparent';
+  const textColor = active
+    ? 'var(--sidebar-active-text)'
+    : 'var(--sidebar-text)';
+  const iconColor = active
+    ? 'var(--sidebar-icon-active)'
+    : 'var(--sidebar-icon)';
 
   return (
     <Link
       href={item.href}
       title={collapsed ? item.label : undefined}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: collapsed ? 0 : 10,
-        padding: collapsed ? '10px 0' : '8px 10px',
+        padding: collapsed ? '10px 0' : '8px 14px',
+        margin: collapsed ? '2px 0' : '2px 8px',
         borderRadius: 8,
         textDecoration: 'none',
-        color: active ? 'var(--primary)' : 'var(--text-muted)',
-        background: active ? 'var(--primary-tint)' : 'transparent',
+        color: textColor,
+        background,
         fontSize: 13,
         fontWeight: active ? 600 : 500,
         position: 'relative',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        transition: 'background .15s, color .15s',
+        transition: 'background .12s, color .12s',
+        boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+        cursor: 'pointer',
       }}
     >
       <span
@@ -673,11 +708,11 @@ function NavLink({ item, pathname, collapsed }) {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: active ? 'var(--primary)' : 'var(--text-muted)',
+          color: iconColor,
           flexShrink: 0,
         }}
       >
-        <Icon size={15} />
+        <Icon size={16} />
       </span>
       {collapsed ? null : (
         <span
@@ -699,8 +734,12 @@ function NavLink({ item, pathname, collapsed }) {
             fontWeight: 600,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            background: 'var(--bg-hover)',
+            color: active
+              ? 'var(--sidebar-active-text)'
+              : 'var(--sidebar-text-muted)',
+            background: active
+              ? 'rgba(15,107,58,0.08)'
+              : 'var(--sidebar-badge-bg)',
             padding: '2px 6px',
             borderRadius: 4,
           }}
@@ -712,10 +751,12 @@ function NavLink({ item, pathname, collapsed }) {
         <span
           aria-hidden
           style={{
-            width: 6,
-            height: 6,
+            width: 8,
+            height: 8,
             borderRadius: '50%',
-            background: 'var(--primary)',
+            background: 'var(--sidebar-dot)',
+            boxShadow: '0 0 8px rgba(52,211,153,0.5)',
+            marginLeft: 'auto',
             animation: 'pulse-dot 2s infinite',
           }}
         />

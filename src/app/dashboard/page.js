@@ -12,6 +12,7 @@ import {
   FileText,
   MessageSquare,
   CheckCircle,
+  Clock,
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
@@ -35,12 +36,6 @@ const REVENUE_KPI = {
   series: [28, 32, 36, 39, 42, 45, 48],
 };
 
-const QUALITY_KPIS = [
-  { id: 'answer-rate', label: 'Answer Rate', value: '94.2%', delta: '+2.1%' },
-  { id: 'time-to-answer', label: 'Time to Answer', value: '0.8s', delta: '-12%' },
-  { id: 'qualification', label: 'Qualification Rate', value: '67%', delta: '+4%' },
-  { id: 'booking', label: 'Booking Rate', value: '38%', delta: '+6%' },
-];
 
 // ---------------------------------------------------------------------------
 // Animation variants
@@ -185,32 +180,29 @@ export default function OverviewPage() {
 
       {/* SECTION 1 — Core Sellers: what Chatty did today */}
       <motion.div variants={item} style={{ marginTop: 40 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
-          <div className="t-eyebrow">WHAT CHATTY DID TODAY</div>
-          <span className="t-body-sm">Updated live · All agents active</span>
+        <div style={{
+          fontSize: 13,
+          fontWeight: 600,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <span>WHAT CHATTY DID TODAY</span>
+          <span className="t-body-sm" style={{ letterSpacing: 0, textTransform: 'none', fontWeight: 400 }}>Updated live · All agents active</span>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 16,
-          }}
-          className="core-sellers-grid"
-        >
+        {/* Top row — 3 cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }} className="sellers-row-top">
           <SellerCard
             href="/dashboard/speed-to-lead"
-            icon={<Zap size={18} />}
+            icon={<Zap size={22} />}
             iconBg="rgba(15,138,79,0.10)"
             iconColor="var(--primary)"
-            agent="SPEED-TO-LEAD"
+            agent="Speed-to-Lead"
             value="47"
             label="leads contacted in under 60 seconds"
             delta="+12 vs yesterday"
@@ -219,10 +211,10 @@ export default function OverviewPage() {
           />
           <SellerCard
             href="/dashboard/follow-ups"
-            icon={<RotateCcw size={18} />}
+            icon={<RotateCcw size={22} />}
             iconBg="rgba(139,92,246,0.12)"
             iconColor="#8b5cf6"
-            agent="DEAD LEAD REACTIVATION"
+            agent="Dead Lead Reactivation"
             value="23"
             label="cold leads reawakened"
             delta="6 replied · 2 booked"
@@ -231,22 +223,25 @@ export default function OverviewPage() {
           />
           <SellerCard
             href="/dashboard/booked-calls"
-            icon={<Calendar size={18} />}
+            icon={<Calendar size={22} />}
             iconBg="rgba(59,130,246,0.12)"
             iconColor="#3b82f6"
-            agent="BOOKED CALLS"
+            agent="Booked Calls"
             value="18"
             label="appointments on the calendar"
             delta="+4 vs yesterday"
             deltaPositive
             footer="Next: Mike R. at 2:30pm"
           />
+        </div>
+        {/* Bottom row — 2 cards, centered */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginTop: 20 }} className="sellers-row-bottom">
           <SellerCard
             href="/dashboard/proposals-out"
-            icon={<FileText size={18} />}
+            icon={<FileText size={22} />}
             iconBg="rgba(245,158,11,0.12)"
             iconColor="#f59e0b"
-            agent="QUOTES SENT + FOLLOWED UP"
+            agent="Quotes Sent + Followed Up"
             value="12"
             label="quotes sent · 34 follow-ups fired"
             delta="5 viewed today"
@@ -255,10 +250,10 @@ export default function OverviewPage() {
           />
           <SellerCard
             href="/dashboard/follow-ups"
-            icon={<MessageSquare size={18} />}
+            icon={<MessageSquare size={22} />}
             iconBg="rgba(236,72,153,0.12)"
             iconColor="#ec4899"
-            agent="FOLLOW-UP TEXTS"
+            agent="Follow-Up Texts"
             value="142"
             label="texts sent across all agents"
             delta="28% reply rate"
@@ -268,37 +263,47 @@ export default function OverviewPage() {
         </div>
       </motion.div>
 
-      {/* SECTION 2 — Agent Quality strip (moved up from bottom) */}
-      <motion.div variants={item} style={{ marginTop: 24 }}>
-        <div className="t-eyebrow" style={{ marginBottom: 12 }}>
-          AGENT QUALITY
-        </div>
+      {/* SECTION 2 — Agent Quality */}
+      <motion.div variants={item} style={{ marginTop: 32 }}>
+        <div style={{
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          marginBottom: 16,
+        }}>AGENT QUALITY</div>
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 16,
+            gap: 20,
           }}
           className="quality-strip-grid"
         >
-          {QUALITY_KPIS.map((k) => (
-            <QualityKpi key={k.id} label={k.label} value={k.value} delta={k.delta} />
-          ))}
+          <QualityCard icon={<CheckCircle size={20} />} name="Answer Rate" value="94.2%" delta="+2.1% vs last week" positive />
+          <QualityCard icon={<Clock size={20} />} name="Time to Answer" value="0.8s" delta="-12% vs last week" positive />
+          <QualityCard icon={<TrendingUp size={20} />} name="Qualification Rate" value="67%" delta="+4% vs last week" positive />
+          <QualityCard icon={<Calendar size={20} />} name="Booking Rate" value="38%" delta="+6% vs last week" positive />
         </div>
       </motion.div>
 
       {/* Responsive fallbacks */}
       <style jsx>{`
         @media (max-width: 1100px) {
-          :global(.core-sellers-grid) {
-            grid-template-columns: repeat(3, 1fr) !important;
+          :global(.sellers-row-top) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          :global(.sellers-row-bottom) {
+            grid-template-columns: 1fr !important;
           }
           :global(.quality-strip-grid) {
             grid-template-columns: repeat(2, 1fr) !important;
           }
         }
         @media (max-width: 700px) {
-          :global(.core-sellers-grid),
+          :global(.sellers-row-top),
+          :global(.sellers-row-bottom),
           :global(.quality-strip-grid) {
             grid-template-columns: 1fr !important;
           }
@@ -398,18 +403,7 @@ function RevenueHeroCard({ kpi }) {
 // SellerCard — Core Sellers row
 // ---------------------------------------------------------------------------
 
-function SellerCard({
-  href,
-  icon,
-  iconBg,
-  iconColor,
-  agent,
-  value,
-  label,
-  delta,
-  deltaPositive,
-  footer,
-}) {
+function SellerCard({ href, icon, iconBg, iconColor, agent, value, label, delta, deltaPositive, footer }) {
   const [hover, setHover] = useState(false);
   const Wrapper = href ? Link : 'div';
   const wrapperProps = href
@@ -423,139 +417,124 @@ function SellerCard({
 
   return (
     <Wrapper {...wrapperProps}>
-    <div
-      className="dark-card"
-      style={{
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-        minHeight: 180,
-        cursor: href ? 'pointer' : 'default',
-        transition: 'border-color 150ms ease, box-shadow 150ms ease',
-        borderColor: hover ? 'var(--border-strong)' : undefined,
-        boxShadow: hover ? '0 4px 16px rgba(0,0,0,0.06)' : undefined,
-      }}
-    >
       <div
+        className="dark-card"
         style={{
+          padding: 28,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          minHeight: 220,
+          cursor: href ? 'pointer' : 'default',
+          transition: 'border-color 150ms ease, box-shadow 150ms ease',
+          borderColor: hover ? 'var(--border-strong)' : undefined,
+          boxShadow: hover ? '0 4px 16px rgba(0,0,0,0.06)' : undefined,
+        }}
+      >
+        {/* Top: icon + agent name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12,
+            background: iconBg, color: iconColor,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>{icon}</div>
+          <span style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: 'var(--text-bright)',
+            letterSpacing: '-0.01em',
+          }}>{agent}</span>
+        </div>
+
+        {/* Big number */}
+        <div style={{
+          fontSize: 56,
+          fontWeight: 800,
+          color: 'var(--text-bright)',
+          letterSpacing: '-0.04em',
+          lineHeight: 1,
+          fontFamily: 'var(--font-display)',
+          fontVariantNumeric: 'tabular-nums',
+        }}>{value}</div>
+
+        {/* Description */}
+        <div style={{
+          fontSize: 15,
+          color: 'var(--text-muted)',
+          lineHeight: 1.4,
+        }}>{label}</div>
+
+        {/* Footer: delta + context */}
+        <div style={{
+          marginTop: 'auto',
+          paddingTop: 16,
+          borderTop: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: iconBg,
-            color: iconColor,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          {icon}
-        </div>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            color: 'var(--text-muted)',
-            textAlign: 'right',
-            lineHeight: 1.2,
-          }}
-        >
-          {agent}
-        </span>
-      </div>
-      <div>
-        <div className="t-kpi" style={{ fontSize: 40, lineHeight: 1 }}>
-          {value}
-        </div>
-        <div className="t-body-sm" style={{ marginTop: 6 }}>
-          {label}
-        </div>
-      </div>
-      <div
-        style={{
-          marginTop: 'auto',
-          paddingTop: 10,
-          borderTop: '1px solid var(--border)',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 12,
+        }}>
+          <span style={{
+            fontSize: 14,
             fontWeight: 600,
             color: deltaPositive ? 'var(--primary)' : 'var(--negative)',
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
-          }}
-        >
-          <TrendingUp size={12} /> {delta}
-        </div>
-        <div className="t-body-sm" style={{ marginTop: 2, fontSize: 11 }}>
-          {footer}
+          }}>
+            <TrendingUp size={14} /> {delta}
+          </span>
+          <span style={{
+            fontSize: 12,
+            color: 'var(--text-subtle)',
+          }}>{footer}</span>
         </div>
       </div>
-    </div>
     </Wrapper>
   );
 }
 
 // ---------------------------------------------------------------------------
-// QualityKpi — compact bottom strip
+// QualityCard — agent quality metrics
 // ---------------------------------------------------------------------------
 
-function QualityKpi({ label, value, delta }) {
-  const positive = !delta || !delta.startsWith('-') || label === 'Time to Answer';
+function QualityCard({ icon, name, value, delta, positive }) {
   return (
-    <div className="dark-card" style={{ padding: 18 }}>
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
-      >
-        <CheckCircle size={11} style={{ color: 'var(--primary)' }} />
-        {label}
-      </div>
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 26,
+    <div className="dark-card" style={{ padding: 24, minHeight: 160 }}>
+      {/* Label row: icon + name */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <span style={{ color: 'var(--primary)' }}>{icon}</span>
+        <span style={{
+          fontSize: 14,
           fontWeight: 700,
           color: 'var(--text-bright)',
-          fontVariantNumeric: 'tabular-nums',
-          lineHeight: 1,
-        }}
-      >
-        {value}
+          letterSpacing: '-0.01em',
+        }}>{name}</span>
       </div>
-      {delta ? (
-        <div
-          style={{
-            marginTop: 6,
-            fontSize: 11,
-            fontWeight: 600,
-            color: positive ? 'var(--primary)' : 'var(--negative)',
-          }}
-        >
-          {delta} vs last week
-        </div>
-      ) : null}
+
+      {/* Big number */}
+      <div style={{
+        fontSize: 44,
+        fontWeight: 800,
+        color: 'var(--text-bright)',
+        letterSpacing: '-0.04em',
+        lineHeight: 1,
+        fontFamily: 'var(--font-display)',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{value}</div>
+
+      {/* Delta */}
+      <div style={{
+        marginTop: 14,
+        fontSize: 13,
+        fontWeight: 600,
+        color: positive ? 'var(--primary)' : 'var(--negative)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+      }}>
+        <TrendingUp size={13} /> {delta}
+      </div>
     </div>
   );
 }
