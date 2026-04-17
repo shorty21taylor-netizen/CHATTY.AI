@@ -329,11 +329,26 @@ with Voyage embeddings. Two modes:
 Fetches new signals from active **pull-based** sources (weather, custom webhooks).
 The built-in CRM does not participate — its signals are emitted inline from API routes.
 
+### brief-scheduler (cron every 15 min)
+Reads `brief_preferences` for enabled orgs, computes current time in each
+org's timezone via `Intl.DateTimeFormat`, floors to 15-min window, and emits
+`brief/run` for matching orgs. Replaces the old hardcoded 5:30am trigger.
+
+### brief-run (event: brief/run)
+Consumes `brief/run` event from scheduler or manual trigger. Checks idempotency
+(skip if `decision_briefs` row exists for org + today), loads org profile from
+`business_profile`, runs the 3-pass Decision Engine via `runDecisionEngine()`,
+emits `brief/deliver` with the result.
+
 ### decision-run (triggered via API)
 Runs the 3-pass Decision Engine: build context -> Pass 1 -> Pass 2 -> Pass 3 -> store brief -> queue delivery.
 
-### brief-deliver (after decision-run)
-Generates voice summary via ElevenLabs TTS, sends SMS via Twilio, logs delivery timestamp.
+### brief-deliver (event: brief/deliver)
+Loads delivery preferences from `brief_preferences`. If `voice_enabled`,
+generates voice summary via ElevenLabs TTS (`textToSpeech()`). If `sms_enabled`
+and `phone_number` set, sends SMS via `sendSms()` with priority emoji + top 3
+recommendations + dashboard link. Updates `decision_briefs.delivered_at`.
+Schedules `feedback/process` event at T+24h via `step.sleepUntil`.
 
 ### feedback-process (daily at 6pm)
 Sends SMS asking operator about brief accuracy, collects feedback_events, aggregates confidence_delta.
