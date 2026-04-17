@@ -29,6 +29,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { getAdminSession, clearAdminSession } from '@/lib/admin';
+import { hydrateFromServer } from '@/lib/agents/storage';
 
 // ---------------------------------------------------------------------------
 // Navigation config
@@ -124,6 +125,7 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     setAdmin(getAdminSession());
+    hydrateFromServer();
   }, []);
 
   function handleSignOut() {
