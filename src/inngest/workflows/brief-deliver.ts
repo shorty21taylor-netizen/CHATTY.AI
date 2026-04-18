@@ -13,6 +13,10 @@ export const briefDeliver = inngest.createFunction(
   {
     id: "brief-deliver",
     name: "Deliver Daily Brief",
+    concurrency: {
+      limit: 25,
+      key: "event.data.orgId",
+    },
     retries: 2,
   },
   { event: "brief/deliver" },

@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { validateBody, decisionTriggerSchema, ValidationError } from "@/lib/utils/validate";
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
-import { runDecisionEngine } from "@/lib/decision-engine";
+import { inngest } from "@/inngest/client";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Rate limit: 10 decision runs per hour
     const rl = await rateLimitRequest(orgId, "decision-trigger", {
       limit: 10,
       windowMs: 3600_000,
@@ -27,22 +26,22 @@ export async function POST(req: Request) {
     const body = await req.json();
     const data = validateBody(decisionTriggerSchema, body);
 
-    // Run the 3-pass Decision Engine
-    const result = await runDecisionEngine(orgId, {
-      vertical: data.vertical,
-      operatorName: data.operator_name,
+    await inngest.send({
+      name: "decision/run",
+      data: {
+        orgId,
+        vertical: data.vertical,
+        operatorName: data.operator_name,
+      },
     });
 
     return NextResponse.json(
       {
         success: true,
-        brief_id: result.briefId,
-        headline: result.brief.headline,
-        duration_ms: result.totalDurationMs,
-        priority: result.brief.actions[0]?.priority || "medium",
-        recommendations_count: result.brief.actions.length,
+        message: "Decision engine run dispatched",
+        dispatched_at: new Date().toISOString(),
       },
-      { status: 200, headers: rateLimitHeaders(rl) }
+      { status: 202, headers: rateLimitHeaders(rl) }
     );
   } catch (error) {
     if (error instanceof ValidationError) {

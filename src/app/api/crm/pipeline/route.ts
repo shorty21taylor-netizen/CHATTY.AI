@@ -6,6 +6,7 @@ import {
   getDailyActivity,
   getOverdueFollowUps,
 } from "@/lib/db/queries";
+import { cached, orgCacheKey } from "@/lib/utils/query-cache";
 
 export async function GET(req: Request) {
   try {
@@ -28,30 +29,37 @@ export async function GET(req: Request) {
       100
     );
 
-    const [pipeline, activity, overdue] = await Promise.all([
-      getPipelineSummary(orgId),
-      getDailyActivity(orgId),
+    const [pipelineRows, activityRows, overdue] = await Promise.all([
+      cached(
+        orgCacheKey(orgId, "pipeline"),
+        async () => (await getPipelineSummary(orgId)).rows,
+        30,
+      ),
+      cached(
+        orgCacheKey(orgId, "daily_activity"),
+        async () => (await getDailyActivity(orgId)).rows,
+        30,
+      ),
       getOverdueFollowUps(orgId, overdueLimit),
     ]);
 
-    // Derive simple totals useful to the dashboard header
-    const totalPipelineValue = pipeline.rows.reduce(
+    const totalPipelineValue = pipelineRows.reduce(
       (sum, row) => sum + Number(row.pipeline_value ?? 0),
       0
     );
-    const totalOpenLeads = pipeline.rows.reduce(
+    const totalOpenLeads = pipelineRows.reduce(
       (sum, row) => sum + Number(row.lead_count ?? 0),
       0
     );
-    const totalInteractionsToday = activity.rows.reduce(
+    const totalInteractionsToday = activityRows.reduce(
       (sum, row) => sum + Number(row.interaction_count ?? 0),
       0
     );
 
     return NextResponse.json(
       {
-        pipeline: pipeline.rows,
-        daily_activity: activity.rows,
+        pipeline: pipelineRows,
+        daily_activity: activityRows,
         overdue_follow_ups: overdue.rows,
         totals: {
           open_leads: totalOpenLeads,

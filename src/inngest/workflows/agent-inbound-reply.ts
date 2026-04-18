@@ -75,6 +75,10 @@ export const agentInboundReply = inngest.createFunction(
     id: "agent-inbound-reply",
     name: "Inbound SMS Reply Router",
     retries: 2,
+    concurrency: {
+      limit: 20,
+      key: "event.data.orgId",
+    },
   },
   { event: "agent/inbound-reply" },
   async ({ event, step }) => {

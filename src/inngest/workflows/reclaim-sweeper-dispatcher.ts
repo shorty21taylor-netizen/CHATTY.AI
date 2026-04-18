@@ -6,6 +6,7 @@ export const reclaimSweeperDispatcher = inngest.createFunction(
     id: "reclaim-sweeper-dispatcher",
     name: "Reclaim Sweeper Dispatcher",
     retries: 2,
+    concurrency: { limit: 1 },
   },
   { cron: "0 8 * * *" },
   async ({ step }) => {

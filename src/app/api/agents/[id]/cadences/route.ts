@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { withOrgContext } from "@/lib/db/drizzle";
 import { agentCadences, cadenceSteps, agentConfigs } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
 
 export async function GET(
@@ -20,16 +20,26 @@ export async function GET(
       .from(agentCadences)
       .where(eq(agentCadences.agentConfigId, agentConfigId));
 
-    const result = [];
-    for (const cad of rows) {
-      const steps = await tx
-        .select()
-        .from(cadenceSteps)
-        .where(eq(cadenceSteps.cadenceId, cad.id))
-        .orderBy(cadenceSteps.stepIndex);
-      result.push({ ...cad, steps });
+    if (rows.length === 0) return [];
+
+    const cadenceIds = rows.map((c) => c.id);
+    const allSteps = await tx
+      .select()
+      .from(cadenceSteps)
+      .where(inArray(cadenceSteps.cadenceId, cadenceIds))
+      .orderBy(cadenceSteps.stepIndex);
+
+    const stepsByCadence = new Map<string, typeof allSteps>();
+    for (const step of allSteps) {
+      const arr = stepsByCadence.get(step.cadenceId) || [];
+      arr.push(step);
+      stepsByCadence.set(step.cadenceId, arr);
     }
-    return result;
+
+    return rows.map((cad) => ({
+      ...cad,
+      steps: stepsByCadence.get(cad.id) || [],
+    }));
   });
 
   return NextResponse.json({ cadences });

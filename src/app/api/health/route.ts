@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { getPoolStats } from "@/lib/db/pool";
 
 export async function GET() {
   const checks: Record<string, { status: string; latency_ms?: number; error?: string }> = {};
@@ -26,6 +27,13 @@ export async function GET() {
     checks.redis = { status: "unhealthy", error: error.message };
   }
 
+  let poolStats;
+  try {
+    poolStats = getPoolStats();
+  } catch {
+    poolStats = null;
+  }
+
   const allHealthy = Object.values(checks).every((c) => c.status === "healthy");
 
   return NextResponse.json(
@@ -34,6 +42,7 @@ export async function GET() {
       version: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) || "dev",
       timestamp: new Date().toISOString(),
       checks,
+      pool: poolStats,
     },
     { status: allHealthy ? 200 : 503 }
   );

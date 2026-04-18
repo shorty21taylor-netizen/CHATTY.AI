@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { withOrgContext } from "@/lib/db/drizzle";
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
+import { cached, orgCacheKey } from "@/lib/utils/query-cache";
 import * as agents from "@/lib/db/queries/agents";
 
 export async function GET() {
@@ -14,6 +15,10 @@ export async function GET() {
     return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(rl) });
   }
 
-  const rows = await withOrgContext(orgId, (tx) => agents.listByOrg(tx));
+  const rows = await cached(
+    orgCacheKey(orgId, "agents"),
+    () => withOrgContext(orgId, (tx) => agents.listByOrg(tx)),
+    30,
+  );
   return NextResponse.json({ agents: rows }, { headers: rateLimitHeaders(rl) });
 }

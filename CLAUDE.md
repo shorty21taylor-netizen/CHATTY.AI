@@ -571,6 +571,53 @@ search. On Sundays the same workflow derives operator playbooks from successful
 - `GET /api/playbooks` — list playbooks (optionally `?active=false` for all)
 - `POST /api/playbooks/:id/run` — dispatch all playbook steps as agent runs
 
+## Multi-Tenant Scale Hardening
+
+Hardening for 1000-org concurrency. Changes span connection pooling, query
+caching, Inngest concurrency limits, and query pattern fixes.
+
+### Connection Pool
+- Pool size configurable via `DB_POOL_MAX` env var (default 20, max 50)
+- 30-second statement timeout on all queries via `statement_timeout`
+- Pool stats (total/idle/waiting) exposed on `GET /api/health` response
+
+### Query Caching (`src/lib/utils/query-cache.ts`)
+- `cached(key, fetcher, ttlSeconds)` — Redis-backed read-through cache
+- `invalidate(key)` / `invalidatePattern(pattern)` — cache busting
+- `orgCacheKey(orgId, resource)` — standard key format `cache:{orgId}:{resource}`
+- Applied to: `/api/crm/pipeline` (30s), `/api/agents` (30s)
+
+### Inngest Concurrency Limits
+Every workflow now has a concurrency cap:
+| Workflow | Limit | Scope |
+|---|---|---|
+| decision-run | 5 | per-org |
+| daily-decision-trigger | 1 | global |
+| signal-sync | 1 | global |
+| feedback-process | 1 | global |
+| agent-run | 30 | per-org |
+| agent-inbound-reply | 20 | per-org |
+| brief-deliver | 25 | per-org |
+| brief-run | 25 | per-org |
+| reclaim-sweeper-dispatcher | 1 | global |
+| reclaim-sweep-org | 20 | per-org |
+| brief-scheduler | 1 | global |
+| simulation-run | 10 | per-org |
+| cadence-step-execute | 50 | per-org |
+| agent-metrics-rollup | 1 | global |
+| memory-graph-build | 1 | global |
+
+### Query Fixes
+- Decision trigger dispatches async to Inngest (202) instead of blocking
+- Cadences GET uses single batch query instead of N+1 loop
+- Signal sync excludes `internal_crm` (push-driven) + adds LIMIT 500
+- Partial indexes on active signal sources, phone lookup, overdue leads
+
+### Key Files
+- `src/lib/db/pool.ts` — Configurable pool, statement timeout, getPoolStats()
+- `src/lib/utils/query-cache.ts` — Redis read-through cache
+- `db/migrations/018_scale_hardening.sql` — Partial indexes for hot paths
+
 ## Roadmap
 
 Chatty AI's built-in CRM is the product — we are not building toward external

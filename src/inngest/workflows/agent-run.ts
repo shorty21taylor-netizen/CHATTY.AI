@@ -75,6 +75,10 @@ export const agentRunWorkflow = inngest.createFunction(
     id: "agent-run",
     name: "Run Agent",
     retries: 2,
+    concurrency: {
+      limit: 30,
+      key: "event.data.orgId",
+    },
   },
   { event: "agent/run" },
   async ({ event, step }) => {

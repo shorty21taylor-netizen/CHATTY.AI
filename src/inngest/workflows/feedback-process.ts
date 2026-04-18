@@ -16,6 +16,7 @@ export const feedbackProcess = inngest.createFunction(
     id: "feedback-process",
     name: "Aggregate Operator Feedback",
     retries: 1,
+    concurrency: { limit: 1 },
   },
   { cron: "0 18 * * *" },
   async ({ step }) => {

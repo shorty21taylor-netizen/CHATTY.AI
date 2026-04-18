@@ -11,6 +11,7 @@ export const signalSync = inngest.createFunction(
   {
     id: "signal-sync",
     name: "Sync Signal Sources",
+    concurrency: { limit: 1 },
   },
   { cron: "*/30 * * * *" },
   async ({ step }) => {
@@ -25,7 +26,8 @@ export const signalSync = inngest.createFunction(
         }>(
           `SELECT id, org_id, source_type, config
            FROM signal_sources
-           WHERE is_active = true`,
+           WHERE is_active = true AND source_type != 'internal_crm'
+           LIMIT 500`,
           []
         );
         return result.rows;

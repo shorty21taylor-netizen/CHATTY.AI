@@ -12,20 +12,35 @@ export function getPool(): Pool {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is required");
   }
+  const maxConnections = parseInt(process.env.DB_POOL_MAX || "20", 10);
   _pool = new Pool({
     connectionString,
     ssl:
       process.env.NODE_ENV === "production"
         ? { rejectUnauthorized: false }
         : false,
-    max: 20,
+    max: Math.min(maxConnections, 50),
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
+    statement_timeout: 30000,
   });
   _pool.on("error", (err) => {
     console.error("[DB] Pool error:", err.message);
   });
   return _pool;
+}
+
+export function getPoolStats(): {
+  total: number;
+  idle: number;
+  waiting: number;
+} {
+  const p = getPool();
+  return {
+    total: p.totalCount,
+    idle: p.idleCount,
+    waiting: p.waitingCount,
+  };
 }
 
 // Proxy so `pool.query(...)` / `pool.connect()` still works for callers

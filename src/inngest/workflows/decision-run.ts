@@ -12,6 +12,10 @@ export const decisionRun = inngest.createFunction(
     id: "decision-run",
     name: "Run Decision Engine",
     retries: 1,
+    concurrency: {
+      limit: 5,
+      key: "event.data.orgId",
+    },
   },
   { event: "decision/run" },
   async ({ event, step }) => {
@@ -48,6 +52,7 @@ export const dailyDecisionTrigger = inngest.createFunction(
   {
     id: "daily-decision-trigger",
     name: "Daily Decision Trigger",
+    concurrency: { limit: 1 },
   },
   { cron: "30 5 * * *" },
   async ({ step }) => {
