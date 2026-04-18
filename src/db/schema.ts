@@ -1092,6 +1092,28 @@ export const billingUsage = pgTable(
   ],
 );
 
+// ===========================================================================
+// 28. industry_prompt_templates — per-industry prompt library
+// ===========================================================================
+
+export const industryPromptTemplates = pgTable(
+  "industry_prompt_templates",
+  {
+    id: pk(),
+    industry: text("industry").notNull(),
+    useCase: text("use_case").notNull(),
+    promptText: text("prompt_text").notNull(),
+    variables: jsonb("variables").notNull().default([]),
+    version: integer("version").notNull().default(1),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("ipt_industry_idx").on(t.industry),
+    index("ipt_industry_use_case_idx").on(t.industry, t.useCase),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1152,6 +1174,8 @@ export type StripeCustomer = typeof stripeCustomers.$inferSelect;
 export type NewStripeCustomer = typeof stripeCustomers.$inferInsert;
 export type BillingUsageRow = typeof billingUsage.$inferSelect;
 export type NewBillingUsage = typeof billingUsage.$inferInsert;
+export type IndustryPromptTemplate = typeof industryPromptTemplates.$inferSelect;
+export type NewIndustryPromptTemplate = typeof industryPromptTemplates.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1189,6 +1213,7 @@ export const RLS_TABLES = [
   "brief_preferences",
   "stripe_customers",
   "billing_usage",
+  "industry_prompt_templates",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

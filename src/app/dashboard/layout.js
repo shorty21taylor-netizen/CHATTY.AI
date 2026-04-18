@@ -72,6 +72,7 @@ const NAV_GROUPS = [
       { href: '/dashboard/agents/voice-receptionist', label: 'Voice Receptionist', icon: Mic },
       { href: '/dashboard/agents/telegram-ea', label: 'Telegram EA', icon: MessageSquare },
       { href: '/dashboard/agents/simulations', label: 'Simulations', icon: FlaskConical },
+      { href: '/dashboard/templates', label: 'Templates', icon: FileText },
     ],
   },
   {

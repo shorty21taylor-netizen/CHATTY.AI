@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { PASS_3_SYSTEM, buildPass3Prompt } from "./prompts";
 import type { Pass2Output } from "./pass-2-pattern-recognition";
+import { getTemplatesForBrief, mapServiceTypeToIndustry } from "@/lib/industry-prompts/registry";
 
 export interface BriefAction {
   priority: "high" | "medium" | "low";
@@ -101,9 +102,18 @@ export async function runPass3(
 ): Promise<Pass3Output> {
   const startTime = Date.now();
 
+  let industryTemplates: Record<string, string> = {};
+  try {
+    const industry = mapServiceTypeToIndustry(vertical ?? "roofing");
+    industryTemplates = await getTemplatesForBrief(industry);
+  } catch (err) {
+    console.warn("[Pass3] Could not load industry templates:", err);
+  }
+
   const prompt = buildPass3Prompt(
     pass2Output as unknown as Record<string, unknown>,
-    operatorName
+    operatorName,
+    industryTemplates,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {

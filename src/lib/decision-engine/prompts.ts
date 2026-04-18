@@ -198,12 +198,21 @@ Return JSON only, matching the schema in the system prompt.`;
 
 export function buildPass3Prompt(
   pass2Output: Record<string, unknown>,
-  orgName: string
+  orgName: string,
+  industryTemplates?: Record<string, string>,
 ): string {
+  let templateBlock = "";
+  if (industryTemplates && Object.keys(industryTemplates).length > 0) {
+    const lines = Object.entries(industryTemplates)
+      .map(([useCase, text]) => `- **${useCase}**: ${text}`)
+      .join("\n");
+    templateBlock = `\n\n## Industry Message Templates\nUse these proven templates when recommending outreach actions:\n${lines}`;
+  }
+
   const user = `Write the Daily Brief for ${orgName}. It ships by SMS at 6am.
 
 ## Strategic Analysis
-${JSON.stringify(pass2Output, null, 2)}
+${JSON.stringify(pass2Output, null, 2)}${templateBlock}
 
 Return JSON only, matching the schema in the system prompt.`;
 
