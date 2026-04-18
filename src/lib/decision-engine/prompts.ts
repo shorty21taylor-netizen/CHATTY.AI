@@ -181,15 +181,20 @@ Return JSON only, matching the schema in the system prompt.`;
 
 export function buildPass2Prompt(
   pass1Output: Record<string, unknown>,
-  previousBriefs: Record<string, unknown>[] = []
+  previousBriefs: Record<string, unknown>[] = [],
+  profileContext?: string,
 ): string {
+  const profileBlock = profileContext
+    ? `\n\n## Business Profile\n${profileContext}`
+    : "";
+
   const user = `Reason about the following pattern analysis and produce a strategic framework.
 
 ## Pass 1 Output
 ${JSON.stringify(pass1Output, null, 2)}
 
 ## Previous Briefs (last ${previousBriefs.length})
-${JSON.stringify(previousBriefs.slice(0, 7), null, 2)}
+${JSON.stringify(previousBriefs.slice(0, 7), null, 2)}${profileBlock}
 
 Return JSON only, matching the schema in the system prompt.`;
 

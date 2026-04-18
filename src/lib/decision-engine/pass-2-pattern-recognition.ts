@@ -117,13 +117,15 @@ function mockPass2Output(): Omit<Pass2Output, "duration_ms" | "used_mock"> {
  */
 export async function runPass2(
   pass1Output: Pass1Output,
-  previousBriefs: Record<string, unknown>[] = []
+  previousBriefs: Record<string, unknown>[] = [],
+  profileContext?: string,
 ): Promise<Pass2Output> {
   const startTime = Date.now();
 
   const prompt = buildPass2Prompt(
     pass1Output as unknown as Record<string, unknown>,
-    previousBriefs
+    previousBriefs,
+    profileContext,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {

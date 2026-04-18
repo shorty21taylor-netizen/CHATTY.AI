@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
@@ -66,8 +66,49 @@ export default function OverviewPage() {
     []
   );
 
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
+  useEffect(() => {
+    fetch('/api/has-profile')
+      .then((r) => r.json())
+      .then((d) => { if (!d.hasProfile) setShowProfileBanner(true); })
+      .catch(() => {});
+  }, []);
+
   return (
     <motion.div initial="hidden" animate="show" variants={container}>
+      {showProfileBanner && (
+        <motion.div
+          variants={item}
+          className="dark-card"
+          style={{
+            padding: '16px 20px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            flexWrap: 'wrap',
+            borderColor: 'color-mix(in srgb, #f59e0b 40%, var(--border))',
+            background: 'color-mix(in srgb, #f59e0b 6%, transparent)',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)' }}>
+              Tell us about your business
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              Set up your business profile so the Decision Engine can tailor briefs to your industry.
+            </div>
+          </div>
+          <Link
+            href="/dashboard/business-profile"
+            className="btn-primary"
+            style={{ textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Set up profile
+          </Link>
+        </motion.div>
+      )}
       {/* Header */}
       <motion.div
         variants={item}

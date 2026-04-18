@@ -9,6 +9,7 @@ import { runPass1 } from "./pass-1-signal-analysis";
 import { runPass2 } from "./pass-2-pattern-recognition";
 import { runPass3 } from "./pass-3-brief-generation";
 import { query, queryOne } from "../db";
+import { getBusinessProfile } from "@/lib/business-profile";
 
 export interface DecisionEngineOptions {
   vertical?: string;
@@ -35,6 +36,27 @@ export async function runDecisionEngine(
 
   console.log(`[DecisionEngine] Starting 3-pass chain for org ${orgId}`);
 
+  // Load business profile for context injection
+  let profileContext: string | undefined;
+  let resolvedVertical = vertical;
+  let resolvedName = operatorName;
+  try {
+    const profile = await getBusinessProfile(orgId);
+    if (profile) {
+      if (profile.primaryServiceType) resolvedVertical = profile.primaryServiceType.toLowerCase();
+      if (profile.ownerFirstName) resolvedName = profile.ownerFirstName;
+      const parts: string[] = [];
+      if (profile.primaryServiceType) parts.push(`This org is a ${profile.primaryServiceType} contractor`);
+      if (profile.teamSize) parts.push(`with ${profile.teamSize} team members`);
+      if (profile.companyName) parts.push(`operating as ${profile.companyName}`);
+      if (profile.pricingPhilosophy) parts.push(`pricing philosophy: ${profile.pricingPhilosophy}`);
+      if (profile.serviceSubtypes?.length) parts.push(`service subtypes: ${profile.serviceSubtypes.join(", ")}`);
+      if (parts.length > 0) profileContext = parts.join(", ") + ".";
+    }
+  } catch (err) {
+    console.warn("[DecisionEngine] Could not load business profile:", err);
+  }
+
   // Step 1: Build unified context from signal_events
   const signalSummary = await buildSignalSummary(orgId);
   const recentEvents = await getRecentEvents(orgId);
@@ -54,14 +76,14 @@ export async function runDecisionEngine(
 
   // Pass 2: Pattern Recognition
   console.log("[DecisionEngine] Running Pass 2: Pattern Recognition...");
-  const pass2 = await runPass2(pass1, previousBriefs);
+  const pass2 = await runPass2(pass1, previousBriefs, profileContext);
   console.log(
     `[DecisionEngine] Pass 2 complete: ${pass2.recommendations.length} recommendations (${pass2.duration_ms}ms)`
   );
 
   // Pass 3: Brief Generation
   console.log("[DecisionEngine] Running Pass 3: Brief Generation...");
-  const pass3 = await runPass3(pass2, operatorName, vertical);
+  const pass3 = await runPass3(pass2, resolvedName, resolvedVertical);
   console.log(
     `[DecisionEngine] Pass 3 complete: "${pass3.brief.headline}" (${pass3.duration_ms}ms)`
   );
