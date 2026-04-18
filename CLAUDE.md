@@ -259,29 +259,24 @@ dispatches to `ea-agent.ts`:
 - `src/app/dashboard/agents/telegram-ea/page.js` — Dashboard UI
 - `db/migrations/010_telegram_ea.sql` — telegram_sessions + telegram_messages tables
 
-## Stripe Billing & Usage Gating
+## Stripe Billing & Plan Gating
 
-### Checkout Flow
-`/checkout?plan=starter&billing=monthly` → shows plan summary → user clicks
-"Continue to Stripe" → `POST /api/stripe/create-session` creates a Stripe
-Checkout Session (upserts `stripe_customers` row if first checkout) → redirects
-to `session.url`. On success Stripe redirects to `/dashboard?checkout=success`;
-on cancel to `/checkout?canceled=true`.
+### Data Model
+Two hand-written tables in `db/migrations/013_stripe_billing.sql` (NOT managed
+by drizzle-kit — apply manually on new environments):
 
-### Webhook Flow
-`POST /api/webhooks/stripe` verifies `stripe-signature` via
-`getStripe().webhooks.constructEvent()`. Handled events:
-- `checkout.session.completed` — activates subscription, sets plan from metadata
-- `invoice.paid` — marks subscription active
-- `invoice.payment_failed` — marks past_due
-- `customer.subscription.updated` — syncs status, cancel_at_period_end, current_period_end
-- `customer.subscription.deleted` — marks canceled, clears subscription ID
+- **stripe_customers** — links `org_id` (Clerk) to `stripe_customer_id`,
+  tracks `stripe_subscription_id`, `stripe_subscription_status`, `current_plan`
+  (starter | pro | scale), `cancel_at_period_end`, `current_period_end`.
+  RLS: `org_id = current_setting('app.current_org_id')`.
+- **billing_usage** — per-org per-month usage counters: `sms_sent`,
+  `voice_minutes`, `agents_active`. Unique on `(org_id, period_start)`.
+  RLS same as above.
 
-### Billing Gate
-`src/lib/stripe/billing-gate.ts` exposes:
-- `getBillingStatus(orgId)` — returns plan, status, isActive, cancelAtPeriodEnd, etc.
-- `checkUsageLimit(orgId, resource)` — checks current usage vs plan limit
-- `incrementUsage(orgId, resource, amount)` — atomic increment via ON CONFLICT
+**Applying the migration on Railway:**
+```bash
+railway run psql $DATABASE_URL -f db/migrations/013_stripe_billing.sql
+```
 
 ### Plan Limits (defined in `src/lib/stripe/client.ts`)
 | | Starter | Pro | Scale |
@@ -289,14 +284,47 @@ on cancel to `/checkout?canceled=true`.
 | SMS/mo | 2,000 | 5,000 | 20,000 |
 | Voice min | 200 | 500 | 2,000 |
 | Agents | 3 | 11 | 11 |
-| Team seats | 1 | 5 | Unlimited |
+| Team seats | 1 | 5 | -1 (unlimited) |
 | Voice Lab | No | No | Yes |
 | Priority Engine | No | No | Yes |
 
-### Dashboard
-- `/dashboard/billing` — fetches `GET /api/stripe/status` (plan + usage + limits),
-  shows plan hero, usage bars, payment method card, plan comparison grid.
-  "Manage billing" button → `POST /api/stripe/portal` → Stripe Customer Portal.
+A limit value of **-1** means unlimited. Price IDs are loaded from env vars
+`STRIPE_PRICE_<PLAN>_<CYCLE>` (e.g. `STRIPE_PRICE_PRO_MONTHLY`).
+
+### Billing-Gate Helpers (`src/lib/stripe/billing-gate.ts`)
+- `getBillingStatus(orgId)` — returns `{ hasSubscription, plan, status, isActive,
+  isTrial, cancelAtPeriodEnd, currentPeriodEnd }`.
+- `checkUsageLimit(orgId, resource)` — returns `{ allowed, current, limit, resource }`.
+  Call this **before** any spend path (SMS send, voice call start, agent creation).
+- `incrementUsage(orgId, resource, amount?)` — atomic `INSERT … ON CONFLICT DO
+  UPDATE SET field = field + amount`. Call **after** the spend succeeds.
+
+### API Routes
+- **`POST /api/stripe/create-session`** — Clerk-authed. Accepts `{ plan, billing_cycle }`.
+  Upserts `stripe_customers` row if first checkout, creates Stripe Checkout Session,
+  returns `{ url }`.
+- **`POST /api/stripe/portal`** — Clerk-authed. Creates Stripe Customer Portal
+  session, returns `{ url }`. Used by "Manage billing" / "Update card" buttons.
+- **`GET /api/stripe/status`** — Clerk-authed. Returns plan + subscription status +
+  per-resource usage + plan limits in one payload. **Degrades gracefully**: if the
+  DB tables don't exist or any query fails, logs the error and returns a free-tier
+  fallback (starter plan, zero usage, full limits) so the dashboard never 500s.
+- **`POST /api/webhooks/stripe`** — Verifies `stripe-signature` via
+  `getStripe().webhooks.constructEvent()`. Handled events:
+  - `checkout.session.completed` — activates subscription, sets plan from metadata
+  - `invoice.paid` — marks subscription active
+  - `invoice.payment_failed` — marks past_due
+  - `customer.subscription.updated` — syncs status, cancel_at_period_end, current_period_end
+  - `customer.subscription.deleted` — marks canceled, clears subscription ID
+
+### Dashboard UX
+- **`/checkout?plan=starter&billing=monthly`** — Plan summary with cycle toggle
+  (monthly/annual). "Continue to Stripe" → POST create-session → redirect to
+  Stripe Checkout. On success Stripe redirects to `/dashboard?checkout=success`;
+  on cancel to `/checkout?canceled=true`.
+- **`/dashboard/billing`** — Fetches `GET /api/stripe/status`, shows plan hero
+  with status pill, usage bars (SMS / voice / agents), payment method card, and
+  plan comparison grid. "Manage billing" → POST portal → Stripe Customer Portal.
 
 ### Files
 - `db/migrations/013_stripe_billing.sql` — stripe_customers + billing_usage tables
@@ -304,7 +332,7 @@ on cancel to `/checkout?canceled=true`.
 - `src/lib/stripe/billing-gate.ts` — getBillingStatus, checkUsageLimit, incrementUsage
 - `src/app/api/stripe/create-session/route.ts` — Checkout session creation
 - `src/app/api/stripe/portal/route.ts` — Billing portal session creation
-- `src/app/api/stripe/status/route.ts` — GET billing status + usage + limits
+- `src/app/api/stripe/status/route.ts` — GET billing status (graceful fallback)
 - `src/app/api/webhooks/stripe/route.ts` — Webhook handler with DB writes
 - `src/app/checkout/page.js` — Checkout page with plan/cycle selection
 - `src/app/dashboard/billing/page.js` — Billing dashboard with live data
