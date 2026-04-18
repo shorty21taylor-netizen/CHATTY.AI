@@ -1,6 +1,9 @@
 import { Pool } from "pg";
 import { readdirSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -27,7 +30,7 @@ async function main() {
     const { rows: applied } = await pool.query(
       "SELECT filename FROM schema_migrations",
     );
-    const appliedSet = new Set(applied.map((r: { filename: string }) => r.filename));
+    const appliedSet = new Set(applied.map((r) => r.filename));
 
     let count = 0;
     for (const file of files) {
