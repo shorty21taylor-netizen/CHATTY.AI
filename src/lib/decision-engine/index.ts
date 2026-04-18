@@ -11,6 +11,7 @@ import { runPass3 } from "./pass-3-brief-generation";
 import { query, queryOne } from "../db";
 import { getBusinessProfile } from "@/lib/business-profile";
 import { getTopAgents } from "@/lib/agent-metrics/rollup";
+import { searchNodes } from "@/lib/memory-graph/nodes";
 
 export interface DecisionEngineOptions {
   vertical?: string;
@@ -78,6 +79,22 @@ export async function runDecisionEngine(
     }
   } catch {
     // Agent metrics table may not exist yet
+  }
+
+  // Inject similar past situations from memory graph
+  try {
+    const summaryText = JSON.stringify(signalSummary).slice(0, 500);
+    const similarMemories = await searchNodes(orgId, summaryText, 3);
+    if (similarMemories.length > 0) {
+      signalSummary.memoryGraphMatches = similarMemories.map((m) => ({
+        nodeType: m.node_type,
+        summary: m.summary,
+        similarity: Math.round((m.similarity || 0) * 100) / 100,
+        data: m.data,
+      }));
+    }
+  } catch {
+    // Memory graph table may not exist yet
   }
 
   // Pass 1: Signal Analysis

@@ -1119,7 +1119,97 @@ export const industryPromptTemplates = pgTable(
 );
 
 // ===========================================================================
-// 29. agent_metrics — per-agent daily performance rollup
+// 29. memory_nodes — entity nodes in the org's knowledge graph
+// ===========================================================================
+
+export const memoryNodeTypeEnum = pgEnum("memory_node_type", [
+  "contact",
+  "opportunity",
+  "agent_run",
+  "brief",
+  "outcome",
+]);
+
+export const memoryEdgeTypeEnum = pgEnum("memory_edge_type", [
+  "touched",
+  "converted",
+  "followed_by",
+  "caused",
+  "similar_to",
+]);
+
+export const memoryNodes = pgTable(
+  "memory_nodes",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    nodeType: text("node_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    summary: text("summary"),
+    embedding: vector("embedding", 1024),
+    data: jsonb("data").notNull().default({}),
+    relevanceScore: numeric("relevance_score").notNull().default("0"),
+    lastReferencedAt: timestamp("last_referenced_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    unique("memory_nodes_org_type_entity_uq").on(t.orgId, t.nodeType, t.entityId),
+    index("memory_nodes_org_type_idx").on(t.orgId, t.nodeType),
+    index("memory_nodes_org_last_ref_idx").on(t.orgId, t.lastReferencedAt),
+  ],
+);
+
+// ===========================================================================
+// 30. memory_edges — relationships between memory nodes
+// ===========================================================================
+
+export const memoryEdges = pgTable(
+  "memory_edges",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    fromNode: uuid("from_node").notNull().references(() => memoryNodes.id, { onDelete: "cascade" }),
+    toNode: uuid("to_node").notNull().references(() => memoryNodes.id, { onDelete: "cascade" }),
+    edgeType: text("edge_type").notNull(),
+    weight: numeric("weight").notNull().default("1"),
+    data: jsonb("data").notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("memory_edges_org_from_to_type_uq").on(t.orgId, t.fromNode, t.toNode, t.edgeType),
+    index("memory_edges_org_from_idx").on(t.orgId, t.fromNode),
+    index("memory_edges_org_to_idx").on(t.orgId, t.toNode),
+  ],
+);
+
+// ===========================================================================
+// 31. operator_playbooks — replayable action sequences
+// ===========================================================================
+
+export const operatorPlaybooks = pgTable(
+  "operator_playbooks",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    triggerSignal: jsonb("trigger_signal").notNull().default({}),
+    steps: jsonb("steps").notNull().default([]),
+    successCount: integer("success_count").notNull().default(0),
+    lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+    isActive: boolean("is_active").notNull().default(true),
+    derivedFromSignalIds: jsonb("derived_from_signal_ids").notNull().default([]),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("operator_playbooks_org_active_idx").on(t.orgId, t.isActive),
+  ],
+);
+
+// ===========================================================================
+// 32. agent_metrics — per-agent daily performance rollup
 // ===========================================================================
 
 export const agentMetrics = pgTable(
@@ -1212,6 +1302,12 @@ export type IndustryPromptTemplate = typeof industryPromptTemplates.$inferSelect
 export type NewIndustryPromptTemplate = typeof industryPromptTemplates.$inferInsert;
 export type AgentMetric = typeof agentMetrics.$inferSelect;
 export type NewAgentMetric = typeof agentMetrics.$inferInsert;
+export type MemoryNode = typeof memoryNodes.$inferSelect;
+export type NewMemoryNode = typeof memoryNodes.$inferInsert;
+export type MemoryEdge = typeof memoryEdges.$inferSelect;
+export type NewMemoryEdge = typeof memoryEdges.$inferInsert;
+export type OperatorPlaybook = typeof operatorPlaybooks.$inferSelect;
+export type NewOperatorPlaybook = typeof operatorPlaybooks.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1251,6 +1347,9 @@ export const RLS_TABLES = [
   "billing_usage",
   "industry_prompt_templates",
   "agent_metrics",
+  "memory_nodes",
+  "memory_edges",
+  "operator_playbooks",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

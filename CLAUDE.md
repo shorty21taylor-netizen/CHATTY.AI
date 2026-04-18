@@ -534,6 +534,43 @@ via atomic upsert.
 Query params: `date` (YYYY-MM-DD), `agent_id` (UUID), `days` (1-90, default 7).
 Returns `{ metrics: AgentMetric[], summary: { totalRuns, totalConversions, topAgent } }`.
 
+## Memory Graph & Playbooks
+
+Org-scoped knowledge graph that connects contacts, opportunities, agents, briefs,
+and outcomes. A nightly Inngest cron (2am UTC) builds nodes from signal_events,
+links edges by entity relationships, and generates Voyage embeddings for semantic
+search. On Sundays the same workflow derives operator playbooks from successful
+30-day signal sequences.
+
+### Flow
+1. Nightly `memory-graph-build` Inngest cron reads past 24h signal_events
+2. Upserts `memory_nodes` (one per entity) with Voyage embeddings
+3. Links `memory_edges` between related entities (contact → opportunity → outcome)
+4. Decision Engine queries memory graph before Pass 1 for "similar past situations"
+5. Sunday derivation scans for recurring successful patterns → `operator_playbooks`
+6. Dashboard `/dashboard/memory` renders force-directed graph (canvas)
+7. Dashboard `/dashboard/playbooks` lists playbooks with "Run Now" dispatching
+
+### Key Files
+- `db/migrations/017_memory_graph.sql` — memory_nodes, memory_edges, operator_playbooks tables + RLS
+- `src/lib/memory-graph/nodes.ts` — upsertNode, getNode, searchNodes (pgvector cosine)
+- `src/lib/memory-graph/edges.ts` — linkNodes, getNeighbors (BFS depth traversal)
+- `src/lib/memory-graph/graph.ts` — buildGraphAroundContact, getOrgGraph
+- `src/lib/playbooks/registry.ts` — listPlaybooks, getPlaybook, runPlaybook, createPlaybook
+- `src/lib/playbooks/inference.ts` — derivePlaybooksFromHistory (pattern mining)
+- `src/inngest/workflows/memory-graph-build.ts` — Nightly cron + Sunday playbook derivation
+- `src/app/api/memory/search/route.ts` — GET with `q` (semantic) or `graph=true` (full snapshot)
+- `src/app/api/playbooks/route.ts` — GET list
+- `src/app/api/playbooks/[id]/run/route.ts` — POST trigger
+- `src/app/dashboard/memory/page.js` — Canvas force-directed graph viz
+- `src/app/dashboard/playbooks/page.js` — Playbook cards with step display + Run Now
+
+### APIs
+- `GET /api/memory/search?q=<text>&limit=20` — semantic search over memory nodes
+- `GET /api/memory/search?graph=true&limit=200` — full graph snapshot (nodes + edges)
+- `GET /api/playbooks` — list playbooks (optionally `?active=false` for all)
+- `POST /api/playbooks/:id/run` — dispatch all playbook steps as agent runs
+
 ## Roadmap
 
 Chatty AI's built-in CRM is the product — we are not building toward external
