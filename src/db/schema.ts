@@ -1102,15 +1102,19 @@ export const industryPromptTemplates = pgTable(
     id: pk(),
     industry: text("industry").notNull(),
     useCase: text("use_case").notNull(),
+    name: text("name").notNull(),
     promptText: text("prompt_text").notNull(),
     variables: jsonb("variables").notNull().default([]),
     version: integer("version").notNull().default(1),
+    isSystem: boolean("is_system").notNull().default(true),
+    orgId: text("org_id"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
     index("ipt_industry_idx").on(t.industry),
     index("ipt_industry_use_case_idx").on(t.industry, t.useCase),
+    index("ipt_org_idx").on(t.orgId),
   ],
 );
 
