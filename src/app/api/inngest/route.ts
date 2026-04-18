@@ -17,6 +17,8 @@ import { briefScheduler } from "@/inngest/workflows/brief-scheduler";
 import { briefRun } from "@/inngest/workflows/brief-run";
 import { agentMetricsRollup } from "@/inngest/workflows/agent-metrics-rollup";
 import { memoryGraphBuild } from "@/inngest/workflows/memory-graph-build";
+import { outboundCallDispatch } from "@/inngest/workflows/outbound-call-dispatch";
+import { outboundCallReconcile } from "@/inngest/workflows/outbound-call-reconcile";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -36,5 +38,7 @@ export const { GET, POST, PUT } = serve({
     briefScheduler,
     agentMetricsRollup,
     memoryGraphBuild,
+    outboundCallDispatch,
+    outboundCallReconcile,
   ],
 });

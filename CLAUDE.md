@@ -571,6 +571,37 @@ search. On Sundays the same workflow derives operator playbooks from successful
 - `GET /api/playbooks` — list playbooks (optionally `?active=false` for all)
 - `POST /api/playbooks/:id/run` — dispatch all playbook steps as agent runs
 
+## Outbound Voice Agent
+
+Proactive outbound calls via ElevenLabs Conversational AI, triggered from
+Daily Brief recommendations or manually by the operator.
+
+### Call Goals
+- `reengage_lead` — Re-engage dormant leads with follow-up call
+- `confirm_appointment` — Confirm upcoming appointment details
+- `followup_quote` — Follow up on sent estimates/quotes
+- `custom` — Operator-defined custom prompt
+
+### Outbound Flow
+1. `POST /api/calls/enqueue` creates `call_tasks` row (status=queued)
+2. `outbound-call-dispatch` Inngest cron (every 2 min) picks up queued tasks
+3. Calls ElevenLabs ConvAI `create-call` endpoint with industry-aware prompt
+4. Updates task to `in_progress` with `convai_conversation_id`
+5. `outbound-call-reconcile` cron (every 5 min) fetches transcripts
+6. Infers outcome heuristically (booked/interested/not_interested/voicemail/etc)
+7. Operator can override outcome on `/dashboard/calls/[id]`
+
+### Key Files
+- `db/migrations/019_outbound_calls.sql` — call_tasks table + RLS
+- `src/lib/elevenlabs/outbound.ts` — startOutboundCall, endCall, fetchTranscript
+- `src/lib/call-tasks/registry.ts` — enqueueCallTask, getPendingTasks, updateTaskStatus, recordOutcome
+- `src/lib/call-tasks/prompts.ts` — Per-goal prompt templates with variable interpolation
+- `src/inngest/workflows/outbound-call-dispatch.ts` — Dispatch cron (2 min)
+- `src/inngest/workflows/outbound-call-reconcile.ts` — Reconcile cron (5 min)
+- `src/app/api/calls/` — enqueue (POST), list (GET), detail + override (GET/PATCH)
+- `src/app/dashboard/calls/page.js` — Tab-filtered call list
+- `src/app/dashboard/calls/[id]/page.js` — Transcript viewer + outcome override
+
 ## Multi-Tenant Scale Hardening
 
 Hardening for 1000-org concurrency. Changes span connection pooling, query

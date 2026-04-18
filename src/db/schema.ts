@@ -1238,6 +1238,40 @@ export const agentMetrics = pgTable(
   ],
 );
 
+// ===========================================================================
+// 33. call_tasks — outbound voice call task queue
+// ===========================================================================
+
+export const callTasks = pgTable(
+  "call_tasks",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    contactId: text("contact_id"),
+    contactName: text("contact_name"),
+    contactPhone: text("contact_phone").notNull(),
+    callGoal: text("call_goal").notNull().default("custom"),
+    customPrompt: text("custom_prompt"),
+    status: text("status").notNull().default("queued"),
+    scheduledFor: timestamp("scheduled_for", { withTimezone: true }).notNull().default(sql`now()`),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    agentId: uuid("agent_id"),
+    briefId: uuid("brief_id"),
+    convaiConversationId: text("convai_conversation_id"),
+    transcript: jsonb("transcript"),
+    outcome: text("outcome"),
+    outcomeNotes: text("outcome_notes"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("call_tasks_org_status_sched_idx").on(t.orgId, t.status, t.scheduledFor),
+    index("call_tasks_org_agent_idx").on(t.orgId, t.agentId),
+    index("call_tasks_org_brief_idx").on(t.orgId, t.briefId),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1308,6 +1342,8 @@ export type MemoryEdge = typeof memoryEdges.$inferSelect;
 export type NewMemoryEdge = typeof memoryEdges.$inferInsert;
 export type OperatorPlaybook = typeof operatorPlaybooks.$inferSelect;
 export type NewOperatorPlaybook = typeof operatorPlaybooks.$inferInsert;
+export type CallTask = typeof callTasks.$inferSelect;
+export type NewCallTask = typeof callTasks.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1350,6 +1386,7 @@ export const RLS_TABLES = [
   "memory_nodes",
   "memory_edges",
   "operator_playbooks",
+  "call_tasks",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level
