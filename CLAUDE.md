@@ -649,6 +649,44 @@ Every workflow now has a concurrency cap:
 - `src/lib/utils/query-cache.ts` — Redis read-through cache
 - `db/migrations/018_scale_hardening.sql` — Partial indexes for hot paths
 
+## Operator Feedback Loop & Confidence-Weighted Engine
+
+Per-recommendation feedback system that closes the loop between Daily Brief
+recommendations and real-world operator outcomes. Feedback accumulates into
+per-category confidence scores that the Decision Engine uses to weight future
+recommendations.
+
+### Flow
+1. Operator receives Daily Brief with N recommendations
+2. Dashboard `/dashboard/feedback` shows each recommendation with helpful/harmful/noop buttons
+3. `POST /api/briefs/:id/feedback` saves per-recommendation outcome + updates brief accuracy_score
+4. `GET /api/briefs/confidence` returns per-category accuracy + 30-day accuracy trend
+5. Pass 3 (Brief Generation) fetches category confidence and injects into prompt context
+6. Claude adjusts recommendation emphasis based on which categories the operator finds most/least helpful
+
+### Category Classification
+Actions are classified into categories via ILIKE keyword matching on the action text:
+- **call_lead** — call, phone, callback, dial, ring
+- **sms_nurture** — sms, text, message, nurture
+- **push_estimate** — estimate, quote, proposal, bid
+- **reallocate_spend** — spend, budget, ad, campaign, cpl
+- **schedule_action** — schedule, reroute, reschedule, crew
+- **request_review** — review, testimonial, rating, referral
+- **other** — default fallback
+
+### Key Files
+- `db/migrations/020_recommendation_feedback.sql` — brief_recommendation_feedback table, accuracy_score + category_confidence on decision_briefs
+- `src/lib/decision-engine/confidence.ts` — getCategoryConfidence(), formatConfidenceContext()
+- `src/lib/decision-engine/pass-3-brief-generation.ts` — Injects confidence context into Pass 3
+- `src/app/api/briefs/[id]/feedback/route.ts` — POST/GET per-recommendation feedback
+- `src/app/api/briefs/confidence/route.ts` — GET category accuracy + trend
+- `src/app/dashboard/feedback/page.js` — Feedback UI with category accuracy breakdown
+
+### API
+- `POST /api/briefs/:id/feedback` — `{ recommendation_index, outcome, notes? }` (outcome: helpful|harmful|noop)
+- `GET /api/briefs/:id/feedback` — list feedback for a brief
+- `GET /api/briefs/confidence` — `{ categories: CategoryAccuracy[], accuracyTrend: { brief_date, accuracy_score }[] }`
+
 ## Roadmap
 
 Chatty AI's built-in CRM is the product — we are not building toward external

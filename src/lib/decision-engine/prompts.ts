@@ -205,6 +205,7 @@ export function buildPass3Prompt(
   pass2Output: Record<string, unknown>,
   orgName: string,
   industryTemplates?: Record<string, string>,
+  confidenceContext?: string,
 ): string {
   let templateBlock = "";
   if (industryTemplates && Object.keys(industryTemplates).length > 0) {
@@ -217,7 +218,7 @@ export function buildPass3Prompt(
   const user = `Write the Daily Brief for ${orgName}. It ships by SMS at 6am.
 
 ## Strategic Analysis
-${JSON.stringify(pass2Output, null, 2)}${templateBlock}
+${JSON.stringify(pass2Output, null, 2)}${templateBlock}${confidenceContext || ""}
 
 Return JSON only, matching the schema in the system prompt.`;
 

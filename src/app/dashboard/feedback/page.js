@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MessageSquare,
   CheckCircle2,
@@ -9,6 +9,7 @@ import {
   Sparkles,
   ThumbsUp,
   ThumbsDown,
+  BarChart3,
 } from 'lucide-react';
 
 const STAT_CARDS = [
@@ -243,6 +244,14 @@ function StatCard({ icon, label, value, hint, accent }) {
 export default function FeedbackPage() {
   const [openReactions, setOpenReactions] = useState({});
   const [draft, setDraft] = useState({});
+  const [confidence, setConfidence] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/briefs/confidence')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => data && setConfidence(data))
+      .catch(() => {});
+  }, []);
 
   return (
     <div>
@@ -271,6 +280,39 @@ export default function FeedbackPage() {
           <StatCard key={s.label} {...s} />
         ))}
       </div>
+
+      {/* Category Confidence Breakdown */}
+      {confidence && confidence.categories.length > 0 && (
+        <div className="dark-card" style={{ padding: 20, marginTop: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <BarChart3 size={16} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)' }}>
+              Per-Category Accuracy (90 days)
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+            {confidence.categories.map((cat) => (
+              <div key={cat.category} style={{ padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-bright)', textTransform: 'capitalize', marginBottom: 8 }}>
+                  {cat.category.replace(/_/g, ' ')}
+                </div>
+                <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(100,116,139,0.2)' }}>
+                  <div style={{ width: `${cat.helpfulPct}%`, background: '#10b981' }} />
+                  <div style={{ width: `${cat.noopPct}%`, background: '#94a3b8' }} />
+                  <div style={{ width: `${cat.harmfulPct}%`, background: '#ef4444' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginTop: 4, color: 'var(--text-muted)' }}>
+                  <span style={{ color: '#10b981' }}>{cat.helpfulPct}% helpful</span>
+                  <span style={{ color: '#ef4444' }}>{cat.harmfulPct}% harmful</span>
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                  {cat.totalFeedback} reviews
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Two-pane: Brief history + Your Feedback Signal */}
       <div

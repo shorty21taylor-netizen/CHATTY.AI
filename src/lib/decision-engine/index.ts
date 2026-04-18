@@ -118,7 +118,7 @@ export async function runDecisionEngine(
 
   // Pass 3: Brief Generation
   console.log("[DecisionEngine] Running Pass 3: Brief Generation...");
-  const pass3 = await runPass3(pass2, resolvedName, resolvedVertical);
+  const pass3 = await runPass3(pass2, resolvedName, resolvedVertical, orgId);
   console.log(
     `[DecisionEngine] Pass 3 complete: "${pass3.brief.headline}" (${pass3.duration_ms}ms)`
   );

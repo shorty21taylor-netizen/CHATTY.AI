@@ -1239,7 +1239,29 @@ export const agentMetrics = pgTable(
 );
 
 // ===========================================================================
-// 33. call_tasks — outbound voice call task queue
+// 33. brief_recommendation_feedback — per-recommendation operator feedback
+// ===========================================================================
+
+export const briefRecommendationFeedback = pgTable(
+  "brief_recommendation_feedback",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    briefId: uuid("brief_id").notNull(),
+    recommendationIndex: integer("recommendation_index").notNull(),
+    outcome: text("outcome").notNull(),
+    operatorId: text("operator_id"),
+    notes: text("notes"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("brf_org_brief_idx").on(t.orgId, t.briefId),
+    index("brf_org_created_idx").on(t.orgId, t.createdAt),
+  ],
+);
+
+// ===========================================================================
+// 34. call_tasks — outbound voice call task queue
 // ===========================================================================
 
 export const callTasks = pgTable(
@@ -1342,6 +1364,8 @@ export type MemoryEdge = typeof memoryEdges.$inferSelect;
 export type NewMemoryEdge = typeof memoryEdges.$inferInsert;
 export type OperatorPlaybook = typeof operatorPlaybooks.$inferSelect;
 export type NewOperatorPlaybook = typeof operatorPlaybooks.$inferInsert;
+export type BriefRecFeedback = typeof briefRecommendationFeedback.$inferSelect;
+export type NewBriefRecFeedback = typeof briefRecommendationFeedback.$inferInsert;
 export type CallTask = typeof callTasks.$inferSelect;
 export type NewCallTask = typeof callTasks.$inferInsert;
 
@@ -1386,6 +1410,7 @@ export const RLS_TABLES = [
   "memory_nodes",
   "memory_edges",
   "operator_playbooks",
+  "brief_recommendation_feedback",
   "call_tasks",
 ] as const;
 
