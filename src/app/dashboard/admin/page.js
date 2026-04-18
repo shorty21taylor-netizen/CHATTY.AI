@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   Users,
@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Upload,
   Mail,
+  Bug,
 } from 'lucide-react';
 
 const TABS = [
@@ -18,6 +19,7 @@ const TABS = [
   { key: 'agents', label: 'Agents Config', icon: Bot },
   { key: 'api', label: 'API Keys', icon: KeyRound },
   { key: 'security', label: 'Security', icon: ShieldCheck },
+  { key: 'errors', label: 'Errors', icon: Bug },
   { key: 'danger', label: 'Danger Zone', icon: AlertTriangle },
 ];
 
@@ -450,6 +452,139 @@ function PlaceholderTab({ title, hint }) {
   );
 }
 
+function ErrorsTab() {
+  const [errors, setErrors] = useState([]);
+  const [stats, setStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/admin/errors?limit=50&days=7');
+        if (res.ok) {
+          const data = await res.json();
+          setErrors(data.errors || []);
+          setStats(data.stats || []);
+        }
+      } catch (err) {
+        console.error('Failed to load errors:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="dark-card" style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+        Loading error log...
+      </div>
+    );
+  }
+
+  const totalErrors = stats.reduce((sum, s) => sum + (s.count || 0), 0);
+  const maxCount = Math.max(...stats.map((s) => s.count || 0), 1);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Stats bar chart */}
+      <div className="dark-card" style={{ padding: 24 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)', marginBottom: 4 }}>
+          Error Trend (7 days)
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+          {totalErrors} total errors this week
+        </div>
+        {stats.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 80 }}>
+            {stats.map((s) => (
+              <div key={s.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <div
+                  style={{
+                    width: '100%',
+                    height: Math.max(4, (s.count / maxCount) * 64),
+                    background: s.count > 0 ? '#ef4444' : 'var(--dark-surface-2)',
+                    borderRadius: 4,
+                    opacity: s.count > 0 ? 0.8 : 0.3,
+                  }}
+                />
+                <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+                  {new Date(s.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 20 }}>
+            No errors recorded
+          </div>
+        )}
+      </div>
+
+      {/* Error list */}
+      <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)' }}>
+            Recent Errors
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            Last 50 errors from your org
+          </div>
+        </div>
+        {errors.length === 0 ? (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+            No errors found. Your system is running clean.
+          </div>
+        ) : (
+          <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+            {errors.map((err) => (
+              <div
+                key={err.id}
+                style={{
+                  padding: '12px 20px',
+                  borderBottom: '1px solid var(--border)',
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <Pill color={err.level === 'error' ? '#ef4444' : err.level === 'warn' ? '#f59e0b' : '#3b82f6'}>
+                    {(err.level || 'error').toUpperCase()}
+                  </Pill>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+                    {err.source}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 'auto' }}>
+                    {new Date(err.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ color: 'var(--text-bright)', fontWeight: 500 }}>
+                  {err.message}
+                </div>
+                {err.stack && (
+                  <pre style={{
+                    marginTop: 6,
+                    padding: 8,
+                    borderRadius: 6,
+                    background: 'var(--dark-surface-2)',
+                    color: 'var(--text-muted)',
+                    fontSize: 11,
+                    overflowX: 'auto',
+                    maxHeight: 120,
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {err.stack}
+                  </pre>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DangerZoneTab() {
   return (
     <div
@@ -633,6 +768,7 @@ export default function AdminPage() {
             hint="SSO (SAML/OIDC), audit logs, and webhook HMAC secrets. Available on the Enterprise plan."
           />
         )}
+        {tab === 'errors' && <ErrorsTab />}
         {tab === 'danger' && <DangerZoneTab />}
       </div>
 

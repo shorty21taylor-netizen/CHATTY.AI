@@ -5,6 +5,7 @@ import { briefPreferences } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { sendSms } from "@/lib/twilio/client";
 import { textToSpeech } from "@/lib/elevenlabs/client";
+import { sendEmail, formatBriefEmail } from "@/lib/email/client";
 
 const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://chattyai-production.up.railway.app";
@@ -104,8 +105,35 @@ export const briefDeliver = inngest.createFunction(
       smsDelivered = smsResult.sent;
     }
 
+    let emailDelivered = false;
+    if ((prefs as Record<string, unknown>)?.emailEnabled && (prefs as Record<string, unknown>)?.emailAddress) {
+      const emailResult = await step.run("send-email", async () => {
+        try {
+          const html = formatBriefEmail(brief);
+          const priorityLabel =
+            brief.actions?.[0]?.priority === "high" ? "[Priority]" :
+            brief.actions?.[0]?.priority === "low" ? "[Low]" : "";
+          const subject = `${priorityLabel} ${brief.headline}`.trim();
+
+          await sendEmail({
+            to: (prefs as Record<string, unknown>).emailAddress as string,
+            subject,
+            html,
+          });
+          return { sent: true };
+        } catch (e) {
+          console.error("[BriefDeliver] Email failed:", e);
+          return { sent: false, reason: String(e) };
+        }
+      });
+      emailDelivered = emailResult.sent;
+    }
+
     await step.run("update-delivery-status", async () => {
-      const via = smsDelivered ? "sms" : "dashboard_only";
+      const channels: string[] = [];
+      if (smsDelivered) channels.push("sms");
+      if (emailDelivered) channels.push("email");
+      const via = channels.length > 0 ? channels.join("+") : "dashboard_only";
       await query(
         `UPDATE decision_briefs
          SET delivered_at = NOW(), delivered_via = $2
@@ -127,6 +155,7 @@ export const briefDeliver = inngest.createFunction(
     return {
       briefId,
       smsDelivered,
+      emailDelivered,
       voiceGenerated,
       messagePreview: smsMessage.substring(0, 100) + "...",
     };

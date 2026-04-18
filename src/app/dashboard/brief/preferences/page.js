@@ -38,7 +38,9 @@ export default function BriefPreferencesPage() {
     timezone: 'America/New_York',
     sms_enabled: true,
     voice_enabled: true,
+    email_enabled: false,
     phone_number: '',
+    email_address: '',
     voice_id: '',
   });
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,9 @@ export default function BriefPreferencesPage() {
             timezone: p.timezone || 'America/New_York',
             sms_enabled: p.smsEnabled ?? p.sms_enabled ?? true,
             voice_enabled: p.voiceEnabled ?? p.voice_enabled ?? true,
+            email_enabled: p.emailEnabled ?? p.email_enabled ?? false,
             phone_number: p.phoneNumber || p.phone_number || '',
+            email_address: p.emailAddress || p.email_address || '',
             voice_id: p.voiceId || p.voice_id || '',
           });
         }
@@ -314,6 +318,60 @@ export default function BriefPreferencesPage() {
             />
           </button>
         </div>
+
+        {/* Email toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)' }}>
+              Email Delivery
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              Receive a formatted HTML email of your brief.
+            </div>
+          </div>
+          <button
+            onClick={() => setPrefs({ ...prefs, email_enabled: !prefs.email_enabled })}
+            style={{
+              width: 48,
+              height: 26,
+              borderRadius: 13,
+              border: 'none',
+              background: prefs.email_enabled ? 'var(--emerald-bright)' : 'var(--dark-surface-2)',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'background .15s',
+            }}
+          >
+            <span
+              style={{
+                position: 'absolute',
+                top: 3,
+                left: prefs.email_enabled ? 25 : 3,
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left .15s',
+              }}
+            />
+          </button>
+        </div>
+
+        {/* Email address */}
+        {prefs.email_enabled && (
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={prefs.email_address}
+              onChange={(e) => setPrefs({ ...prefs, email_address: e.target.value })}
+              placeholder="operator@company.com"
+              style={inputStyle}
+            />
+          </div>
+        )}
 
         {/* Voice selection */}
         {prefs.voice_enabled && voices.length > 0 && (

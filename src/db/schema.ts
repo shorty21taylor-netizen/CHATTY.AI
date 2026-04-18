@@ -1024,7 +1024,9 @@ export const briefPreferences = pgTable(
     timezone: text("timezone").notNull().default("America/New_York"),
     smsEnabled: boolean("sms_enabled").notNull().default(true),
     voiceEnabled: boolean("voice_enabled").notNull().default(true),
+    emailEnabled: boolean("email_enabled").notNull().default(false),
     phoneNumber: text("phone_number"),
+    emailAddress: text("email_address"),
     voiceId: text("voice_id"),
     createdAt: createdAt(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
@@ -1294,6 +1296,28 @@ export const callTasks = pgTable(
   ],
 );
 
+// ===========================================================================
+// 35. error_log — application error tracking
+// ===========================================================================
+
+export const errorLog = pgTable(
+  "error_log",
+  {
+    id: pk(),
+    orgId: text("org_id"),
+    level: text("level").notNull().default("error"),
+    source: text("source").notNull(),
+    message: text("message").notNull(),
+    stack: text("stack"),
+    meta: jsonb("meta").notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("idx_error_log_org_created").on(t.orgId, t.createdAt),
+    index("idx_error_log_level").on(t.level, t.createdAt),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1368,6 +1392,8 @@ export type BriefRecFeedback = typeof briefRecommendationFeedback.$inferSelect;
 export type NewBriefRecFeedback = typeof briefRecommendationFeedback.$inferInsert;
 export type CallTask = typeof callTasks.$inferSelect;
 export type NewCallTask = typeof callTasks.$inferInsert;
+export type ErrorLogRow = typeof errorLog.$inferSelect;
+export type NewErrorLogRow = typeof errorLog.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1412,6 +1438,7 @@ export const RLS_TABLES = [
   "operator_playbooks",
   "brief_recommendation_feedback",
   "call_tasks",
+  "error_log",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

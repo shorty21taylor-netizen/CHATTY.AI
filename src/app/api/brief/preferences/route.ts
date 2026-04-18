@@ -21,7 +21,9 @@ export async function GET() {
       timezone: "America/New_York",
       smsEnabled: true,
       voiceEnabled: true,
+      emailEnabled: false,
       phoneNumber: null,
+      emailAddress: null,
       voiceId: null,
     },
   });
@@ -46,6 +48,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const emailAddress = body.email_address as string | null;
+  if (emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) {
+    return NextResponse.json(
+      { error: "email_address must be a valid email" },
+      { status: 400 },
+    );
+  }
+
   const values = {
     orgId,
     enabled: body.enabled !== false,
@@ -53,7 +63,9 @@ export async function POST(req: NextRequest) {
     timezone: (body.timezone as string) || "America/New_York",
     smsEnabled: body.sms_enabled !== false,
     voiceEnabled: body.voice_enabled !== false,
+    emailEnabled: body.email_enabled === true,
     phoneNumber: phoneNumber || null,
+    emailAddress: emailAddress || null,
     voiceId: (body.voice_id as string) || null,
     updatedAt: new Date(),
   };
@@ -69,7 +81,9 @@ export async function POST(req: NextRequest) {
         timezone: values.timezone,
         smsEnabled: values.smsEnabled,
         voiceEnabled: values.voiceEnabled,
+        emailEnabled: values.emailEnabled,
         phoneNumber: values.phoneNumber,
+        emailAddress: values.emailAddress,
         voiceId: values.voiceId,
         updatedAt: values.updatedAt,
       },

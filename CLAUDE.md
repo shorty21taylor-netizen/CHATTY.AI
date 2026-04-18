@@ -687,6 +687,47 @@ Actions are classified into categories via ILIKE keyword matching on the action 
 - `GET /api/briefs/:id/feedback` — list feedback for a brief
 - `GET /api/briefs/confidence` — `{ categories: CategoryAccuracy[], accuracyTrend: { brief_date, accuracy_score }[] }`
 
+## Email Daily Brief & Error Observability
+
+Multi-channel brief delivery via Resend (email) alongside existing SMS/voice,
+plus application-level error logging with an admin dashboard.
+
+### Email Delivery
+- **Resend API** (`RESEND_API_KEY`) sends formatted HTML emails with full brief
+  content: headline, prioritized actions, risk flags, opportunities, metric of
+  the day, and a CTA button to Mission Control.
+- `brief_preferences` extended with `email_enabled` (BOOLEAN) and `email_address`
+  (TEXT). Operators configure via `/dashboard/brief/preferences`.
+- `brief-deliver` Inngest workflow now has a `send-email` step that runs in
+  parallel with SMS. `delivered_via` tracks channels (e.g. `sms+email`).
+
+### Error Observability
+- `error_log` table stores per-org application errors with level, source,
+  message, stack trace, and JSON metadata.
+- `src/instrumentation.ts` captures `unhandledRejection` and
+  `uncaughtException` events at the Node.js process level.
+- `logError()` helper can be called from any API route or workflow to persist
+  errors with org context.
+- Admin dashboard `/dashboard/admin` → Errors tab shows 7-day error trend
+  bar chart and scrollable recent errors list.
+
+### Key Files
+- `db/migrations/021_email_brief.sql` — email_enabled/email_address on brief_preferences, error_log table
+- `src/lib/email/client.ts` — `sendEmail()` (Resend), `formatBriefEmail()` (HTML template)
+- `src/lib/error-log/index.ts` — `logError()`, `getRecentErrors()`, `getErrorStats()`
+- `src/instrumentation.ts` — Next.js instrumentation hook for uncaught errors
+- `src/inngest/workflows/brief-deliver.ts` — Added `send-email` step
+- `src/app/api/brief/preferences/route.ts` — Extended for email fields
+- `src/app/api/admin/errors/route.ts` — GET recent errors + stats
+- `src/app/dashboard/brief/preferences/page.js` — Email toggle + address input
+- `src/app/dashboard/admin/page.js` — Errors tab with trend chart + log list
+
+### Environment Variables
+```env
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=Chatty AI <brief@chattyai.com>
+```
+
 ## Roadmap
 
 Chatty AI's built-in CRM is the product — we are not building toward external
