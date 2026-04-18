@@ -16,10 +16,11 @@ export async function GET() {
   // Check Redis
   try {
     const start = Date.now();
-    const { Redis } = await import("ioredis");
-    const redis = new Redis(process.env.REDIS_URL || "", { connectTimeout: 3000 });
+    const IORedisModule = await import("ioredis");
+    const IORedis = IORedisModule.default;
+    const redis = new IORedis(process.env.REDIS_URL || "", { connectTimeout: 3000, lazyConnect: false, maxRetriesPerRequest: 1 });
     await redis.ping();
-    await redis.quit();
+    redis.disconnect();
     checks.redis = { status: "healthy", latency_ms: Date.now() - start };
   } catch (error: any) {
     checks.redis = { status: "unhealthy", error: error.message };
