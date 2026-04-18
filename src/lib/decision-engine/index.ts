@@ -10,6 +10,7 @@ import { runPass2 } from "./pass-2-pattern-recognition";
 import { runPass3 } from "./pass-3-brief-generation";
 import { query, queryOne } from "../db";
 import { getBusinessProfile } from "@/lib/business-profile";
+import { getTopAgents } from "@/lib/agent-metrics/rollup";
 
 export interface DecisionEngineOptions {
   vertical?: string;
@@ -61,6 +62,23 @@ export async function runDecisionEngine(
   const signalSummary = await buildSignalSummary(orgId);
   const recentEvents = await getRecentEvents(orgId);
   const previousBriefs = await getPreviousBriefs(orgId);
+
+  // Inject yesterday's top agents as a signal
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const topAgents = await getTopAgents(orgId, yesterday.toISOString().split("T")[0], 3);
+    if (topAgents.length > 0) {
+      signalSummary.agentPerformance = topAgents.map((a) => ({
+        agentType: a.agentType,
+        runs: a.runs,
+        conversions: a.leadsConverted,
+        successRate: a.runs > 0 ? Math.round((a.successes / a.runs) * 100) : 0,
+      }));
+    }
+  } catch {
+    // Agent metrics table may not exist yet
+  }
 
   // Pass 1: Signal Analysis
   console.log("[DecisionEngine] Running Pass 1: Signal Analysis...");

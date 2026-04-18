@@ -1118,6 +1118,36 @@ export const industryPromptTemplates = pgTable(
   ],
 );
 
+// ===========================================================================
+// 29. agent_metrics — per-agent daily performance rollup
+// ===========================================================================
+
+export const agentMetrics = pgTable(
+  "agent_metrics",
+  {
+    id: pk(),
+    orgId: text("org_id").notNull(),
+    agentId: text("agent_id").notNull(),
+    agentType: text("agent_type").notNull(),
+    metricDate: date("metric_date").notNull(),
+    runs: integer("runs").notNull().default(0),
+    successes: integer("successes").notNull().default(0),
+    failures: integer("failures").notNull().default(0),
+    leadsTouched: integer("leads_touched").notNull().default(0),
+    leadsConverted: integer("leads_converted").notNull().default(0),
+    messagesSent: integer("messages_sent").notNull().default(0),
+    avgResponseSeconds: numeric("avg_response_seconds"),
+    data: jsonb("data").notNull().default({}),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    unique("agent_metrics_org_agent_date_uq").on(t.orgId, t.agentId, t.metricDate),
+    index("agent_metrics_org_date_idx").on(t.orgId, t.metricDate),
+    index("agent_metrics_org_type_idx").on(t.orgId, t.agentType),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Type exports — Drizzle inference for callers
 // ---------------------------------------------------------------------------
@@ -1180,6 +1210,8 @@ export type BillingUsageRow = typeof billingUsage.$inferSelect;
 export type NewBillingUsage = typeof billingUsage.$inferInsert;
 export type IndustryPromptTemplate = typeof industryPromptTemplates.$inferSelect;
 export type NewIndustryPromptTemplate = typeof industryPromptTemplates.$inferInsert;
+export type AgentMetric = typeof agentMetrics.$inferSelect;
+export type NewAgentMetric = typeof agentMetrics.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Convenience: list of every table that needs RLS (consumed by the
@@ -1218,6 +1250,7 @@ export const RLS_TABLES = [
   "stripe_customers",
   "billing_usage",
   "industry_prompt_templates",
+  "agent_metrics",
 ] as const;
 
 // Suppress unused-var warnings for helpers not referenced at top level

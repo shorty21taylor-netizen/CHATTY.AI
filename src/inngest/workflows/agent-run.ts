@@ -13,6 +13,7 @@ import { buildAgentSystemPrompt } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { getLeadById } from "@/lib/db/queries";
 import { nanoid } from "nanoid";
+import { recordAgentRun } from "@/lib/agent-metrics/rollup";
 
 const AGENT_META: Record<string, { id: string; name: string; description: string; missionDefault: string }> = {
   "instant-lead-response": {
@@ -371,6 +372,17 @@ export const agentRunWorkflow = inngest.createFunction(
           .set({ lastRunAt: sql`now()`, updatedAt: sql`now()` })
           .where(eq(agentConfigs.id, agentConfigId));
       });
+    });
+
+    // Record metrics (fire-and-forget)
+    await step.run("record-metrics", async () => {
+      await recordAgentRun(orgId, agentConfigId, eventType, {
+        success: finalStatus === "success",
+        leadTouched: true,
+        leadConverted: false,
+        messageSent: sendResult.status === "sent",
+        responseSeconds: Math.round((Date.now() - startTime) / 1000),
+      }).catch((err) => console.error("[AgentRun] metrics recording failed:", err));
     });
 
     return {

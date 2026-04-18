@@ -9,6 +9,7 @@ import {
   Settings,
   Sparkles,
 } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { AGENT_TYPES } from '@/lib/agents/registry';
 import { loadAgentConfig, agentConfigStatus } from '@/lib/agents/storage';
 import { StatusBadge, ProgressRing } from '@/components/agent/FormPrimitives';
@@ -411,6 +412,51 @@ function PillarSection({ pillar, configs, hydrated, lastSweepAt }) {
 // Agent card
 // ---------------------------------------------------------------------------
 
+function AgentSparkline({ agentId }) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    fetch(`/api/agents/metrics?agent_id=${agentId}&days=7`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.metrics?.length) {
+          setData(d.metrics.map((m) => ({
+            date: m.metricDate,
+            runs: m.runs,
+            rate: m.runs > 0 ? Math.round((m.successes / m.runs) * 100) : 0,
+          })));
+        }
+      })
+      .catch(() => {});
+  }, [agentId]);
+
+  if (!data || data.length === 0) return null;
+
+  const totalRuns = data.reduce((s, d) => s + d.runs, 0);
+  const avgRate = data.length > 0 ? Math.round(data.reduce((s, d) => s + d.rate, 0) / data.length) : 0;
+
+  return (
+    <div style={{ paddingTop: 4 }}>
+      <div style={{ height: 32, width: '100%' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <Area
+              type="monotone"
+              dataKey="runs"
+              stroke="var(--primary)"
+              fill="color-mix(in srgb, var(--primary) 14%, transparent)"
+              strokeWidth={1.5}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{ display: 'flex', gap: 12, fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+        <span>{totalRuns} runs · 7d</span>
+        <span>{avgRate}% success</span>
+      </div>
+    </div>
+  );
+}
+
 function AgentCard({ agent, status, hydrated }) {
   const Icon = agent.icon;
   const isConfigured = hydrated && status && status.steps > 0;
@@ -526,6 +572,8 @@ function AgentCard({ agent, status, hydrated }) {
           </div>
         </div>
       ) : null}
+
+      <AgentSparkline agentId={agent.id} />
 
       {/* Bottom row: actions */}
       <div

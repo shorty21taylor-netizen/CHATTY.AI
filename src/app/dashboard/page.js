@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts';
 import {
   Bell,
   Zap,
@@ -50,6 +50,69 @@ const item = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: 'easeOut' } },
 };
+
+function TopAgentsWidget() {
+  const [agents, setAgents] = useState([]);
+  useEffect(() => {
+    fetch('/api/agents/metrics?days=1')
+      .then((r) => r.json())
+      .then((d) => setAgents((d.metrics || []).slice(0, 3)))
+      .catch(() => {});
+  }, []);
+
+  if (agents.length === 0) return null;
+
+  const chartData = agents.map((a) => ({
+    name: a.agentType?.replace(/_/g, ' ') || a.agentId?.slice(0, 8),
+    runs: a.runs,
+    conversions: a.leadsConverted,
+  }));
+
+  return (
+    <motion.div variants={item} style={{ marginTop: 32 }}>
+      <div style={{
+        fontSize: 12,
+        fontWeight: 600,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        color: 'var(--text-muted)',
+        marginBottom: 16,
+      }}>TOP AGENTS TODAY</div>
+      <div
+        className="dark-card"
+        style={{ padding: 20, display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}
+      >
+        <div style={{ flex: 1, minWidth: 200, height: 120 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} layout="vertical">
+              <XAxis type="number" hide />
+              <Bar dataKey="runs" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={14} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {agents.map((a, i) => (
+            <div key={a.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+              <span style={{
+                width: 20, height: 20, borderRadius: 4,
+                background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+                color: 'var(--primary)',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 700,
+              }}>{i + 1}</span>
+              <span style={{ color: 'var(--text-bright)', fontWeight: 600, textTransform: 'capitalize' }}>
+                {a.agentType?.replace(/_/g, ' ') || 'Agent'}
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>
+                {a.runs} runs · {a.leadsConverted} converted
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -303,6 +366,9 @@ export default function OverviewPage() {
           />
         </div>
       </motion.div>
+
+      {/* SECTION — Top Agents Today */}
+      <TopAgentsWidget />
 
       {/* SECTION 2 — Agent Quality */}
       <motion.div variants={item} style={{ marginTop: 32 }}>

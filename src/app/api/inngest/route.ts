@@ -15,6 +15,7 @@ import { reclaimSweepOrg } from "@/inngest/workflows/reclaim-sweep-org";
 import { simulationRunWorkflow } from "@/inngest/workflows/simulation-run";
 import { briefScheduler } from "@/inngest/workflows/brief-scheduler";
 import { briefRun } from "@/inngest/workflows/brief-run";
+import { agentMetricsRollup } from "@/inngest/workflows/agent-metrics-rollup";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -32,5 +33,6 @@ export const { GET, POST, PUT } = serve({
     reclaimSweepOrg,
     simulationRunWorkflow,
     briefScheduler,
+    agentMetricsRollup,
   ],
 });

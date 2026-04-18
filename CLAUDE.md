@@ -509,6 +509,31 @@ NODE_ENV=production
 - Always filter by `org_id` in every SELECT/UPDATE/DELETE
 - Cache frequently accessed rows in Redis
 
+## Agent Metrics
+
+Per-agent performance tracking with automatic rollup. Every agent run records
+outcome metrics (success/failure/leads/messages) into `agent_metrics` table
+via atomic upsert.
+
+### Flow
+1. Agent workflow completes → `recordAgentRun(orgId, agentId, agentType, outcome)` upserts today's row
+2. Hourly Inngest cron `agent-metrics-rollup` recomputes from `agent_runs` table as backup
+3. Decision Engine injects yesterday's top 3 agents into Pass 1 signal summary
+4. Dashboard `/dashboard/agents` shows 7-day sparklines per agent card
+5. Dashboard `/dashboard` shows TopAgentsWidget with today's top 3
+
+### Key Files
+- `db/migrations/016_agent_metrics.sql` — Table with UNIQUE(org_id, agent_id, metric_date), RLS
+- `src/lib/agent-metrics/rollup.ts` — `recordAgentRun()`, `getTopAgents()`, `getAgentMetrics()`, `getOrgMetricsSummary()`
+- `src/app/api/agents/metrics/route.ts` — GET endpoint (date, agent_id, days filters)
+- `src/inngest/workflows/agent-metrics-rollup.ts` — Hourly cron backup rollup
+- `src/inngest/workflows/agent-run.ts` — Inline "record-metrics" step
+- `src/inngest/workflows/cadence-step-execute.ts` — Inline "record-metrics" step
+
+### API: GET /api/agents/metrics
+Query params: `date` (YYYY-MM-DD), `agent_id` (UUID), `days` (1-90, default 7).
+Returns `{ metrics: AgentMetric[], summary: { totalRuns, totalConversions, topAgent } }`.
+
 ## Roadmap
 
 Chatty AI's built-in CRM is the product — we are not building toward external

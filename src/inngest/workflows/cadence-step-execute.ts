@@ -15,6 +15,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { buildAgentSystemPrompt } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { advanceCadence, exitCadence } from "@/lib/agents/cadence";
+import { recordAgentRun } from "@/lib/agent-metrics/rollup";
 
 const PROHIBITED_PATTERNS = [
   /\$\d/i,
@@ -394,6 +395,16 @@ export const cadenceStepExecuteWorkflow = inngest.createFunction(
         });
       });
     }
+
+    await step.run("record-metrics", async () => {
+      const agentConfigId = (context as any)?.agentConfig?.id || "cadence";
+      await recordAgentRun(orgId, agentConfigId, "cadence", {
+        success: sendResult.status === "sent",
+        leadTouched: true,
+        messageSent: sendResult.status === "sent",
+        responseSeconds: Math.round((Date.now() - startTime) / 1000),
+      }).catch((err) => console.error("[Cadence] metrics recording failed:", err));
+    });
 
     return {
       status: sendResult.status,
