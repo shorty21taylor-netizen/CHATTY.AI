@@ -12,6 +12,7 @@ import { query, queryOne } from "../db";
 import { getBusinessProfile } from "@/lib/business-profile";
 import { getTopAgents } from "@/lib/agent-metrics/rollup";
 import { searchNodes } from "@/lib/memory-graph/nodes";
+import { logError } from "@/lib/error-log";
 
 export interface DecisionEngineOptions {
   vertical?: string;
@@ -97,17 +98,33 @@ export async function runDecisionEngine(
     // Memory graph table may not exist yet
   }
 
-  // Pass 1: Signal Analysis
+  // Pass 1: Signal Analysis (real signal_events input via buildSignalSummary)
   console.log("[DecisionEngine] Running Pass 1: Signal Analysis...");
   const pass1 = await runPass1({
     orgId,
     signalSummary,
     recentEvents,
     externalContext: {},
+    orgVertical: resolvedVertical,
   });
   console.log(
-    `[DecisionEngine] Pass 1 complete: ${pass1.patterns.length} patterns found (${pass1.duration_ms}ms)`
+    `[DecisionEngine] Pass 1 complete: ${pass1.patterns.length} patterns found (mock=${pass1.used_mock}, ${pass1.duration_ms}ms)`
   );
+
+  // Observability: log when Pass 1 falls back to mock in production so we can
+  // catch a missing ANTHROPIC_API_KEY or a bad model id on Railway.
+  if (pass1.used_mock && process.env.NODE_ENV === "production") {
+    await logError({
+      orgId,
+      level: "warn",
+      source: "decision-engine.pass1",
+      message: "Pass 1 returned mock output in production — Claude call did not succeed",
+      meta: {
+        total_events: (signalSummary as { total_events?: number }).total_events ?? 0,
+        has_api_key: Boolean(process.env.ANTHROPIC_API_KEY),
+      },
+    });
+  }
 
   // Pass 2: Pattern Recognition
   console.log("[DecisionEngine] Running Pass 2: Pattern Recognition...");
@@ -124,7 +141,10 @@ export async function runDecisionEngine(
   );
 
   // Store the brief in the database
-  const briefId = await storeBrief(orgId, pass1, pass2, pass3);
+  const briefId = await storeBrief(orgId, pass1, pass2, pass3, {
+    signalSummary,
+    recentEventsCount: recentEvents.length,
+  });
 
   const totalDurationMs = Date.now() - startTime;
   console.log(
@@ -144,6 +164,7 @@ export async function runDecisionEngine(
 async function buildSignalSummary(
   orgId: string
 ): Promise<Record<string, unknown>> {
+  // Prefer an existing unified_context row for today (upstream writers may populate it)
   try {
     const result = await queryOne<{ signal_summary: Record<string, unknown> }>(
       `SELECT signal_summary FROM unified_context
@@ -151,9 +172,106 @@ async function buildSignalSummary(
        ORDER BY created_at DESC LIMIT 1`,
       [orgId]
     );
-    return result?.signal_summary || getDefaultSignalSummary();
+    if (result?.signal_summary && Object.keys(result.signal_summary).length > 0) {
+      return result.signal_summary;
+    }
   } catch {
-    console.warn("[DecisionEngine] No unified context found, using defaults");
+    // fallthrough to aggregate
+  }
+
+  // Aggregate directly from signal_events so Pass 1 always gets a real summary
+  // even when no upstream writer has built a unified_context row yet.
+  try {
+    const totalRow = await queryOne<{
+      total_events: number;
+      first_seen: string | null;
+      last_seen: string | null;
+    }>(
+      `SELECT
+         COUNT(*)::int AS total_events,
+         MIN(created_at)::text AS first_seen,
+         MAX(created_at)::text AS last_seen
+       FROM signal_events
+       WHERE org_id = $1 AND created_at > NOW() - INTERVAL '24 hours'`,
+      [orgId]
+    );
+
+    const totalEvents = totalRow?.total_events ?? 0;
+    if (totalEvents === 0) return getDefaultSignalSummary();
+
+    const [eventRows, sourceRows, entityRows] = await Promise.all([
+      query<{ event_type: string; cnt: number }>(
+        `SELECT event_type, COUNT(*)::int AS cnt
+         FROM signal_events
+         WHERE org_id = $1 AND created_at > NOW() - INTERVAL '24 hours'
+         GROUP BY event_type
+         ORDER BY cnt DESC`,
+        [orgId]
+      ),
+      query<{ source_type: string; cnt: number }>(
+        `SELECT source_type, COUNT(*)::int AS cnt
+         FROM signal_events
+         WHERE org_id = $1 AND created_at > NOW() - INTERVAL '24 hours'
+         GROUP BY source_type
+         ORDER BY cnt DESC`,
+        [orgId]
+      ),
+      query<{ entity_type: string | null; cnt: number }>(
+        `SELECT entity_type, COUNT(*)::int AS cnt
+         FROM signal_events
+         WHERE org_id = $1 AND created_at > NOW() - INTERVAL '24 hours'
+         GROUP BY entity_type
+         ORDER BY cnt DESC`,
+        [orgId]
+      ),
+    ]);
+
+    const event_breakdown: Record<string, number> = {};
+    eventRows.rows.forEach((r) => (event_breakdown[r.event_type || "unknown"] = r.cnt));
+    const source_breakdown: Record<string, number> = {};
+    sourceRows.rows.forEach((r) => (source_breakdown[r.source_type || "unknown"] = r.cnt));
+    const entity_breakdown: Record<string, number> = {};
+    entityRows.rows.forEach((r) => (entity_breakdown[r.entity_type || "unknown"] = r.cnt));
+
+    // Pull fresh micro_metrics so Pass 1 sees KPIs (trend, benchmarks)
+    let microMetricRows: Array<{
+      metric_name: string;
+      metric_value: number;
+      benchmark: number | null;
+      trend: number | null;
+    }> = [];
+    try {
+      const metrics = await query<{
+        metric_name: string;
+        metric_value: number;
+        benchmark: number | null;
+        trend: number | null;
+      }>(
+        `SELECT metric_name, metric_value, benchmark, trend
+         FROM micro_metrics
+         WHERE org_id = $1 AND metric_date >= CURRENT_DATE - INTERVAL '7 days'
+         ORDER BY metric_date DESC
+         LIMIT 50`,
+        [orgId]
+      );
+      microMetricRows = metrics.rows;
+    } catch {
+      // micro_metrics may be empty or table not yet migrated
+    }
+
+    return {
+      window_hours: 24,
+      total_events: totalEvents,
+      event_breakdown,
+      source_breakdown,
+      entity_breakdown,
+      first_seen: totalRow?.first_seen,
+      last_seen: totalRow?.last_seen,
+      micro_metrics: microMetricRows,
+      sourced_from: "signal_events.live",
+    };
+  } catch (err) {
+    console.warn("[DecisionEngine] Aggregation from signal_events failed:", err);
     return getDefaultSignalSummary();
   }
 }
@@ -195,8 +313,10 @@ async function storeBrief(
   orgId: string,
   pass1: Awaited<ReturnType<typeof runPass1>>,
   pass2: Awaited<ReturnType<typeof runPass2>>,
-  pass3: Awaited<ReturnType<typeof runPass3>>
+  pass3: Awaited<ReturnType<typeof runPass3>>,
+  pass1Input: { signalSummary: Record<string, unknown>; recentEventsCount: number }
 ): Promise<string> {
+  const { signalSummary, recentEventsCount } = pass1Input;
   try {
     const result = await queryOne<{ id: string }>(
       `INSERT INTO decision_briefs (
@@ -213,6 +333,9 @@ async function storeBrief(
             signal_quality_score: pass1.signal_quality_score,
             summary: pass1.summary,
             duration_ms: pass1.duration_ms,
+            used_mock: pass1.used_mock,
+            signal_summary_source: (signalSummary as { sourced_from?: string }).sourced_from ?? "unknown",
+            input_events_count: recentEventsCount,
           },
           pass2: {
             diagnosis: pass2.diagnosis,
@@ -240,11 +363,12 @@ async function storeBrief(
 
 function getDefaultSignalSummary(): Record<string, unknown> {
   return {
-    new_leads: 0,
-    total_spend: 0,
-    calls_received: 0,
-    emails_opened: 0,
-    appointments_booked: 0,
-    note: "No signals ingested yet — connect your first data source",
+    window_hours: 24,
+    total_events: 0,
+    event_breakdown: {},
+    source_breakdown: {},
+    entity_breakdown: {},
+    sourced_from: "empty.default",
+    note: "No signals in last 24h — connect a source or run the seed script",
   };
 }

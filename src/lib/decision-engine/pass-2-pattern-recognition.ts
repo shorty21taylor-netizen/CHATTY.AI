@@ -146,7 +146,7 @@ export async function runPass2(
     const userMessage = prompt.split("\n\n---\n\n")[1] ?? prompt;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 2500,
       system: PASS_2_SYSTEM,
       messages: [{ role: "user", content: userMessage }],

@@ -1,5 +1,6 @@
 import { inngest } from "../client";
 import { runDecisionEngine } from "@/lib/decision-engine";
+import { query } from "@/lib/db";
 
 /**
  * Decision Run Workflow
@@ -56,12 +57,38 @@ export const dailyDecisionTrigger = inngest.createFunction(
   },
   { cron: "30 5 * * *" },
   async ({ step }) => {
-    // In production, query all active orgs from the database
-    // For now, we'll use a placeholder
+    // Discover all orgs that have at least one active signal source OR recent signal_events
+    // (so newly-onboarded orgs without a source connection but with seeded data still run).
     const activeOrgs = await step.run("get-active-orgs", async () => {
-      // TODO: Query signal_sources for distinct active org_ids
-      return [{ orgId: "org_demo_harbor_dental", operatorName: "Harbor Dental" }];
+      const rows = await query<{
+        org_id: string;
+        operator_name: string | null;
+        vertical: string | null;
+      }>(
+        `WITH org_pool AS (
+           SELECT DISTINCT org_id FROM signal_sources WHERE is_active = true
+           UNION
+           SELECT DISTINCT org_id FROM signal_events
+           WHERE created_at > NOW() - INTERVAL '7 days'
+         )
+         SELECT
+           op.org_id,
+           bp.owner_first_name AS operator_name,
+           COALESCE(bp.primary_service_type, 'home_services') AS vertical
+         FROM org_pool op
+         LEFT JOIN business_profile bp ON bp.org_id::text = op.org_id::text`,
+        []
+      );
+      return rows.rows.map((r) => ({
+        orgId: r.org_id,
+        operatorName: r.operator_name ?? "Operator",
+        vertical: (r.vertical ?? "home_services").toLowerCase(),
+      }));
     });
+
+    if (activeOrgs.length === 0) {
+      return { triggered: 0, note: "no active orgs found" };
+    }
 
     // Trigger decision run for each org
     const events = activeOrgs.map((org) => ({
@@ -69,7 +96,7 @@ export const dailyDecisionTrigger = inngest.createFunction(
       data: {
         orgId: org.orgId,
         operatorName: org.operatorName,
-        vertical: "home_services",
+        vertical: org.vertical,
       },
     }));
 
