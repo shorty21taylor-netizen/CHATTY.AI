@@ -186,7 +186,10 @@ export const feedbackProcess = inngest.createFunction(
     const aggregated = await step.run("aggregate-outcomes", async () => {
       let count = 0;
       for (const brief of pending) {
-        const ok = await aggregateInAppFeedback(brief);
+        // step.run serializes returns through Inngest's Jsonify, which
+        // widens required fields to optional. Re-assert the shape here —
+        // we trust the SELECT above to always include id/org_id.
+        const ok = await aggregateInAppFeedback(brief as BriefRow);
         if (ok) count += 1;
       }
       return count;
@@ -332,10 +335,14 @@ export const feedbackProcessBrief = inngest.createFunction(
     }
 
     // Step 2: aggregate in-app feedback if captured + not yet aggregated.
+    // `ctx.brief` is widened to an all-optional shape by Inngest's Jsonify
+    // on step.run return; cast back to BriefRow since the SELECT above
+    // always includes the required fields.
+    const briefRow = ctx.brief as BriefRow;
     let aggregated = false;
     if (!ctx.alreadyAggregated) {
       aggregated = await step.run("aggregate-in-app", async () =>
-        aggregateInAppFeedback(ctx.brief!)
+        aggregateInAppFeedback(briefRow)
       );
     }
 
@@ -352,7 +359,7 @@ export const feedbackProcessBrief = inngest.createFunction(
     }
 
     const promptResult = await step.run("prompt-operator", async () =>
-      promptForFeedback(ctx.brief!)
+      promptForFeedback(briefRow)
     );
 
     return { briefId, aggregated: false, prompted: promptResult };

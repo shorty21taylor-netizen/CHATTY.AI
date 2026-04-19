@@ -65,7 +65,11 @@ export const briefDeliver = inngest.createFunction(
     // Voice generation. Return the result from the step (Inngest memoizes
     // step results across retries; mutating a closure var doesn't survive
     // re-entry, which is why `voiceGenerated` was silently resetting before).
-    type DeliveryResult = { sent: boolean; reason?: string; sid?: string };
+    //
+    // `sent` is declared optional because step.run() wraps returns in
+    // Inngest's Jsonify — which makes required fields optional on the
+    // memoized result. Treat absent as false at call sites.
+    type DeliveryResult = { sent?: boolean; reason?: string; sid?: string };
     let voiceResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if (prefs?.voiceEnabled && brief.voice_summary) {
       voiceResult = await step.run("generate-voice-summary", async (): Promise<DeliveryResult> => {
@@ -92,7 +96,7 @@ export const briefDeliver = inngest.createFunction(
         }
       });
     }
-    const voiceGenerated = voiceResult.sent;
+    const voiceGenerated = !!voiceResult.sent;
 
     let smsResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if (prefs?.smsEnabled && prefs?.phoneNumber) {
@@ -109,7 +113,7 @@ export const briefDeliver = inngest.createFunction(
         }
       });
     }
-    const smsDelivered = smsResult.sent;
+    const smsDelivered = !!smsResult.sent;
 
     let emailResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if ((prefs as Record<string, unknown>)?.emailEnabled && (prefs as Record<string, unknown>)?.emailAddress) {
@@ -133,7 +137,7 @@ export const briefDeliver = inngest.createFunction(
         }
       });
     }
-    const emailDelivered = emailResult.sent;
+    const emailDelivered = !!emailResult.sent;
 
     await step.run("update-delivery-status", async () => {
       const channels: string[] = [];
