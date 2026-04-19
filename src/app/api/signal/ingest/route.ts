@@ -5,6 +5,7 @@ import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
 import { insertSignalEvent } from "@/lib/db/queries";
 import { getAdapter } from "@/lib/signals/registry";
 import { generateEmbedding, eventToEmbeddingText } from "@/lib/utils/embedding";
+import { dispatchAgentsForEvent } from "@/lib/agents/dispatcher";
 
 export async function POST(req: Request) {
   try {
@@ -51,6 +52,22 @@ export async function POST(req: Request) {
       data: data.data,
       embedding: embedding.length > 0 ? embedding : undefined,
     });
+
+    // Fire-and-forget agent dispatch — same pattern as /api/webhooks/meta,
+    // /api/forms/[slug]/submit, and the internal-crm adapter. Without this,
+    // programmatically ingested signals sat in the DB until the decision
+    // engine picked them up 24h later; agents with matching triggers never
+    // fired in real time. Errors are logged, not raised, so the caller
+    // still sees a 201 for the store operation.
+    dispatchAgentsForEvent({
+      orgId,
+      eventType: data.event_type,
+      entityType: data.entity_type,
+      entityId: data.entity_id,
+      data: data.data,
+    }).catch((err) =>
+      console.error("[signal-ingest] dispatch failed:", err),
+    );
 
     return NextResponse.json(
       { success: true, event_id: event?.id, queued_to: "inngest" },
