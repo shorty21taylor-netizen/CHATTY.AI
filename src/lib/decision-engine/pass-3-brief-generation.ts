@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { DECISION_ENGINE_MODEL } from "@/lib/ai/model-config";
 import { PASS_3_SYSTEM, buildPass3Prompt } from "./prompts";
 import type { Pass2Output } from "./pass-2-pattern-recognition";
 import { getTemplatesForBrief, mapServiceTypeToIndustry } from "@/lib/industry-prompts/registry";
@@ -145,7 +146,7 @@ export async function runPass3(
     const userMessage = prompt.split("\n\n---\n\n")[1] ?? prompt;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: DECISION_ENGINE_MODEL,
       max_tokens: 2000,
       system: PASS_3_SYSTEM,
       messages: [{ role: "user", content: userMessage }],

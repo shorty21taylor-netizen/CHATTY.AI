@@ -7,6 +7,7 @@ import { withOrgContext } from "@/lib/db/drizzle";
 import * as briefQueries from "@/lib/db/queries/briefs";
 import { getDailyActivity, getPipelineSummary } from "@/lib/db/queries";
 import Anthropic from "@anthropic-ai/sdk";
+import { EA_AGENT_MODEL } from "@/lib/ai/model-config";
 
 const anthropic = new Anthropic();
 
@@ -41,7 +42,7 @@ export async function handleNaturalLanguage(text: string, ctx: EAContext) {
   const metrics = await gatherMetrics(ctx.orgId);
 
   const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: EA_AGENT_MODEL,
     max_tokens: 500,
     system: `You are the Chatty AI Executive Assistant for ${ctx.businessName}. Answer concisely using the metrics context provided. Use plain text, no markdown. Keep answers under 3 sentences unless the user asks for detail.\n\nContext:\n${metrics}`,
     messages: [{ role: "user", content: text }],

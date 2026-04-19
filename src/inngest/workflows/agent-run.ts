@@ -13,6 +13,7 @@ import { buildAgentSystemPrompt } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { getLeadById } from "@/lib/db/queries";
 import { nanoid } from "nanoid";
+import { AGENT_RUN_MODEL } from "@/lib/ai/model-config";
 import { recordAgentRun } from "@/lib/agent-metrics/rollup";
 
 const AGENT_META: Record<string, { id: string; name: string; description: string; missionDefault: string }> = {
@@ -215,7 +216,7 @@ export const agentRunWorkflow = inngest.createFunction(
               "content-type": "application/json",
             },
             body: JSON.stringify({
-              model: "claude-sonnet-4-20250514",
+              model: AGENT_RUN_MODEL,
               max_tokens: 400,
               temperature: 0.4,
               system: systemPrompt,

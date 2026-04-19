@@ -17,6 +17,7 @@ import {
 } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { exitRunningCadencesForEntity } from "@/lib/agents/cadence";
+import { AGENT_REPLY_MODEL } from "@/lib/ai/model-config";
 
 const PROHIBITED_PATTERNS = [
   /\$\d/i,
@@ -220,7 +221,7 @@ export const agentInboundReply = inngest.createFunction(
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
+            model: AGENT_REPLY_MODEL,
             max_tokens: 20,
             temperature: 0,
             system: CLASSIFY_SYSTEM,
@@ -379,7 +380,7 @@ export const agentInboundReply = inngest.createFunction(
               "content-type": "application/json",
             },
             body: JSON.stringify({
-              model: "claude-sonnet-4-20250514",
+              model: AGENT_REPLY_MODEL,
               max_tokens: 400,
               temperature: 0.4,
               system,

@@ -16,6 +16,7 @@ import { buildAgentSystemPrompt } from "@/lib/agents/prompt-builder";
 import { sendSms } from "@/lib/twilio/client";
 import { advanceCadence, exitCadence } from "@/lib/agents/cadence";
 import { recordAgentRun } from "@/lib/agent-metrics/rollup";
+import { CADENCE_STEP_MODEL } from "@/lib/ai/model-config";
 
 const PROHIBITED_PATTERNS = [
   /\$\d/i,
@@ -264,7 +265,7 @@ export const cadenceStepExecuteWorkflow = inngest.createFunction(
               "content-type": "application/json",
             },
             body: JSON.stringify({
-              model: "claude-sonnet-4-20250514",
+              model: CADENCE_STEP_MODEL,
               max_tokens: 400,
               temperature: 0.4,
               system: systemPrompt,

@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { DECISION_ENGINE_MODEL } from "@/lib/ai/model-config";
 import { PASS_1_SYSTEM, buildPass1Prompt } from "./prompts";
 
 export interface Pass1Input {
@@ -133,10 +134,10 @@ export async function runPass1(input: Pass1Input): Promise<Pass1Output> {
     };
   }
 
-  // TODO (Thursday): verify claude-sonnet-4-6 model name on production key,
-  //                  stream responses for faster first-token, and move the
+  // TODO (Thursday): stream responses for faster first-token, and move the
   //                  Anthropic client into src/lib/ai/anthropic.ts so all
   //                  passes share one instance with tracing middleware.
+  //                  Model ID is now centralized in @/lib/ai/model-config.
   try {
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
@@ -145,7 +146,7 @@ export async function runPass1(input: Pass1Input): Promise<Pass1Output> {
     const userMessage = prompt.split("\n\n---\n\n")[1] ?? prompt;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: DECISION_ENGINE_MODEL,
       max_tokens: 2000,
       system: PASS_1_SYSTEM,
       messages: [{ role: "user", content: userMessage }],
