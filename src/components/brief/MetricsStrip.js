@@ -194,9 +194,176 @@ function MetricCard({ metric, delay }) {
   );
 }
 
+// Cosmetic metadata for each known metric_name we seed/emit from analytics-update.
+// New metric_names fall back to the DEFAULT_META — they still render, they just
+// get a generic icon and palette until someone adds them here.
+const METRIC_META = {
+  response_time_avg_s: {
+    label: 'Response Time',
+    icon: Timer,
+    unit: 's',
+    color: '#fbbf24',
+    positiveDown: true,
+    formatValue: (v) =>
+      v >= 3600 ? `${(v / 3600).toFixed(1)}h`
+      : v >= 60 ? `${Math.round(v / 60)}m`
+      : `${Math.round(v)}s`,
+    formatBenchmark: (b) =>
+      b != null
+        ? `vs. ${b >= 60 ? Math.round(b / 60) + 'm' : Math.round(b) + 's'} SLA`
+        : null,
+  },
+  leads_received: {
+    label: 'Leads Received',
+    icon: Target,
+    unit: '',
+    color: '#0F8A4F',
+    formatValue: (v) => Math.round(v).toString(),
+    formatBenchmark: (b) => (b != null ? `vs. ${Math.round(b)} avg` : null),
+  },
+  appointments_booked: {
+    label: 'Appointments Booked',
+    icon: PieChart,
+    unit: '',
+    color: '#818cf8',
+    formatValue: (v) => Math.round(v).toString(),
+    formatBenchmark: (b) => (b != null ? `vs. ${Math.round(b)} avg` : null),
+  },
+  proposals_sent: {
+    label: 'Proposals Sent',
+    icon: Gauge,
+    unit: '',
+    color: '#f472b6',
+    formatValue: (v) => Math.round(v).toString(),
+    formatBenchmark: (b) => (b != null ? `vs. ${Math.round(b)} avg` : null),
+  },
+  close_rate_pct: {
+    label: 'Close Rate',
+    icon: PieChart,
+    unit: '%',
+    color: '#0F8A4F',
+    formatValue: (v) => `${Math.round(v)}`,
+    formatBenchmark: (b) => (b != null ? `vs. ${Math.round(b)}% target` : null),
+  },
+  revenue_closed_usd: {
+    label: 'Revenue Closed',
+    icon: Wallet,
+    unit: '',
+    color: '#0F8A4F',
+    formatValue: (v) =>
+      v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M`
+      : v >= 1000 ? `$${Math.round(v / 1000)}k`
+      : `$${Math.round(v)}`,
+    formatBenchmark: (b) =>
+      b != null
+        ? `vs. $${b >= 1000 ? Math.round(b / 1000) + 'k' : Math.round(b)} wk avg`
+        : null,
+  },
+  lead_quality_score: {
+    label: 'Lead Quality Score',
+    icon: Gauge,
+    unit: '/10',
+    color: '#0F8A4F',
+    formatValue: (v) => v.toFixed(1),
+    formatBenchmark: (b) => (b != null ? `vs. ${b.toFixed(1)} avg` : null),
+  },
+  ad_spend_roi: {
+    label: 'Ad Spend ROI',
+    icon: DollarSign,
+    unit: 'x',
+    color: '#818cf8',
+    formatValue: (v) => v.toFixed(1),
+    formatBenchmark: (b) => (b != null ? `vs. ${b.toFixed(1)}x goal` : null),
+  },
+  conversion_rate: {
+    label: 'Conversion Rate',
+    icon: Target,
+    unit: '%',
+    color: '#f472b6',
+    formatValue: (v) => `${Math.round(v)}`,
+    formatBenchmark: (b) => (b != null ? `vs. ${Math.round(b)}% last wk` : null),
+  },
+  pipeline_value: {
+    label: 'Pipeline Value',
+    icon: Wallet,
+    unit: '',
+    color: '#0F8A4F',
+    formatValue: (v) =>
+      v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M`
+      : `$${Math.round(v / 1000)}k`,
+    formatBenchmark: (b) =>
+      b != null
+        ? `vs. $${b >= 1000 ? Math.round(b / 1000) + 'k' : Math.round(b)} wk avg`
+        : null,
+  },
+};
+
+const DEFAULT_META = {
+  label: null,
+  icon: Gauge,
+  unit: '',
+  color: '#818cf8',
+  formatValue: (v) => (Number.isInteger(v) ? String(v) : v.toFixed(1)),
+  formatBenchmark: (b) => (b != null ? `vs. ${b} benchmark` : null),
+};
+
+function humanizeName(metricName) {
+  return metricName
+    .replace(/_/g, ' ')
+    .replace(/\bpct\b/i, '%')
+    .replace(/\busd\b/i, '')
+    .replace(/\bavg\b/i, 'avg')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Map a row from /api/metrics into the card shape MetricCard expects.
+ * Returns null if the row is unusable (null value with no sparkline).
+ */
+function toCard(row) {
+  const meta = METRIC_META[row.metric_name] || DEFAULT_META;
+  const value = row.metric_value;
+  if (value == null && (!row.sparkline || row.sparkline.length === 0)) {
+    return null;
+  }
+  const numericValue = value == null ? 0 : Number(value);
+  const sparkValues =
+    Array.isArray(row.sparkline) && row.sparkline.length > 0
+      ? row.sparkline
+          .map((p) => (p.value == null ? null : Number(p.value)))
+          .filter((v) => v != null)
+      : [numericValue];
+
+  return {
+    key: row.metric_name,
+    label: meta.label || humanizeName(row.metric_name),
+    icon: meta.icon,
+    value: meta.formatValue(numericValue),
+    unit: meta.unit,
+    trend: row.trend == null ? 0 : Number(row.trend),
+    benchmark:
+      meta.formatBenchmark(row.benchmark == null ? null : Number(row.benchmark)) ||
+      (row.vertical ? `${row.vertical} vertical` : ''),
+    color: meta.color,
+    positiveDown: !!meta.positiveDown,
+    data: sparkline(sparkValues.length > 0 ? sparkValues : [numericValue]),
+  };
+}
+
 export default function MetricsStrip({ metrics }) {
-  // Map any real micro_metrics into the card shape, else use mocks.
-  const cards = MOCK_METRICS;
+  // Render real micro_metrics when present; fall back to MOCK_METRICS only
+  // when the API returned no rows (empty org / unmigrated tenant).
+  let cards = MOCK_METRICS;
+  let usingMocks = true;
+  if (Array.isArray(metrics) && metrics.length > 0) {
+    const mapped = metrics.map(toCard).filter(Boolean);
+    if (mapped.length > 0) {
+      cards = mapped.slice(0, 6);
+      usingMocks = false;
+    }
+  }
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -205,7 +372,9 @@ export default function MetricsStrip({ metrics }) {
             Micro-metrics
           </h3>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            7-day rolling trend vs. benchmark.
+            {usingMocks
+              ? 'Sample data — connect a brief run to populate real KPIs.'
+              : '7-day rolling trend vs. benchmark.'}
           </p>
         </div>
       </div>
