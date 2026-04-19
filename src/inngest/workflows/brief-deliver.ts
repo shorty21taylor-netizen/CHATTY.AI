@@ -62,12 +62,16 @@ export const briefDeliver = inngest.createFunction(
       return msg;
     });
 
-    let voiceGenerated = false;
+    // Voice generation. Return the result from the step (Inngest memoizes
+    // step results across retries; mutating a closure var doesn't survive
+    // re-entry, which is why `voiceGenerated` was silently resetting before).
+    type DeliveryResult = { sent: boolean; reason?: string; sid?: string };
+    let voiceResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if (prefs?.voiceEnabled && brief.voice_summary) {
-      await step.run("generate-voice-summary", async () => {
+      voiceResult = await step.run("generate-voice-summary", async (): Promise<DeliveryResult> => {
         if (!process.env.ELEVENLABS_API_KEY) {
           console.log("[BriefDeliver] ElevenLabs not configured, skipping voice");
-          return;
+          return { sent: false, reason: "elevenlabs_not_configured" };
         }
 
         try {
@@ -76,21 +80,23 @@ export const briefDeliver = inngest.createFunction(
             text: brief.voice_summary,
             voiceId,
           });
-          voiceGenerated = true;
 
           await query(
             `UPDATE decision_briefs SET voice_summary_text = $2 WHERE id = $1`,
             [briefId, brief.voice_summary],
           );
+          return { sent: true };
         } catch (e) {
           console.error("[BriefDeliver] Voice generation failed:", e);
+          return { sent: false, reason: String(e) };
         }
       });
     }
+    const voiceGenerated = voiceResult.sent;
 
-    let smsDelivered = false;
+    let smsResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if (prefs?.smsEnabled && prefs?.phoneNumber) {
-      const smsResult = await step.run("send-sms", async () => {
+      smsResult = await step.run("send-sms", async (): Promise<DeliveryResult> => {
         try {
           const results = await sendSms({
             to: prefs.phoneNumber!,
@@ -102,12 +108,12 @@ export const briefDeliver = inngest.createFunction(
           return { sent: false, reason: String(e) };
         }
       });
-      smsDelivered = smsResult.sent;
     }
+    const smsDelivered = smsResult.sent;
 
-    let emailDelivered = false;
+    let emailResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if ((prefs as Record<string, unknown>)?.emailEnabled && (prefs as Record<string, unknown>)?.emailAddress) {
-      const emailResult = await step.run("send-email", async () => {
+      emailResult = await step.run("send-email", async (): Promise<DeliveryResult> => {
         try {
           const html = formatBriefEmail(brief);
           const priorityLabel =
@@ -126,19 +132,34 @@ export const briefDeliver = inngest.createFunction(
           return { sent: false, reason: String(e) };
         }
       });
-      emailDelivered = emailResult.sent;
     }
+    const emailDelivered = emailResult.sent;
 
     await step.run("update-delivery-status", async () => {
       const channels: string[] = [];
       if (smsDelivered) channels.push("sms");
       if (emailDelivered) channels.push("email");
+      if (voiceGenerated) channels.push("voice");
       const via = channels.length > 0 ? channels.join("+") : "dashboard_only";
+
+      // Per-channel telemetry: merged into decision_engine_trace.delivery so
+      // ops can measure adoption + failure rates without a new column.
+      const delivery = {
+        at: new Date().toISOString(),
+        channels,
+        sms: smsResult,
+        email: emailResult,
+        voice: voiceResult,
+      };
+
       await query(
         `UPDATE decision_briefs
-         SET delivered_at = NOW(), delivered_via = $2
+           SET delivered_at = NOW(),
+               delivered_via = $2,
+               decision_engine_trace = COALESCE(decision_engine_trace, '{}'::jsonb)
+                                       || jsonb_build_object('delivery', $3::jsonb)
          WHERE id = $1`,
-        [briefId, via],
+        [briefId, via, JSON.stringify(delivery)],
       );
     });
 
