@@ -93,9 +93,11 @@ function mockBrief(operatorName: string): DailyBrief {
 /**
  * Run Pass 3: Brief Generation.
  *
- * TODO (Thursday): When ANTHROPIC_API_KEY is set, the live Claude path
- * produces the 6am SMS brief + voice summary. Until then we return a
- * polished mock so Mission Control and the SMS preview both look real.
+ * Consumes Pass 2's diagnosis + recommendations and produces the operator-
+ * facing Daily Brief (headline, 3-5 actions, risk, opportunity, metric of
+ * the day, voice summary). Hits Claude when ANTHROPIC_API_KEY is set;
+ * otherwise returns a polished mock so Mission Control and the SMS preview
+ * both render realistic content during local dev.
  */
 export async function runPass3(
   pass2Output: Pass2Output,

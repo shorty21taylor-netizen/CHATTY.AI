@@ -108,10 +108,11 @@ function mockPass1Output(): Omit<Pass1Output, "duration_ms" | "used_mock"> {
 /**
  * Run Pass 1: Signal Analysis.
  *
- * TODO (Thursday): When `ANTHROPIC_API_KEY` is wired in Railway, the live
- * Claude path below runs. Until then we log the prompt and return a realistic
- * mock so downstream passes, the Inngest workflow, and Mission Control all
- * render useful data.
+ * When `ANTHROPIC_API_KEY` is set (standard in Railway), hits Claude with the
+ * signal summary + recent events and returns a structured pattern/risk/anomaly
+ * report. Falls back to a realistic mock when the key is absent (local dev
+ * without creds, or if the API call throws) so downstream passes, the Inngest
+ * workflow, and Mission Control always render useful data.
  */
 export async function runPass1(input: Pass1Input): Promise<Pass1Output> {
   const startTime = Date.now();
@@ -134,10 +135,10 @@ export async function runPass1(input: Pass1Input): Promise<Pass1Output> {
     };
   }
 
-  // TODO (Thursday): stream responses for faster first-token, and move the
-  //                  Anthropic client into src/lib/ai/anthropic.ts so all
-  //                  passes share one instance with tracing middleware.
-  //                  Model ID is now centralized in @/lib/ai/model-config.
+  // Future: move the Anthropic client into src/lib/ai/anthropic.ts so all
+  // three passes share one instance with tracing middleware, and stream
+  // responses for faster first-token. Model ID is already centralized in
+  // @/lib/ai/model-config (DECISION_ENGINE_MODEL).
   try {
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
