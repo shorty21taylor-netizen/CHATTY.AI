@@ -4,10 +4,8 @@ import { db } from "@/lib/db/drizzle";
 import { briefPreferences } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { sendSms } from "@/lib/twilio/client";
-import { textToSpeech } from "@/lib/elevenlabs/client";
 import { sendEmail, formatBriefEmail } from "@/lib/email/client";
 
-const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://chattyai-production.up.railway.app";
 
 export const briefDeliver = inngest.createFunction(
@@ -62,9 +60,18 @@ export const briefDeliver = inngest.createFunction(
       return msg;
     });
 
-    // Voice generation. Return the result from the step (Inngest memoizes
-    // step results across retries; mutating a closure var doesn't survive
-    // re-entry, which is why `voiceGenerated` was silently resetting before).
+    // Voice "generation" step. Historically this called ElevenLabs TTS
+    // and threw away the returned ArrayBuffer — burning credits on audio
+    // the dashboard/SMS path never delivers. The decision_briefs schema
+    // has a `voice_summary_url` column waiting for an audio URL, but no
+    // code populates it because no blob storage is wired yet.
+    //
+    // Until a storage layer exists (S3/R2 + signed URL flow), we:
+    //   • skip the textToSpeech call entirely (no wasted credits),
+    //   • still persist voice_summary_text so Mission Control / future
+    //     client-side TTS can render it,
+    //   • report `sent: false, reason: "audio_storage_not_configured"`
+    //     so delivery telemetry is honest about what shipped.
     //
     // `sent` is declared optional because step.run() wraps returns in
     // Inngest's Jsonify — which makes required fields optional on the
@@ -73,27 +80,17 @@ export const briefDeliver = inngest.createFunction(
     let voiceResult: DeliveryResult = { sent: false, reason: "not_requested" };
     if (prefs?.voiceEnabled && brief.voice_summary) {
       voiceResult = await step.run("generate-voice-summary", async (): Promise<DeliveryResult> => {
-        if (!process.env.ELEVENLABS_API_KEY) {
-          console.log("[BriefDeliver] ElevenLabs not configured, skipping voice");
-          return { sent: false, reason: "elevenlabs_not_configured" };
-        }
-
         try {
-          const voiceId = prefs.voiceId || DEFAULT_VOICE_ID;
-          await textToSpeech({
-            text: brief.voice_summary,
-            voiceId,
-          });
-
           await query(
             `UPDATE decision_briefs SET voice_summary_text = $2 WHERE id = $1`,
             [briefId, brief.voice_summary],
           );
-          return { sent: true };
         } catch (e) {
-          console.error("[BriefDeliver] Voice generation failed:", e);
-          return { sent: false, reason: String(e) };
+          console.error("[BriefDeliver] Failed to persist voice_summary_text:", e);
         }
+        // TODO: when blob storage is wired, call textToSpeech + upload
+        //       + update voice_summary_url, and only then return sent: true.
+        return { sent: false, reason: "audio_storage_not_configured" };
       });
     }
     const voiceGenerated = !!voiceResult.sent;
