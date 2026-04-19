@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { DECISION_ENGINE_MODEL } from "@/lib/ai/model-config";
-import { PASS_2_SYSTEM, buildPass2Prompt } from "./prompts";
+import { PASS_2_SYSTEM, buildPass2Prompt, type Pass2CrmContext } from "./prompts";
 import type { Pass1Output } from "./pass-1-signal-analysis";
 
 export interface Recommendation {
@@ -112,14 +112,18 @@ function mockPass2Output(): Omit<Pass2Output, "duration_ms" | "used_mock"> {
 /**
  * Run Pass 2: Pattern Recognition.
  *
- * TODO (Thursday): Same wiring as Pass 1 — mock is used until
- * ANTHROPIC_API_KEY is present. Revisit model name + tool-use structure
- * once we move to Anthropic SDK's JSON mode.
+ * Feeds Pass 1 output + CRM pipeline snapshot + operator feedback into Claude
+ * and returns a strategic framework (diagnosis + ranked recommendations).
+ *
+ * The `crmContext` arg is what the PASS_2_SYSTEM prompt actually advertises —
+ * pipeline summary, daily activity, overdue follow-ups, and feedback history.
+ * Without it Claude was being told it had data it didn't have. PR W wired it.
  */
 export async function runPass2(
   pass1Output: Pass1Output,
   previousBriefs: Record<string, unknown>[] = [],
   profileContext?: string,
+  crmContext?: Pass2CrmContext,
 ): Promise<Pass2Output> {
   const startTime = Date.now();
 
@@ -127,6 +131,7 @@ export async function runPass2(
     pass1Output as unknown as Record<string, unknown>,
     previousBriefs,
     profileContext,
+    crmContext,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {

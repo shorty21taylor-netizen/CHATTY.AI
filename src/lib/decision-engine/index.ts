@@ -9,6 +9,12 @@ import { runPass1 } from "./pass-1-signal-analysis";
 import { runPass2 } from "./pass-2-pattern-recognition";
 import { runPass3 } from "./pass-3-brief-generation";
 import { query, queryOne } from "../db";
+import {
+  getPipelineSummary,
+  getDailyActivity,
+  getOverdueFollowUps,
+  getRecentFeedback,
+} from "../db/queries";
 import { getBusinessProfile } from "@/lib/business-profile";
 import { getTopAgents } from "@/lib/agent-metrics/rollup";
 import { searchNodes } from "@/lib/memory-graph/nodes";
@@ -126,24 +132,60 @@ export async function runDecisionEngine(
     });
   }
 
+  // Build CRM context for Pass 2 — pipeline state, today's activity, overdue
+  // follow-ups, and the operator feedback loop. These are what the PASS_2_SYSTEM
+  // prompt advertises; before PR W the prompt claimed to have them but the
+  // builder passed nothing.
+  const crmContext = await buildPass2CrmContext(orgId);
+
   // Pass 2: Pattern Recognition
   console.log("[DecisionEngine] Running Pass 2: Pattern Recognition...");
-  const pass2 = await runPass2(pass1, previousBriefs, profileContext);
+  const pass2 = await runPass2(pass1, previousBriefs, profileContext, crmContext);
   console.log(
-    `[DecisionEngine] Pass 2 complete: ${pass2.recommendations.length} recommendations (${pass2.duration_ms}ms)`
+    `[DecisionEngine] Pass 2 complete: ${pass2.recommendations.length} recommendations (${pass2.duration_ms}ms, mock=${pass2.used_mock})`
   );
+
+  if (pass2.used_mock && process.env.NODE_ENV === "production") {
+    await logError({
+      orgId,
+      level: "warn",
+      source: "decision-engine.pass2",
+      message: "Pass 2 returned mock output in production — Claude call did not succeed",
+      meta: {
+        has_api_key: Boolean(process.env.ANTHROPIC_API_KEY),
+        pass1_pattern_count: pass1.patterns.length,
+        crm_pipeline_rows: crmContext.pipelineSummary?.length ?? 0,
+        crm_activity_rows: crmContext.dailyActivity?.length ?? 0,
+        overdue_followups: crmContext.overdueFollowUps?.length ?? 0,
+      },
+    });
+  }
 
   // Pass 3: Brief Generation
   console.log("[DecisionEngine] Running Pass 3: Brief Generation...");
   const pass3 = await runPass3(pass2, resolvedName, resolvedVertical, orgId);
   console.log(
-    `[DecisionEngine] Pass 3 complete: "${pass3.brief.headline}" (${pass3.duration_ms}ms)`
+    `[DecisionEngine] Pass 3 complete: "${pass3.brief.headline}" (${pass3.duration_ms}ms, mock=${pass3.used_mock})`
   );
+
+  if (pass3.used_mock && process.env.NODE_ENV === "production") {
+    await logError({
+      orgId,
+      level: "warn",
+      source: "decision-engine.pass3",
+      message: "Pass 3 returned mock output in production — Claude call did not succeed",
+      meta: {
+        has_api_key: Boolean(process.env.ANTHROPIC_API_KEY),
+        pass2_recommendations: pass2.recommendations.length,
+      },
+    });
+  }
 
   // Store the brief in the database
   const briefId = await storeBrief(orgId, pass1, pass2, pass3, {
     signalSummary,
     recentEventsCount: recentEvents.length,
+    crmContext,
   });
 
   const totalDurationMs = Date.now() - startTime;
@@ -314,9 +356,13 @@ async function storeBrief(
   pass1: Awaited<ReturnType<typeof runPass1>>,
   pass2: Awaited<ReturnType<typeof runPass2>>,
   pass3: Awaited<ReturnType<typeof runPass3>>,
-  pass1Input: { signalSummary: Record<string, unknown>; recentEventsCount: number }
+  traceInput: {
+    signalSummary: Record<string, unknown>;
+    recentEventsCount: number;
+    crmContext: Awaited<ReturnType<typeof buildPass2CrmContext>>;
+  }
 ): Promise<string> {
-  const { signalSummary, recentEventsCount } = pass1Input;
+  const { signalSummary, recentEventsCount, crmContext } = traceInput;
   try {
     const result = await queryOne<{ id: string }>(
       `INSERT INTO decision_briefs (
@@ -343,10 +389,18 @@ async function storeBrief(
             risk_flags: pass2.risk_flags,
             opportunities: pass2.opportunities,
             duration_ms: pass2.duration_ms,
+            used_mock: pass2.used_mock,
+            crm_context_snapshot: {
+              pipeline_rows: crmContext.pipelineSummary?.length ?? 0,
+              activity_rows: crmContext.dailyActivity?.length ?? 0,
+              overdue_followups: crmContext.overdueFollowUps?.length ?? 0,
+              feedback_events: crmContext.recentFeedback?.length ?? 0,
+            },
           },
           pass3: {
             headline: pass3.brief.headline,
             duration_ms: pass3.duration_ms,
+            used_mock: pass3.used_mock,
           },
         }),
         JSON.stringify(pass3.brief),
@@ -371,4 +425,74 @@ function getDefaultSignalSummary(): Record<string, unknown> {
     sourced_from: "empty.default",
     note: "No signals in last 24h — connect a source or run the seed script",
   };
+}
+
+/**
+ * Build the CRM context block Pass 2 reasons over.
+ *
+ * PASS_2_SYSTEM advertises pipeline_summary, daily_activity, overdue follow-ups,
+ * and previous brief feedback. Before PR W those promises were empty. This
+ * helper fetches all four in parallel and tolerates missing tables/views so a
+ * freshly-migrated org still gets a run instead of a crash.
+ */
+async function buildPass2CrmContext(orgId: string): Promise<{
+  pipelineSummary: Record<string, unknown>[];
+  dailyActivity: Record<string, unknown>[];
+  overdueFollowUps: Record<string, unknown>[];
+  recentFeedback: Record<string, unknown>[];
+}> {
+  const [pipelineRes, activityRes, overdueRes, feedbackRows] = await Promise.allSettled([
+    getPipelineSummary(orgId),
+    getDailyActivity(orgId),
+    getOverdueFollowUps(orgId, 30),
+    getRecentFeedback(orgId, 10),
+  ]);
+
+  const pipelineSummary =
+    pipelineRes.status === "fulfilled"
+      ? (pipelineRes.value.rows as unknown as Record<string, unknown>[])
+      : [];
+  const dailyActivity =
+    activityRes.status === "fulfilled"
+      ? (activityRes.value.rows as unknown as Record<string, unknown>[])
+      : [];
+  // Overdue follow-ups: keep only the fields Claude needs — stripping
+  // operator-PII like phone/email keeps the prompt tight and reduces token cost.
+  const overdueFollowUps =
+    overdueRes.status === "fulfilled"
+      ? (overdueRes.value.rows as unknown as Array<Record<string, unknown>>).map((r) => ({
+          id: r.id,
+          service_type: r.service_type,
+          status: r.status,
+          priority: r.priority,
+          estimated_value: r.estimated_value,
+          follow_up_date: r.follow_up_date,
+          days_overdue:
+            r.follow_up_date
+              ? Math.floor(
+                  (Date.now() - new Date(r.follow_up_date as string).getTime()) /
+                    86400000
+                )
+              : null,
+        }))
+      : [];
+  const recentFeedback =
+    feedbackRows.status === "fulfilled"
+      ? (feedbackRows.value as unknown as Record<string, unknown>[])
+      : [];
+
+  if (pipelineRes.status === "rejected") {
+    console.warn("[DecisionEngine] crm_pipeline_summary query failed:", pipelineRes.reason);
+  }
+  if (activityRes.status === "rejected") {
+    console.warn("[DecisionEngine] crm_daily_activity query failed:", activityRes.reason);
+  }
+  if (overdueRes.status === "rejected") {
+    console.warn("[DecisionEngine] overdue follow-ups query failed:", overdueRes.reason);
+  }
+  if (feedbackRows.status === "rejected") {
+    console.warn("[DecisionEngine] feedback_events query failed:", feedbackRows.reason);
+  }
+
+  return { pipelineSummary, dailyActivity, overdueFollowUps, recentFeedback };
 }

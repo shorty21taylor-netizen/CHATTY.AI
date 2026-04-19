@@ -179,14 +179,38 @@ Return JSON only, matching the schema in the system prompt.`;
   return `${PASS_1_SYSTEM}\n\n---\n\n${user}`;
 }
 
+export interface Pass2CrmContext {
+  pipelineSummary?: Record<string, unknown>[];
+  dailyActivity?: Record<string, unknown>[];
+  overdueFollowUps?: Record<string, unknown>[];
+  recentFeedback?: Record<string, unknown>[];
+}
+
 export function buildPass2Prompt(
   pass1Output: Record<string, unknown>,
   previousBriefs: Record<string, unknown>[] = [],
   profileContext?: string,
+  crmContext?: Pass2CrmContext,
 ): string {
   const profileBlock = profileContext
     ? `\n\n## Business Profile\n${profileContext}`
     : "";
+
+  const pipelineBlock = crmContext?.pipelineSummary?.length
+    ? `\n\n## Pipeline Summary (from crm_pipeline_summary view)\n${JSON.stringify(crmContext.pipelineSummary, null, 2)}`
+    : "\n\n## Pipeline Summary\n[empty — no open leads in the pipeline view]";
+
+  const activityBlock = crmContext?.dailyActivity?.length
+    ? `\n\n## Today's Activity (from crm_daily_activity view)\n${JSON.stringify(crmContext.dailyActivity, null, 2)}`
+    : "\n\n## Today's Activity\n[empty — no interactions logged today]";
+
+  const overdueBlock = crmContext?.overdueFollowUps?.length
+    ? `\n\n## Overdue Follow-ups (${crmContext.overdueFollowUps.length} leads past their follow_up_date)\n${JSON.stringify(crmContext.overdueFollowUps.slice(0, 20), null, 2)}`
+    : "\n\n## Overdue Follow-ups\n[none]";
+
+  const feedbackBlock = crmContext?.recentFeedback?.length
+    ? `\n\n## Recent Operator Feedback on Prior Briefs\n${JSON.stringify(crmContext.recentFeedback, null, 2)}\n\nWeight your recommendations toward actions similar to ones the operator has acted on, and away from types of actions they've ignored.`
+    : "\n\n## Recent Operator Feedback\n[none yet — first week of briefs]";
 
   const user = `Reason about the following pattern analysis and produce a strategic framework.
 
@@ -194,7 +218,7 @@ export function buildPass2Prompt(
 ${JSON.stringify(pass1Output, null, 2)}
 
 ## Previous Briefs (last ${previousBriefs.length})
-${JSON.stringify(previousBriefs.slice(0, 7), null, 2)}${profileBlock}
+${JSON.stringify(previousBriefs.slice(0, 7), null, 2)}${profileBlock}${pipelineBlock}${activityBlock}${overdueBlock}${feedbackBlock}
 
 Return JSON only, matching the schema in the system prompt.`;
 

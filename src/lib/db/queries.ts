@@ -74,6 +74,49 @@ export async function insertFeedback(orgId: string, data: any) {
   );
 }
 
+/**
+ * Pull the most recent feedback events with the brief_date they belong to.
+ * Used by the Decision Engine to feed the operator outcome signal into
+ * Pass 2 pattern recognition so the LLM can see what's been landing.
+ */
+export async function getRecentFeedback(
+  orgId: string,
+  limit = 10
+): Promise<
+  Array<{
+    brief_date: string | null;
+    feedback_type: string;
+    feedback_text: string | null;
+    confidence_delta: number | null;
+    outcome_data: Record<string, unknown> | null;
+    created_at: string;
+  }>
+> {
+  const res = await query<{
+    brief_date: string | null;
+    feedback_type: string;
+    feedback_text: string | null;
+    confidence_delta: number | null;
+    outcome_data: Record<string, unknown> | null;
+    created_at: string;
+  }>(
+    `SELECT
+       db.brief_date::text AS brief_date,
+       fe.feedback_type,
+       fe.feedback_text,
+       fe.confidence_delta,
+       fe.outcome_data,
+       fe.created_at::text AS created_at
+     FROM feedback_events fe
+     LEFT JOIN decision_briefs db ON db.id = fe.brief_id
+     WHERE fe.org_id = $1
+     ORDER BY fe.created_at DESC
+     LIMIT $2`,
+    [orgId, limit]
+  );
+  return res.rows;
+}
+
 // =============================================================================
 // CRM — contacts
 // =============================================================================
