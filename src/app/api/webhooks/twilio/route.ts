@@ -142,16 +142,34 @@ async function tryHandleBriefFeedback(
 
   if (!isFeedback) return false;
 
-  const briefs = await query<{ id: string; org_id: string }>(
+  // Prefer the brief we most-recently prompted for via the feedback-process
+  // SMS. `feedback_prompted_at` is set by feedback-process step 3 when it
+  // sends "did yesterday's brief help?". Without this, a Y/N reply at 7pm
+  // on day T+1 would be attributed to today's 6am brief, not yesterday's.
+  const prompted = await query<{ id: string; org_id: string }>(
     `SELECT id, org_id FROM decision_briefs
-     WHERE org_id = $1 AND delivered_at IS NOT NULL
-     ORDER BY delivered_at DESC LIMIT 1`,
+     WHERE org_id = $1
+       AND (operator_feedback->>'feedback_prompted_at')::timestamptz > NOW() - INTERVAL '48 hours'
+     ORDER BY (operator_feedback->>'feedback_prompted_at')::timestamptz DESC
+     LIMIT 1`,
     [orgId],
   );
 
-  if (briefs.rows.length === 0) return false;
+  let brief: { id: string; org_id: string } | undefined = prompted.rows[0];
 
-  const brief = briefs.rows[0];
+  if (!brief) {
+    // Fallback: no outstanding prompt → assume they're reacting to the
+    // most recent brief they received.
+    const latest = await query<{ id: string; org_id: string }>(
+      `SELECT id, org_id FROM decision_briefs
+       WHERE org_id = $1 AND delivered_at IS NOT NULL
+       ORDER BY delivered_at DESC LIMIT 1`,
+      [orgId],
+    );
+    brief = latest.rows[0];
+  }
+
+  if (!brief) return false;
   let feedbackType = "comment";
   if (bodyLower === "y" || bodyLower === "yes" || bodyLower.includes("acted")) {
     feedbackType = "action_taken";

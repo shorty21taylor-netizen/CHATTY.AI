@@ -1,5 +1,13 @@
 import { inngest } from "../client";
 import { query } from "@/lib/db";
+import { db } from "@/lib/db/drizzle";
+import { briefPreferences } from "@/db/schema";
+import { inArray } from "drizzle-orm";
+import { sendSms } from "@/lib/twilio/client";
+
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://chattyai-production.up.railway.app";
 
 /**
  * Feedback Process Workflow
@@ -8,8 +16,9 @@ import { query } from "@/lib/db";
  * operator feedback yet, prompts the operator for outcomes via SMS,
  * and aggregates confidence deltas back into the decision engine.
  *
- * Current implementation is a scaffold — the real feedback SMS prompt
- * + Claude-scored outcome analysis ship in the next pass.
+ * Inbound Y/N/acted/skip replies are handled by /api/webhooks/twilio,
+ * which looks for briefs with `feedback_prompted_at` set in the last
+ * 48h so feedback attaches to yesterday's brief (not today's 6am one).
  */
 export const feedbackProcess = inngest.createFunction(
   {
@@ -50,7 +59,7 @@ export const feedbackProcess = inngest.createFunction(
     });
 
     if (pending.length === 0) {
-      return { pending: 0, aggregated: 0 };
+      return { pending: 0, aggregated: 0, prompted: { sent: 0, failed: 0, skipped: 0 } };
     }
 
     // Step 2: Aggregate confidence deltas for briefs that already received
@@ -114,21 +123,100 @@ export const feedbackProcess = inngest.createFunction(
       return count;
     });
 
-    // Step 3: Fan out SMS prompts for briefs that still have no feedback.
-    // Stub — real Twilio wiring lives in brief-deliver; reuse that path later.
-    await step.run("queue-sms-prompts", () => {
+    // Step 3: Send SMS prompts for briefs that still have no feedback.
+    // This is the missing half of the Pass 2 feedback loop — without it,
+    // Pass 2's `recent_feedback` block is permanently empty.
+    const promptResult = await step.run("send-sms-prompts", async () => {
       const needsPrompt = pending.filter((b) => {
-        const fb = (b.operator_feedback ?? {}) as { rating?: number };
-        return !fb.rating;
+        const fb = (b.operator_feedback ?? {}) as {
+          rating?: number;
+          feedback_prompted_at?: string;
+        };
+        // Skip if already rated in-app or if we've already prompted this brief.
+        return !fb.rating && !fb.feedback_prompted_at;
       });
-      if (needsPrompt.length > 0) {
-        console.log(
-          `[FeedbackProcess] ${needsPrompt.length} briefs still need SMS prompts`
+
+      if (needsPrompt.length === 0) {
+        return { queued: 0, sent: 0, failed: 0, skipped: 0 };
+      }
+
+      // Batch-load brief_preferences for all orgs we're about to prompt.
+      const orgIds = Array.from(new Set(needsPrompt.map((b) => b.org_id)));
+      const prefsByOrg = new Map<
+        string,
+        { smsEnabled: boolean; phoneNumber: string | null }
+      >();
+      try {
+        const rows = await db
+          .select({
+            orgId: briefPreferences.orgId,
+            smsEnabled: briefPreferences.smsEnabled,
+            phoneNumber: briefPreferences.phoneNumber,
+          })
+          .from(briefPreferences)
+          .where(inArray(briefPreferences.orgId, orgIds));
+        for (const row of rows) {
+          prefsByOrg.set(row.orgId, {
+            smsEnabled: row.smsEnabled,
+            phoneNumber: row.phoneNumber,
+          });
+        }
+      } catch (err) {
+        console.warn(
+          "[FeedbackProcess] Failed to load brief_preferences:",
+          (err as Error).message
         );
       }
-      return { queued: needsPrompt.length };
+
+      let sent = 0;
+      let failed = 0;
+      let skipped = 0;
+
+      for (const brief of needsPrompt) {
+        const prefs = prefsByOrg.get(brief.org_id);
+        if (!prefs || !prefs.smsEnabled || !prefs.phoneNumber) {
+          skipped += 1;
+          continue;
+        }
+
+        const msg =
+          `Chatty AI check-in: did yesterday's brief help?\n\n` +
+          `Reply:\n` +
+          `Y = acted on it\n` +
+          `N = skipped it\n` +
+          `or tell me what happened.\n\n` +
+          `Full brief: ${APP_URL}/dashboard/brief`;
+
+        try {
+          await sendSms({ to: prefs.phoneNumber, body: msg });
+          sent += 1;
+
+          // Mark so the Twilio webhook can route the Y/N reply back to this
+          // brief (not to today's 6am brief) and so we don't double-prompt.
+          await query(
+            `UPDATE decision_briefs
+                SET operator_feedback = COALESCE(operator_feedback, '{}'::jsonb)
+                                        || jsonb_build_object('feedback_prompted_at', NOW())
+              WHERE id = $1`,
+            [brief.id]
+          );
+        } catch (err) {
+          failed += 1;
+          console.error(
+            "[FeedbackProcess] SMS prompt failed for brief",
+            brief.id,
+            err
+          );
+        }
+      }
+
+      return { queued: needsPrompt.length, sent, failed, skipped };
     });
 
-    return { pending: pending.length, aggregated };
+    return {
+      pending: pending.length,
+      aggregated,
+      prompted: promptResult,
+    };
   }
 );
