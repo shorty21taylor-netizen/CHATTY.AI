@@ -135,6 +135,22 @@ export interface Estimate {
   updated_at: Date;
 }
 
+/**
+ * Estimate row enriched with the minimal contact display fields needed to
+ * render a dashboard card (name, company, address). Produced by
+ * `listEstimates` via LEFT JOIN on contacts — fields are nullable because a
+ * contact could have been deleted. Core estimate fields remain identical
+ * to `Estimate`.
+ */
+export interface EstimateWithContact extends Estimate {
+  contact_first_name: string | null;
+  contact_last_name: string | null;
+  contact_company: string | null;
+  contact_address_line1: string | null;
+  contact_city: string | null;
+  contact_state: string | null;
+}
+
 export interface Job {
   id: string;
   org_id: string;

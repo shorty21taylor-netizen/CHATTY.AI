@@ -1,6 +1,6 @@
 import { query, queryOne } from "./index";
 import type {
-  Contact, Lead, Estimate, Job, Interaction,
+  Contact, Lead, Estimate, EstimateWithContact, Job, Interaction,
   ContactListFilter, LeadListFilter, JobListFilter, InteractionListFilter,
   LeadStatus, EstimateStatus, JobStatus,
   PipelineSummaryRow, DailyActivityRow,
@@ -348,19 +348,32 @@ type EstimateInsert = Partial<Omit<Estimate, "id" | "org_id" | "created_at" | "u
 };
 
 export async function listEstimates(orgId: string, opts: { status?: EstimateStatus; limit?: number; offset?: number } = {}) {
-  const where: string[] = [`org_id = $1`];
+  // LEFT JOIN keeps rows visible even if a contact has been deleted — the
+  // dashboard falls back to "Unknown contact" in that case rather than
+  // hiding the estimate entirely (which would break KPI counts).
+  const where: string[] = [`e.org_id = $1`];
   const params: any[] = [orgId];
   let i = 2;
 
-  if (opts.status) { where.push(`status = $${i++}`); params.push(opts.status); }
+  if (opts.status) { where.push(`e.status = $${i++}`); params.push(opts.status); }
 
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
   params.push(limit, offset);
 
-  return query<Estimate>(
-    `SELECT * FROM estimates WHERE ${where.join(" AND ")}
-     ORDER BY created_at DESC
+  return query<EstimateWithContact>(
+    `SELECT
+       e.*,
+       c.first_name    AS contact_first_name,
+       c.last_name     AS contact_last_name,
+       c.company       AS contact_company,
+       c.address_line1 AS contact_address_line1,
+       c.city          AS contact_city,
+       c.state         AS contact_state
+     FROM estimates e
+     LEFT JOIN contacts c ON c.id = e.contact_id AND c.org_id = e.org_id
+     WHERE ${where.join(" AND ")}
+     ORDER BY e.created_at DESC
      LIMIT $${i++} OFFSET $${i++}`,
     params
   );

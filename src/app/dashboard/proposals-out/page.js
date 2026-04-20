@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FileText,
   Plus,
@@ -14,144 +14,185 @@ import {
   Send,
   AlertCircle,
   DollarSign,
+  RefreshCw,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Status config — only status accents are hardcoded (they're theme-agnostic
-// indicator colors); everything else routes through theme tokens.
+// Status config — keys mirror EstimateStatus from the DB schema. Labels are
+// contractor-friendly ("WON" / "LOST" rather than the raw
+// "accepted" / "rejected") because "won the job" is how the operator
+// thinks about it, but the underlying data is unchanged.
+//
+// Progress % is a UX hint ("where is this deal in the funnel?") derived from
+// status alone — no separate DB column needed. draft/sent/viewed advance
+// toward 100; accepted/rejected/expired stay at 100 because the deal is
+// closed (one way or another).
 // ---------------------------------------------------------------------------
 
 const STATUS_CONFIG = {
-  won: {
+  accepted: {
     label: 'WON',
     color: 'var(--primary)',
     barColor: 'var(--primary)',
     icon: CheckCircle,
+    progress: 100,
   },
   sent: {
     label: 'SENT',
     color: '#3b82f6',
     barColor: '#3b82f6',
     icon: Send,
+    progress: 45,
   },
   viewed: {
     label: 'VIEWED',
     color: '#8b5cf6',
     barColor: '#8b5cf6',
     icon: Eye,
+    progress: 70,
   },
   draft: {
     label: 'DRAFT',
     color: 'var(--text-muted)',
     barColor: 'var(--text-muted)',
     icon: FileEdit,
+    progress: 15,
   },
-  lost: {
+  rejected: {
     label: 'LOST',
     color: 'var(--negative)',
     barColor: 'var(--negative)',
     icon: XCircle,
+    progress: 100,
   },
   expired: {
     label: 'EXPIRED',
     color: '#f59e0b',
     barColor: '#f59e0b',
     icon: AlertCircle,
+    progress: 100,
+  },
+  revised: {
+    label: 'REVISED',
+    color: '#8b5cf6',
+    barColor: '#8b5cf6',
+    icon: RefreshCw,
+    progress: 55,
   },
 };
 
-const FILTERS = ['all', 'draft', 'sent', 'viewed', 'won', 'lost', 'expired'];
-
-const PROPOSALS = [
-  {
-    id: 1,
-    clientName: 'Thompson Residence',
-    address: '1847 Oak Grove Ln',
-    value: 18400,
-    jobType: 'Full Roof Replacement',
-    status: 'won',
-    progress: 100,
-    metaTop: 'Signed 2 days ago',
-    metaBottom: 'Contract signed, job scheduled for next week',
-  },
-  {
-    id: 2,
-    clientName: 'Patel Home',
-    address: '2412 Birchwood Ln',
-    value: 12800,
-    jobType: 'HVAC System Install',
-    status: 'sent',
-    progress: 50,
-    metaTop: 'Sent 3 days ago',
-    metaBottom: 'Viewed 2x — awaiting response',
-  },
-  {
-    id: 3,
-    clientName: 'Williams Property',
-    address: '8821 Sunset Blvd',
-    value: 34200,
-    jobType: 'Solar Panel Array (24 panels)',
-    status: 'viewed',
-    progress: 70,
-    metaTop: 'Sent 1 week ago',
-    metaBottom: 'Viewed 5x — high engagement, follow up',
-  },
-  {
-    id: 4,
-    clientName: 'Chen Residence',
-    address: '5523 Maple Ave',
-    value: 28500,
-    jobType: 'Kitchen Remodel',
-    status: 'draft',
-    progress: 15,
-    metaTop: 'Created today',
-    metaBottom: 'Awaiting final line items before send',
-  },
-  {
-    id: 5,
-    clientName: 'Rodriguez Home',
-    address: '214 Cedar Park Rd',
-    value: 6200,
-    jobType: 'Roof Repair + Gutters',
-    status: 'won',
-    progress: 100,
-    metaTop: 'Signed yesterday',
-    metaBottom: 'Deposit received, starting Monday',
-  },
-  {
-    id: 6,
-    clientName: 'Davis Property',
-    address: '8877 Pinecrest Way',
-    value: 22100,
-    jobType: 'Complete Exterior',
-    status: 'sent',
-    progress: 40,
-    metaTop: 'Sent 5 days ago',
-    metaBottom: 'No activity yet — ping scheduled for tomorrow',
-  },
-  {
-    id: 7,
-    clientName: 'Anderson Residence',
-    address: '1204 Elm Street',
-    value: 4800,
-    jobType: 'HVAC Maintenance Contract',
-    status: 'lost',
-    progress: 100,
-    metaTop: 'Declined 3 days ago',
-    metaBottom: 'Went with cheaper competitor — save objection data',
-  },
-  {
-    id: 8,
-    clientName: 'Miller Home',
-    address: '7660 Willow Creek',
-    value: 15600,
-    jobType: 'Storm Damage Roof',
-    status: 'expired',
-    progress: 100,
-    metaTop: 'Sent 30 days ago',
-    metaBottom: 'No response — dead lead reactivation queued',
-  },
+const FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'draft', label: 'Draft' },
+  { key: 'sent', label: 'Sent' },
+  { key: 'viewed', label: 'Viewed' },
+  { key: 'accepted', label: 'Won' },
+  { key: 'rejected', label: 'Lost' },
+  { key: 'expired', label: 'Expired' },
 ];
+
+// Closed-and-lost statuses do not contribute to open pipeline value.
+const PIPELINE_EXCLUDE = new Set(['rejected', 'expired']);
+
+// ---------------------------------------------------------------------------
+// Row → display shape
+// ---------------------------------------------------------------------------
+
+function fmtClientName(row) {
+  if (row.contact_company) return row.contact_company;
+  const fn = (row.contact_first_name || '').trim();
+  const ln = (row.contact_last_name || '').trim();
+  const full = [fn, ln].filter(Boolean).join(' ');
+  return full || 'Unknown contact';
+}
+
+function fmtAddress(row) {
+  const line1 = (row.contact_address_line1 || '').trim();
+  const city = (row.contact_city || '').trim();
+  const state = (row.contact_state || '').trim();
+  if (line1 && city) return `${line1}, ${city}${state ? ` ${state}` : ''}`;
+  return line1 || [city, state].filter(Boolean).join(', ') || 'No address on file';
+}
+
+function fmtJobType(row) {
+  if (row.title) return row.title;
+  const first = Array.isArray(row.line_items) ? row.line_items[0] : null;
+  if (first?.description) return first.description;
+  return row.estimate_number || 'Estimate';
+}
+
+function timeAgo(value) {
+  if (!value) return null;
+  const diffMs = Date.now() - new Date(value).getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) return null;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return new Date(value).toLocaleDateString();
+}
+
+function fmtMetaTop(row) {
+  switch (row.status) {
+    case 'accepted': {
+      const t = timeAgo(row.responded_at);
+      return t ? `Accepted ${t}` : 'Accepted';
+    }
+    case 'rejected': {
+      const t = timeAgo(row.responded_at);
+      return t ? `Declined ${t}` : 'Declined';
+    }
+    case 'sent':
+    case 'viewed':
+    case 'revised': {
+      const t = timeAgo(row.sent_at || row.updated_at);
+      return t ? `Sent ${t}` : 'Sent';
+    }
+    case 'expired': {
+      const t = row.valid_until
+        ? `Expired ${new Date(row.valid_until).toLocaleDateString()}`
+        : 'Expired';
+      return t;
+    }
+    case 'draft':
+    default: {
+      const t = timeAgo(row.created_at);
+      return t ? `Created ${t}` : 'Created';
+    }
+  }
+}
+
+function fmtMetaBottom(row) {
+  const parts = [];
+  if (row.estimate_number) parts.push(row.estimate_number);
+  const count = Array.isArray(row.line_items) ? row.line_items.length : 0;
+  if (count) parts.push(`${count} line item${count === 1 ? '' : 's'}`);
+  if (row.status === 'sent' && row.valid_until) {
+    parts.push(`valid until ${new Date(row.valid_until).toLocaleDateString()}`);
+  }
+  return parts.join(' · ') || '—';
+}
+
+function normalizeProposal(row) {
+  const cfg = STATUS_CONFIG[row.status] || STATUS_CONFIG.draft;
+  const value = Number(row.total ?? 0);
+  return {
+    id: row.id,
+    clientName: fmtClientName(row),
+    address: fmtAddress(row),
+    value: Number.isFinite(value) ? value : 0,
+    jobType: fmtJobType(row),
+    status: row.status,
+    progress: cfg.progress,
+    metaTop: fmtMetaTop(row),
+    metaBottom: fmtMetaBottom(row),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -160,12 +201,45 @@ const PROPOSALS = [
 export default function ProposalsPage() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        setError(null);
+        setLoading(true);
+        const res = await fetch('/api/crm/estimates?limit=200', {
+          cache: 'no-store',
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        const payload = await res.json();
+        if (cancelled) return;
+        const mapped = (payload.estimates || []).map(normalizeProposal);
+        setRows(mapped);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredProposals = useMemo(() => {
-    let list = PROPOSALS;
+    let list = rows;
     if (filter !== 'all') list = list.filter((p) => p.status === filter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
+    if (q) {
       list = list.filter(
         (p) =>
           p.clientName.toLowerCase().includes(q) ||
@@ -174,16 +248,20 @@ export default function ProposalsPage() {
       );
     }
     return list;
-  }, [filter, search]);
+  }, [rows, filter, search]);
 
-  const pipelineValue = useMemo(
-    () =>
-      PROPOSALS.filter((p) => !['lost', 'expired'].includes(p.status)).reduce(
-        (sum, p) => sum + p.value,
-        0
-      ),
-    []
-  );
+  const kpis = useMemo(() => {
+    const open = rows.filter((p) => !PIPELINE_EXCLUDE.has(p.status));
+    return {
+      pipelineValue: open.reduce((sum, p) => sum + p.value, 0),
+      total: rows.length,
+      pending: rows.filter((p) =>
+        ['draft', 'sent', 'viewed', 'revised'].includes(p.status)
+      ).length,
+      won: rows.filter((p) => p.status === 'accepted').length,
+      lost: rows.filter((p) => p.status === 'rejected').length,
+    };
+  }, [rows]);
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
@@ -261,21 +339,29 @@ export default function ProposalsPage() {
             className="t-kpi"
             style={{ marginTop: 8, color: 'var(--primary)' }}
           >
-            ${pipelineValue.toLocaleString()}
+            {loading ? '—' : `$${kpis.pipelineValue.toLocaleString()}`}
           </div>
         </div>
 
-        <KpiCard label="Total Proposals" value="34" icon={FileText} />
-        <KpiCard label="Pending" value="12" icon={Clock} />
+        <KpiCard
+          label="Total Proposals"
+          value={loading ? '—' : String(kpis.total)}
+          icon={FileText}
+        />
+        <KpiCard
+          label="Pending"
+          value={loading ? '—' : String(kpis.pending)}
+          icon={Clock}
+        />
         <KpiCard
           label="Won"
-          value="15"
+          value={loading ? '—' : String(kpis.won)}
           icon={CheckCircle}
           valueColor="var(--primary)"
         />
         <KpiCard
           label="Lost"
-          value="7"
+          value={loading ? '—' : String(kpis.lost)}
           icon={XCircle}
           valueColor="var(--text-muted)"
         />
@@ -296,12 +382,12 @@ export default function ProposalsPage() {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {FILTERS.map((f) => (
             <button
-              key={f}
+              key={f.key}
               type="button"
-              onClick={() => setFilter(f)}
-              className={filter === f ? 'filter-pill-active' : 'filter-pill'}
+              onClick={() => setFilter(f.key)}
+              className={filter === f.key ? 'filter-pill-active' : 'filter-pill'}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f.label}
             </button>
           ))}
         </div>
@@ -335,10 +421,47 @@ export default function ProposalsPage() {
           gap: 16,
         }}
       >
-        {filteredProposals.map((p) => (
-          <ProposalCard key={p.id} proposal={p} />
-        ))}
-        {filteredProposals.length === 0 ? (
+        {loading ? (
+          <div
+            className="dark-card"
+            style={{
+              padding: 40,
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: 13,
+            }}
+          >
+            Loading proposals…
+          </div>
+        ) : error ? (
+          <div
+            className="dark-card"
+            style={{
+              padding: 40,
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              color: 'var(--negative)',
+              fontSize: 13,
+            }}
+          >
+            Failed to load proposals: {error}
+          </div>
+        ) : rows.length === 0 ? (
+          <div
+            className="dark-card"
+            style={{
+              padding: 40,
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: 13,
+            }}
+          >
+            No proposals yet. Click <strong>Create Proposal</strong> to send
+            your first one — it will show up here with live view tracking.
+          </div>
+        ) : filteredProposals.length === 0 ? (
           <div
             className="dark-card"
             style={{
@@ -351,7 +474,9 @@ export default function ProposalsPage() {
           >
             No proposals match your filter.
           </div>
-        ) : null}
+        ) : (
+          filteredProposals.map((p) => <ProposalCard key={p.id} proposal={p} />)
+        )}
       </div>
 
       <style jsx>{`
@@ -397,11 +522,11 @@ function KpiCard({ label, value, icon: Icon, valueColor }) {
 // ---------------------------------------------------------------------------
 
 function ProposalCard({ proposal }) {
-  const s = STATUS_CONFIG[proposal.status];
+  const s = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft;
 
   // Lost + Expired get a colored left accent border so they pop at a glance.
   const accent =
-    proposal.status === 'lost'
+    proposal.status === 'rejected'
       ? '3px solid var(--negative)'
       : proposal.status === 'expired'
         ? '3px solid #f59e0b'
