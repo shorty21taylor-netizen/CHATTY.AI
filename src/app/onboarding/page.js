@@ -162,6 +162,8 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
+  const [launching, setLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState(null);
 
   // Step 1 — Business Info
   const [company, setCompany] = useState('Summit Roofing Co.');
@@ -189,12 +191,66 @@ export default function OnboardingPage() {
     )
   );
 
-  function goNext() {
+  // Persist the org's business profile to the backend so the Decision Engine
+  // has real vertical + contact context on day one. Non-blocking: if the save
+  // fails we still ship the operator to the dashboard, but we surface the
+  // error so they can retry from Settings later.
+  async function persistBusinessProfile() {
+    const primary = industries[0] || null;
+    const subtypes = industries.slice(1);
+    const ownerFirst = (owner || '').trim().split(/\s+/)[0] || null;
+
+    const profile = {
+      legal_name: company || null,
+      primary_service_type: primary,
+      service_subtypes: subtypes,
+      owner_first_name: ownerFirst,
+      main_phone: phone || null,
+      service_area_mode: areas.length > 1 ? 'multi_city' : 'single_city',
+      service_area_zips: areas,
+    };
+
+    const res = await fetch('/api/business-profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile }),
+    });
+
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body && body.error) detail = body.error;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(detail);
+    }
+  }
+
+  async function goNext() {
     if (step < STEPS.length) {
       setDirection(1);
       setStep(step + 1);
-    } else {
+      return;
+    }
+    if (launching) return;
+    setLaunching(true);
+    setLaunchError(null);
+    try {
+      await persistBusinessProfile();
       router.push('/dashboard');
+    } catch (err) {
+      console.error('[onboarding] business profile save failed', err);
+      setLaunchError(
+        err && err.message
+          ? `Couldn't save your profile (${err.message}). You can continue, but Chatty will run on defaults until you edit it in Settings.`
+          : "Couldn't save your profile. Continuing on defaults."
+      );
+      // Still advance — the operator shouldn't be trapped if the backend hiccups.
+      router.push('/dashboard');
+    } finally {
+      setLaunching(false);
     }
   }
 
@@ -403,6 +459,7 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={goNext}
+            disabled={launching}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -416,14 +473,19 @@ export default function OnboardingPage() {
               color: '#ffffff',
               fontWeight: 700,
               fontSize: 13.5,
-              cursor: 'pointer',
+              cursor: launching ? 'wait' : 'pointer',
+              opacity: launching ? 0.75 : 1,
               boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
             }}
           >
             {isLast ? (
-              <>
-                <Rocket size={14} fill="#ffffff" /> Launch Chatty AI
-              </>
+              launching ? (
+                <>Saving your profile…</>
+              ) : (
+                <>
+                  <Rocket size={14} fill="#ffffff" /> Launch Chatty AI
+                </>
+              )
             ) : (
               <>
                 Continue <ChevronRight size={14} />
@@ -431,6 +493,24 @@ export default function OnboardingPage() {
             )}
           </button>
         </div>
+
+        {launchError ? (
+          <div
+            role="alert"
+            style={{
+              marginTop: 12,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              color: '#fecaca',
+              fontSize: 12.5,
+              lineHeight: 1.5,
+            }}
+          >
+            {launchError}
+          </div>
+        ) : null}
       </div>
     </div>
   );
