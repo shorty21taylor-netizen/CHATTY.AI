@@ -1,6 +1,6 @@
 import { query, queryOne } from "./index";
 import type {
-  Contact, Lead, Estimate, EstimateWithContact, Job, Interaction,
+  Contact, Lead, LeadWithContact, Estimate, EstimateWithContact, Job, Interaction,
   ContactListFilter, LeadListFilter, JobListFilter, InteractionListFilter,
   LeadStatus, EstimateStatus, JobStatus,
   PipelineSummaryRow, DailyActivityRow,
@@ -229,27 +229,38 @@ type LeadInsert = Partial<Omit<Lead, "id" | "org_id" | "created_at" | "updated_a
 };
 
 export async function listLeads(orgId: string, filter: LeadListFilter = {}) {
-  const where: string[] = [`org_id = $1`];
+  const where: string[] = [`l.org_id = $1`];
   const params: any[] = [orgId];
   let i = 2;
 
-  if (filter.status)       { where.push(`status = $${i++}`);       params.push(filter.status); }
-  if (filter.service_type) { where.push(`service_type = $${i++}`); params.push(filter.service_type); }
-  if (filter.priority)     { where.push(`priority = $${i++}`);     params.push(filter.priority); }
-  if (filter.assigned_to)  { where.push(`assigned_to = $${i++}`);  params.push(filter.assigned_to); }
+  if (filter.status)       { where.push(`l.status = $${i++}`);       params.push(filter.status); }
+  if (filter.service_type) { where.push(`l.service_type = $${i++}`); params.push(filter.service_type); }
+  if (filter.priority)     { where.push(`l.priority = $${i++}`);     params.push(filter.priority); }
+  if (filter.assigned_to)  { where.push(`l.assigned_to = $${i++}`);  params.push(filter.assigned_to); }
   if (filter.overdue_only) {
-    where.push(`follow_up_date <= CURRENT_DATE AND status NOT IN ('won', 'lost')`);
+    where.push(`l.follow_up_date <= CURRENT_DATE AND l.status NOT IN ('won', 'lost')`);
   }
 
   const limit = filter.limit ?? 50;
   const offset = filter.offset ?? 0;
   params.push(limit, offset);
 
-  return query<Lead>(
-    `SELECT * FROM leads WHERE ${where.join(" AND ")}
+  return query<LeadWithContact>(
+    `SELECT
+       l.*,
+       c.first_name    AS contact_first_name,
+       c.last_name     AS contact_last_name,
+       c.company       AS contact_company,
+       c.phone         AS contact_phone,
+       c.email         AS contact_email,
+       c.city          AS contact_city,
+       c.state         AS contact_state
+     FROM leads l
+     LEFT JOIN contacts c ON c.id = l.contact_id AND c.org_id = l.org_id
+     WHERE ${where.join(" AND ")}
      ORDER BY
-       CASE priority WHEN 'hot' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END,
-       created_at DESC
+       CASE l.priority WHEN 'hot' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END,
+       l.created_at DESC
      LIMIT $${i++} OFFSET $${i++}`,
     params
   );

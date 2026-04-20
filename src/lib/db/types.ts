@@ -151,6 +151,22 @@ export interface EstimateWithContact extends Estimate {
   contact_state: string | null;
 }
 
+/**
+ * Lead row enriched with the minimal contact display fields the follow-ups
+ * and pipeline dashboards need (name, company). Produced by `listLeads`
+ * via LEFT JOIN on contacts — contact fields are nullable because a contact
+ * could have been deleted. Core lead fields remain identical to `Lead`.
+ */
+export interface LeadWithContact extends Lead {
+  contact_first_name: string | null;
+  contact_last_name: string | null;
+  contact_company: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  contact_city: string | null;
+  contact_state: string | null;
+}
+
 export interface Job {
   id: string;
   org_id: string;

@@ -1,181 +1,814 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw,
   FileText,
   MessageSquare,
-  Star,
   Snowflake,
-  Ghost,
-  Users,
   Eye,
   AlertCircle,
   List,
   Calendar,
   ArrowRight,
   Sparkles,
+  Inbox,
+  Handshake,
 } from 'lucide-react';
 
-const AGENTS = [
-  {
-    id: 'quote-fu',
-    name: 'Quote Follow-Up',
-    icon: FileText,
-    color: '#f59e0b',
-    count: 12,
-    countLabel: 'active sequences',
-  },
-  {
-    id: 'objection',
-    name: 'Objection Handler',
-    icon: AlertCircle,
-    color: '#8b5cf6',
-    count: 3,
-    countLabel: 'active',
-  },
-  {
-    id: 'review',
-    name: 'Review Request',
-    icon: Star,
-    color: 'var(--primary)',
-    count: 8,
-    countLabel: 'sent today',
-  },
-  {
-    id: 'dead-lead',
-    name: 'Dead Lead Reactivation',
-    icon: Snowflake,
-    color: '#3b82f6',
-    count: 23,
-    countLabel: 'in rotation',
-  },
-  {
-    id: 'ghosted',
-    name: 'Ghosted Bid Follow-Up',
-    icon: Ghost,
-    color: '#ec4899',
-    count: 7,
-    countLabel: 'active',
-  },
-  {
-    id: 'past-customer',
-    name: 'Past Customer Re-engagement',
-    icon: Users,
-    color: '#14b8a6',
-    count: 18,
-    countLabel: 'in rotation',
-  },
-];
+// ---------------------------------------------------------------------------
+// Lead status → agent/pipeline-stage presentation
+// ---------------------------------------------------------------------------
 
-const READY_TO_ACT = [
-  {
-    id: 1,
-    name: 'Patricia Williams',
-    signal: 'Viewed quote 3x in 24h',
-    agent: 'Quote Follow-Up',
-    icon: Eye,
-  },
-  {
-    id: 2,
-    name: 'Marcus Miller',
-    signal: 'Replied to dead-lead SMS after 94 days',
-    agent: 'Dead Lead Reactivation',
-    icon: MessageSquare,
-  },
-  {
-    id: 3,
-    name: 'Thompson Residence',
-    signal: 'Opened proposal email 5x, no reply',
-    agent: 'Ghosted Bid Follow-Up',
-    icon: Eye,
-  },
-  {
-    id: 4,
-    name: 'James Rodriguez',
-    signal: 'Asked about price in Objection Handler thread',
-    agent: 'Objection Handler',
-    icon: AlertCircle,
-  },
-  {
-    id: 5,
-    name: 'Sarah Chen',
-    signal: 'One-year install anniversary — maintenance eligible',
-    agent: 'Past Customer Re-engagement',
-    icon: Users,
-  },
-  {
-    id: 6,
-    name: 'Jennifer Davis',
-    signal: 'Google Maps profile view spike (3 this week)',
-    agent: 'Review Request',
-    icon: Star,
-  },
+// The six tiles the contractor sees: each one maps 1:1 to a lead status
+// the Follow-Up agents work on. Counts are computed from real leads so
+// the tiles reflect the actual tenant pipeline.
+const AGENT_STAGES = [
+  { id: 'new',             name: 'Inbound New Leads',  icon: Inbox,       color: '#3b82f6',          statuses: ['new'],            label: 'need first touch' },
+  { id: 'contacted',       name: 'Contacted',          icon: MessageSquare, color: '#8b5cf6',        statuses: ['contacted'],      label: 'awaiting reply'    },
+  { id: 'appointment_set', name: 'Appointments Set',   icon: Calendar,    color: 'var(--primary)',   statuses: ['appointment_set'], label: 'confirmed'         },
+  { id: 'quoted',          name: 'Quote Follow-Up',    icon: FileText,    color: '#f59e0b',          statuses: ['quoted'],         label: 'active sequences'  },
+  { id: 'negotiating',     name: 'Objection Handler',  icon: Handshake,   color: '#ec4899',          statuses: ['negotiating'],    label: 'in negotiation'    },
+  { id: 'on_hold',         name: 'Dead Lead Rescue',   icon: Snowflake,   color: 'var(--text-muted)', statuses: ['on_hold','lost'], label: 'in rotation'      },
 ];
-
-const SEQUENCES = [
-  { id: 1, contact: 'Patricia Williams', type: 'Quote FU', days: 2, last: 'Apr 14 · Text', next: 'Apr 16 · Call', status: 'active' },
-  { id: 2, contact: 'Marcus Miller', type: 'Dead Lead', days: 94, last: 'Apr 14 · SMS', next: 'Apr 18 · SMS', status: 'warm' },
-  { id: 3, contact: 'Thompson Residence', type: 'Ghosted Bid', days: 11, last: 'Apr 12 · Email', next: 'Apr 16 · Call', status: 'active' },
-  { id: 4, contact: 'James Rodriguez', type: 'Objection', days: 1, last: 'Apr 14 · SMS', next: 'Apr 15 · Call', status: 'warm' },
-  { id: 5, contact: 'Sarah Chen', type: 'Past Customer', days: 365, last: 'Mar 22 · Email', next: 'Apr 17 · Email', status: 'active' },
-  { id: 6, contact: 'Robert Thompson', type: 'Quote FU', days: 5, last: 'Apr 13 · SMS', next: 'Apr 17 · Call', status: 'active' },
-  { id: 7, contact: 'Kevin Park', type: 'Ghosted Bid', days: 18, last: 'Apr 11 · Email', next: 'Apr 16 · SMS', status: 'active' },
-  { id: 8, contact: 'Linda Martinez', type: 'Review', days: 4, last: 'Apr 11 · SMS', next: 'Apr 18 · SMS', status: 'active' },
-  { id: 9, contact: 'David Kim', type: 'Dead Lead', days: 121, last: 'Apr 10 · SMS', next: 'Apr 20 · Email', status: 'cold' },
-  { id: 10, contact: 'Amanda Foster', type: 'Quote FU', days: 3, last: 'Apr 13 · Call', next: 'Apr 17 · Email', status: 'active' },
-  { id: 11, contact: 'Jennifer Davis', type: 'Review', days: 2, last: 'Apr 13 · SMS', next: 'Apr 18 · SMS', status: 'active' },
-  { id: 12, contact: 'Rodriguez Home', type: 'Past Customer', days: 410, last: 'Apr 09 · Email', next: 'Apr 19 · Email', status: 'active' },
-  { id: 13, contact: 'Miller Home', type: 'Ghosted Bid', days: 22, last: 'Apr 10 · SMS', next: 'Apr 16 · Call', status: 'active' },
-  { id: 14, contact: 'Chen Residence', type: 'Objection', days: 3, last: 'Apr 12 · SMS', next: 'Apr 16 · SMS', status: 'active' },
-  { id: 15, contact: 'Williams Property', type: 'Quote FU', days: 8, last: 'Apr 08 · Email', next: 'Apr 16 · Call', status: 'active' },
-];
-
-const TIMELINE_DAYS = [
-  { day: 'Wed', date: 'Apr 16', touches: [
-    { time: '9:30a', contact: 'Patricia Williams', type: 'Quote FU', channel: 'Call' },
-    { time: '10:15a', contact: 'Thompson Residence', type: 'Ghosted Bid', channel: 'Call' },
-    { time: '11:00a', contact: 'Williams Property', type: 'Quote FU', channel: 'Call' },
-    { time: '2:00p', contact: 'Kevin Park', type: 'Ghosted', channel: 'SMS' },
-    { time: '3:30p', contact: 'Miller Home', type: 'Ghosted', channel: 'Call' },
-    { time: '4:00p', contact: 'Chen Residence', type: 'Objection', channel: 'SMS' },
-  ]},
-  { day: 'Thu', date: 'Apr 17', touches: [
-    { time: '9:00a', contact: 'Sarah Chen', type: 'Past Customer', channel: 'Email' },
-    { time: '11:30a', contact: 'Amanda Foster', type: 'Quote FU', channel: 'Email' },
-    { time: '2:00p', contact: 'Robert Thompson', type: 'Quote FU', channel: 'Call' },
-  ]},
-  { day: 'Fri', date: 'Apr 18', touches: [
-    { time: '9:00a', contact: 'Marcus Miller', type: 'Dead Lead', channel: 'SMS' },
-    { time: '10:00a', contact: 'Linda Martinez', type: 'Review', channel: 'SMS' },
-    { time: '11:00a', contact: 'Jennifer Davis', type: 'Review', channel: 'SMS' },
-  ]},
-  { day: 'Sat', date: 'Apr 19', touches: [
-    { time: '10:00a', contact: 'Rodriguez Home', type: 'Past Customer', channel: 'Email' },
-  ]},
-  { day: 'Sun', date: 'Apr 20', touches: [
-    { time: '10:00a', contact: 'David Kim', type: 'Dead Lead', channel: 'Email' },
-  ]},
-  { day: 'Mon', date: 'Apr 21', touches: [] },
-  { day: 'Tue', date: 'Apr 22', touches: [] },
-];
-
-const TYPE_COLORS = {
-  'Quote FU': '#f59e0b',
-  Objection: '#8b5cf6',
-  Review: 'var(--primary)',
-  'Dead Lead': '#3b82f6',
-  'Ghosted Bid': '#ec4899',
-  Ghosted: '#ec4899',
-  'Past Customer': '#14b8a6',
-};
 
 const STATUS_COLORS = {
-  active: { label: 'ACTIVE', color: '#3b82f6' },
-  warm: { label: 'WARM', color: '#f59e0b' },
-  cold: { label: 'COLD', color: 'var(--text-muted)' },
+  new:             { label: 'NEW',            color: '#3b82f6' },
+  contacted:       { label: 'CONTACTED',      color: '#8b5cf6' },
+  appointment_set: { label: 'APPT SET',       color: 'var(--primary)' },
+  inspected:       { label: 'INSPECTED',      color: 'var(--primary)' },
+  quoted:          { label: 'QUOTED',         color: '#f59e0b' },
+  negotiating:     { label: 'NEGOTIATING',    color: '#ec4899' },
+  on_hold:         { label: 'ON HOLD',        color: 'var(--text-muted)' },
+  won:             { label: 'WON',            color: 'var(--primary)' },
+  lost:            { label: 'LOST',           color: '#ef4444' },
 };
+
+const PRIORITY_COLORS = {
+  hot:    { label: 'HOT',    color: '#ef4444' },
+  high:   { label: 'HIGH',   color: '#f59e0b' },
+  medium: { label: 'MEDIUM', color: 'var(--text-muted)' },
+  low:    { label: 'LOW',    color: 'var(--text-muted)' },
+};
+
+const ACTIVE_STATUSES = new Set([
+  'new', 'contacted', 'appointment_set', 'inspected', 'quoted', 'negotiating', 'on_hold',
+]);
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function fmtContactName(lead) {
+  const company = lead.contact_company;
+  const first = lead.contact_first_name;
+  const last = lead.contact_last_name;
+  if (company && company.trim()) return company;
+  const name = [first, last].filter(Boolean).join(' ').trim();
+  if (name) return name;
+  return lead.title || 'Unnamed lead';
+}
+
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function daysBetween(a, b) {
+  return Math.round((startOfDay(a).getTime() - startOfDay(b).getTime()) / (24 * 60 * 60 * 1000));
+}
+
+function daysSinceCreated(lead) {
+  if (!lead.created_at) return 0;
+  const created = new Date(lead.created_at);
+  if (Number.isNaN(created.getTime())) return 0;
+  return Math.max(0, daysBetween(new Date(), created));
+}
+
+function fmtFollowUp(iso) {
+  if (!iso) return { label: 'Unscheduled', color: 'var(--text-muted)', overdue: false };
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { label: 'Unscheduled', color: 'var(--text-muted)', overdue: false };
+  const diff = daysBetween(d, new Date());
+  const short = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  if (diff < 0) return { label: `${short} · overdue ${Math.abs(diff)}d`, color: '#ef4444', overdue: true };
+  if (diff === 0) return { label: `${short} · today`, color: '#f59e0b', overdue: false };
+  if (diff === 1) return { label: `${short} · tomorrow`, color: '#f59e0b', overdue: false };
+  return { label: short, color: 'var(--text-body)', overdue: false };
+}
+
+function fmtMoney(n) {
+  const v = Number(n ?? 0);
+  if (Number.isNaN(v) || v === 0) return '—';
+  if (v >= 1000) return `$${Math.round(v / 1000)}K`;
+  return `$${v.toLocaleString()}`;
+}
+
+function warmth(lead) {
+  if (lead.priority === 'hot') return 'warm';
+  if (lead.priority === 'high') return 'warm';
+  if (lead.status === 'on_hold' || lead.status === 'lost') return 'cold';
+  return 'active';
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default function FollowUpsPage() {
+  const [view, setView] = useState('list');
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancel = false;
+    setLoading(true);
+    fetch('/api/crm/leads?limit=200', { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((json) => {
+        if (cancel) return;
+        setLeads(Array.isArray(json?.leads) ? json.leads : []);
+      })
+      .catch((err) => {
+        if (cancel) return;
+        setError(err?.message || 'Failed to load leads');
+      })
+      .finally(() => {
+        if (cancel) return;
+        setLoading(false);
+      });
+    return () => { cancel = true; };
+  }, []);
+
+  // Active sequences = leads actively being nurtured (not won, not still-new dead lost)
+  const activeLeads = useMemo(
+    () => leads.filter((l) => ACTIVE_STATUSES.has(l.status)),
+    [leads],
+  );
+
+  // Ready to act = overdue follow-ups + hot-priority active leads
+  const readyToAct = useMemo(() => {
+    const today = startOfDay(new Date());
+    return leads
+      .filter((l) => {
+        if (!ACTIVE_STATUSES.has(l.status)) return false;
+        if (l.priority === 'hot') return true;
+        if (!l.follow_up_date) return false;
+        const d = new Date(l.follow_up_date);
+        return !Number.isNaN(d.getTime()) && d.getTime() <= today.getTime();
+      })
+      .slice(0, 6);
+  }, [leads]);
+
+  // Stat strip values
+  const pipelineValue = useMemo(
+    () => activeLeads.reduce((sum, l) => sum + Number(l.estimated_value ?? 0), 0),
+    [activeLeads],
+  );
+  const warmCount = useMemo(
+    () => activeLeads.filter((l) => l.priority === 'hot' || l.priority === 'high').length,
+    [activeLeads],
+  );
+  const newThisWeek = useMemo(() => {
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    return leads.filter((l) => {
+      if (!l.created_at) return false;
+      const d = new Date(l.created_at);
+      return !Number.isNaN(d.getTime()) && d >= weekAgo;
+    }).length;
+  }, [leads]);
+
+  // Per-agent tile counts
+  const stageCounts = useMemo(() => {
+    const map = {};
+    for (const stage of AGENT_STAGES) {
+      map[stage.id] = leads.filter((l) => stage.statuses.includes(l.status)).length;
+    }
+    return map;
+  }, [leads]);
+
+  // Timeline = leads grouped by follow_up_date for next 7 days
+  const timelineDays = useMemo(() => {
+    const today = startOfDay(new Date());
+    const days = [];
+    for (let i = 0; i < 7; i += 1) {
+      const d = new Date(today); d.setDate(today.getDate() + i);
+      const dayKey = d.toISOString().slice(0, 10);
+      const dayLeads = leads.filter((l) => {
+        if (!l.follow_up_date || !ACTIVE_STATUSES.has(l.status)) return false;
+        return String(l.follow_up_date).slice(0, 10) === dayKey;
+      });
+      days.push({
+        day: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        leads: dayLeads,
+      });
+    }
+    return days;
+  }, [leads]);
+
+  return (
+    <div>
+      {/* Header */}
+      <div>
+        <div
+          className="t-eyebrow"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+        >
+          <RefreshCw size={12} style={{ color: 'var(--primary)' }} />
+          Deliverable
+        </div>
+        <h1
+          className="t-h1"
+          style={{
+            margin: '6px 0 6px',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Active Follow-Ups
+        </h1>
+        <p
+          className="t-body-sm"
+          style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-body)' }}
+        >
+          No lead goes cold. Every quote, every ghost, every past customer —
+          chased automatically.
+        </p>
+      </div>
+
+      {/* Hero */}
+      <div
+        className="dark-card"
+        style={{
+          padding: 28,
+          marginTop: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 20,
+          flexWrap: 'wrap',
+          borderColor: 'color-mix(in srgb, var(--primary) 40%, var(--border))',
+          boxShadow: '0 0 28px rgba(16,185,129,0.14)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 14,
+              background: 'color-mix(in srgb, var(--primary) 18%, transparent)',
+              color: 'var(--primary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <RefreshCw size={26} />
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'var(--primary-dark)',
+                fontWeight: 700,
+              }}
+            >
+              In motion right now
+            </div>
+            <div
+              style={{
+                fontSize: 56,
+                fontWeight: 700,
+                lineHeight: 1,
+                color: 'var(--primary)',
+                marginTop: 6,
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {loading ? '—' : activeLeads.length}
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text-body)', marginTop: 8 }}>
+              active sequences · <b>{readyToAct.length}</b> ready to act on ·{' '}
+              <b>{fmtMoney(pipelineValue)}</b> pipeline in motion
+            </div>
+          </div>
+        </div>
+        <Pill color="#f59e0b">{warmCount} WARM</Pill>
+      </div>
+
+      {/* Stat strip */}
+      <div
+        className="fu-stat-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
+        <StatCard
+          label="Active Sequences"
+          value={loading ? '—' : String(activeLeads.length)}
+          hint="across 6 pipeline stages"
+        />
+        <StatCard
+          label="Pipeline Value"
+          value={loading ? '—' : fmtMoney(pipelineValue)}
+          hint="estimated across active"
+        />
+        <StatCard
+          label="Warm Signals"
+          value={loading ? '—' : String(warmCount)}
+          hint="hot + high priority"
+          accent
+        />
+        <StatCard
+          label="New This Week"
+          value={loading ? '—' : String(newThisWeek)}
+          hint="last 7 days"
+        />
+      </div>
+
+      {/* Error or loading banners */}
+      {error ? (
+        <div
+          className="dark-card"
+          style={{
+            padding: 16,
+            marginTop: 20,
+            borderColor: 'color-mix(in srgb, #ef4444 30%, var(--border))',
+            color: '#ef4444',
+            fontSize: 13,
+          }}
+        >
+          Couldn&apos;t load leads: {error}
+        </div>
+      ) : null}
+
+      {/* Agents / stages working */}
+      <div style={{ marginTop: 28 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'var(--text-bright)',
+            marginBottom: 12,
+          }}
+        >
+          Stages the Follow-Up agents are working
+        </div>
+        <div
+          className="fu-agent-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 12,
+          }}
+        >
+          {AGENT_STAGES.map((a) => (
+            <AgentTile key={a.id} agent={a} count={loading ? '—' : stageCounts[a.id]} />
+          ))}
+        </div>
+      </div>
+
+      {/* Ready to act on — amber highlighted */}
+      <div style={{ marginTop: 28 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 4,
+          }}
+        >
+          <AlertCircle size={14} style={{ color: '#f59e0b' }} />
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'var(--text-bright)',
+            }}
+          >
+            Ready to act on
+          </div>
+          <Pill color="#f59e0b">WARM</Pill>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+          Leads with overdue follow-ups or hot priority. Every hour matters.
+        </div>
+        {loading ? (
+          <EmptyInline text="Loading leads…" />
+        ) : readyToAct.length === 0 ? (
+          <EmptyInline text="Nothing urgent right now. Keep shipping." />
+        ) : (
+          <div
+            className="fu-ready-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 12,
+            }}
+          >
+            {readyToAct.map((lead) => {
+              const fu = fmtFollowUp(lead.follow_up_date);
+              const pri = PRIORITY_COLORS[lead.priority] || PRIORITY_COLORS.medium;
+              const Icon = lead.priority === 'hot' ? AlertCircle : Eye;
+              const signal = lead.priority === 'hot'
+                ? 'Marked hot priority'
+                : fu.overdue
+                  ? `Follow-up ${fu.label}`
+                  : 'Follow-up due today';
+              return (
+                <div
+                  key={lead.id}
+                  className="dark-card"
+                  style={{
+                    padding: 18,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                    borderColor: 'color-mix(in srgb, #f59e0b 40%, var(--border))',
+                    background: 'linear-gradient(180deg, transparent 0%, color-mix(in srgb, #f59e0b 5%, transparent) 100%)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: '#f59e0b',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      <Icon size={12} />
+                      {lead.priority === 'hot' ? 'Hot lead' : 'Warm signal'}
+                    </span>
+                    <Pill color={pri.color}>{pri.label}</Pill>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: 'var(--text-bright)',
+                    }}
+                  >
+                    {fmtContactName(lead)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 1.5,
+                      color: 'var(--text-body)',
+                    }}
+                  >
+                    {signal}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {lead.title} · <b>{fmtMoney(lead.estimated_value)}</b>
+                  </div>
+                  <Link
+                    href={`/dashboard/crm/leads`}
+                    className="btn-primary"
+                    style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    Take action
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* View toggle + active sequences */}
+      <div style={{ marginTop: 28 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            flexWrap: 'wrap',
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+              }}
+            >
+              All active sequences
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              {view === 'list'
+                ? `${activeLeads.length} leads currently being nurtured`
+                : 'Next 7 days of scheduled follow-ups'}
+            </div>
+          </div>
+          <div style={{ display: 'inline-flex', gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className={view === 'list' ? 'filter-pill-active' : 'filter-pill'}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <List size={13} />
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('timeline')}
+              className={view === 'timeline' ? 'filter-pill-active' : 'filter-pill'}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <Calendar size={13} />
+              Timeline
+            </button>
+          </div>
+        </div>
+
+        {view === 'list' ? (
+          <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
+            {loading ? (
+              <EmptyBig icon={<RefreshCw size={24} />} title="Loading sequences…" body="Pulling leads from your CRM." />
+            ) : activeLeads.length === 0 ? (
+              <EmptyBig
+                icon={<Sparkles size={24} />}
+                title="No active follow-ups"
+                body="Once you have contacted, quoted, or negotiating leads, they'll show up here."
+              />
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Contact</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Days in</th>
+                      <th>Value</th>
+                      <th>Next Follow-Up</th>
+                      <th style={{ textAlign: 'center' }}>Warmth</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeLeads.map((l) => {
+                      const statusCfg = STATUS_COLORS[l.status] || { label: String(l.status || '').toUpperCase(), color: 'var(--text-muted)' };
+                      const fu = fmtFollowUp(l.follow_up_date);
+                      const w = warmth(l);
+                      const warmthCfg = w === 'warm'
+                        ? { label: 'WARM',   color: '#f59e0b' }
+                        : w === 'cold'
+                          ? { label: 'COLD',   color: 'var(--text-muted)' }
+                          : { label: 'ACTIVE', color: '#3b82f6' };
+                      return (
+                        <tr key={l.id}>
+                          <td style={{ color: 'var(--text-bright)', fontWeight: 500 }}>
+                            {fmtContactName(l)}
+                            {l.title ? (
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>
+                                {l.title}
+                              </div>
+                            ) : null}
+                          </td>
+                          <td>
+                            <Pill color={statusCfg.color}>{statusCfg.label}</Pill>
+                          </td>
+                          <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--text-muted)' }}>
+                            {daysSinceCreated(l)}
+                          </td>
+                          <td style={{ color: 'var(--text-body)', fontVariantNumeric: 'tabular-nums' }}>
+                            {fmtMoney(l.estimated_value)}
+                          </td>
+                          <td style={{ color: fu.color, fontVariantNumeric: 'tabular-nums' }}>
+                            {fu.label}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <Pill color={warmthCfg.color}>{warmthCfg.label}</Pill>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="dark-card" style={{ padding: 20 }}>
+            {loading ? (
+              <EmptyBig icon={<RefreshCw size={24} />} title="Loading timeline…" body="Pulling follow-up schedule from your CRM." />
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: 10,
+                }}
+                className="fu-timeline-grid"
+              >
+                {timelineDays.map((d) => (
+                  <div
+                    key={d.date}
+                    style={{
+                      padding: 12,
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-2)',
+                      minHeight: 240,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-muted)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {d.day}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: 'var(--text-bright)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {d.date}
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 6,
+                        marginTop: 4,
+                      }}
+                    >
+                      {d.leads.length === 0 ? (
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--text-muted)',
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          Quiet day
+                        </div>
+                      ) : (
+                        d.leads.map((lead) => {
+                          const statusCfg = STATUS_COLORS[lead.status] || { label: String(lead.status || '').toUpperCase(), color: 'var(--text-muted)' };
+                          return (
+                            <div
+                              key={lead.id}
+                              style={{
+                                padding: '6px 8px',
+                                borderRadius: 6,
+                                border: `1px solid color-mix(in srgb, ${statusCfg.color} 30%, transparent)`,
+                                background: `color-mix(in srgb, ${statusCfg.color} 8%, transparent)`,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  color: statusCfg.color,
+                                  fontWeight: 600,
+                                  letterSpacing: '0.08em',
+                                }}
+                              >
+                                {statusCfg.label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: 'var(--text-bright)',
+                                  marginTop: 2,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {fmtContactName(lead)}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer CTA */}
+      <div
+        style={{
+          marginTop: 28,
+          padding: 20,
+          borderRadius: 12,
+          border: '1px solid var(--border)',
+          background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+          <div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+              }}
+            >
+              Fine-tune the follow-up cadence?
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              Increase how aggressively your agents nurture quoted and ghosted leads.
+            </div>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/agents"
+          className="btn-primary"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        >
+          Tune cadence
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
+      <style jsx>{`
+        @media (max-width: 1200px) {
+          :global(.fu-ready-grid),
+          :global(.fu-agent-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          :global(.fu-timeline-grid) {
+            grid-template-columns: repeat(4, 1fr) !important;
+          }
+        }
+        @media (max-width: 900px) {
+          :global(.fu-stat-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          :global(.fu-timeline-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 640px) {
+          :global(.fu-stat-grid),
+          :global(.fu-agent-grid),
+          :global(.fu-ready-grid),
+          :global(.fu-timeline-grid) {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Small shared components
+// ---------------------------------------------------------------------------
 
 function Pill({ color, children }) {
   return (
@@ -232,7 +865,7 @@ function StatCard({ label, value, hint, accent }) {
   );
 }
 
-function AgentTile({ agent }) {
+function AgentTile({ agent, count }) {
   const Icon = agent.icon;
   return (
     <div
@@ -287,7 +920,7 @@ function AgentTile({ agent }) {
             fontVariantNumeric: 'tabular-nums',
           }}
         >
-          {agent.count} {agent.countLabel}
+          {count} {agent.label}
         </div>
       </div>
       <Link
@@ -306,535 +939,43 @@ function AgentTile({ agent }) {
   );
 }
 
-export default function FollowUpsPage() {
-  const [view, setView] = useState('list');
-
+function EmptyInline({ text }) {
   return (
-    <div>
-      {/* Header */}
-      <div>
-        <div
-          className="t-eyebrow"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-        >
-          <RefreshCw size={12} style={{ color: 'var(--primary)' }} />
-          Deliverable
-        </div>
-        <h1
-          className="t-h1"
-          style={{
-            margin: '6px 0 6px',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          Active Follow-Ups
-        </h1>
-        <p
-          className="t-body-sm"
-          style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-body)' }}
-        >
-          No lead goes cold. Every quote, every ghost, every past customer —
-          chased automatically.
-        </p>
-      </div>
+    <div
+      className="dark-card"
+      style={{
+        padding: '28px 20px',
+        textAlign: 'center',
+        color: 'var(--text-muted)',
+        fontSize: 13,
+      }}
+    >
+      {text}
+    </div>
+  );
+}
 
-      {/* Hero */}
-      <div
-        className="dark-card"
-        style={{
-          padding: 28,
-          marginTop: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 20,
-          flexWrap: 'wrap',
-          borderColor:
-            'color-mix(in srgb, var(--primary) 40%, var(--border))',
-          boxShadow: '0 0 28px rgba(16,185,129,0.14)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 14,
-              background:
-                'color-mix(in srgb, var(--primary) 18%, transparent)',
-              color: 'var(--primary)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <RefreshCw size={26} />
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'var(--primary-dark)',
-                fontWeight: 700,
-              }}
-            >
-              In motion right now
-            </div>
-            <div
-              style={{
-                fontSize: 56,
-                fontWeight: 700,
-                lineHeight: 1,
-                color: 'var(--primary)',
-                marginTop: 6,
-                fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              34
-            </div>
-            <div style={{ fontSize: 14, color: 'var(--text-body)', marginTop: 8 }}>
-              active sequences · <b>6</b> ready to act on ·{' '}
-              <b>$127K</b> pipeline in motion
-            </div>
-          </div>
-        </div>
-        <Pill color="#f59e0b">6 WARM</Pill>
-      </div>
-
-      {/* Stat strip */}
-      <div
-        className="fu-stat-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 12,
-          marginTop: 16,
-        }}
-      >
-        <StatCard label="Active Sequences" value="34" hint="across 6 agents" />
-        <StatCard label="Messages Today" value="142" hint="SMS · Email · Call" />
-        <StatCard label="Reply Rate" value="28%" hint="+4pts vs last week" accent />
-        <StatCard label="Warm-Signal Reactivations" value="6" hint="Ready to act on" />
-      </div>
-
-      {/* Agents working */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 12,
-          }}
-        >
-          Agents working this deliverable
-        </div>
-        <div
-          className="fu-agent-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 12,
-          }}
-        >
-          {AGENTS.map((a) => (
-            <AgentTile key={a.id} agent={a} />
-          ))}
-        </div>
-      </div>
-
-      {/* Ready to act on — amber highlighted */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 4,
-          }}
-        >
-          <AlertCircle size={14} style={{ color: '#f59e0b' }} />
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: 'var(--text-bright)',
-            }}
-          >
-            Ready to act on
-          </div>
-          <Pill color="#f59e0b">WARM</Pill>
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-          Leads showing warm signals right now. Every hour matters.
-        </div>
-        <div
-          className="fu-ready-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 12,
-          }}
-        >
-          {READY_TO_ACT.map((r) => {
-            const Icon = r.icon;
-            return (
-              <div
-                key={r.id}
-                className="dark-card"
-                style={{
-                  padding: 18,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 10,
-                  borderColor: 'color-mix(in srgb, #f59e0b 40%, var(--border))',
-                  background:
-                    'linear-gradient(180deg, transparent 0%, color-mix(in srgb, #f59e0b 5%, transparent) 100%)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: '#f59e0b',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    <Icon size={12} />
-                    Warm signal
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: 'var(--text-bright)',
-                  }}
-                >
-                  {r.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                    color: 'var(--text-body)',
-                  }}
-                >
-                  {r.signal}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                  Detected by <b>{r.agent}</b>
-                </div>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  style={{ marginTop: 'auto' }}
-                >
-                  Take action
-                  <ArrowRight size={13} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* View toggle + active sequences */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            flexWrap: 'wrap',
-            marginBottom: 12,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: 'var(--text-bright)',
-              }}
-            >
-              All active sequences
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              {view === 'list'
-                ? '15 contacts currently being nurtured'
-                : 'Next 7 days of scheduled touches'}
-            </div>
-          </div>
-          <div style={{ display: 'inline-flex', gap: 6 }}>
-            <button
-              type="button"
-              onClick={() => setView('list')}
-              className={view === 'list' ? 'filter-pill-active' : 'filter-pill'}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              <List size={13} />
-              List
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('timeline')}
-              className={view === 'timeline' ? 'filter-pill-active' : 'filter-pill'}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              <Calendar size={13} />
-              Timeline
-            </button>
-          </div>
-        </div>
-
-        {view === 'list' ? (
-          <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Contact</th>
-                    <th>Type</th>
-                    <th style={{ textAlign: 'right' }}>Days in</th>
-                    <th>Last Message</th>
-                    <th>Next Message</th>
-                    <th style={{ textAlign: 'center' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SEQUENCES.map((s) => {
-                    const typeColor = TYPE_COLORS[s.type] || 'var(--text-muted)';
-                    const status = STATUS_COLORS[s.status];
-                    return (
-                      <tr key={s.id}>
-                        <td
-                          style={{
-                            color: 'var(--text-bright)',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {s.contact}
-                        </td>
-                        <td>
-                          <Pill color={typeColor}>{s.type.toUpperCase()}</Pill>
-                        </td>
-                        <td
-                          style={{
-                            textAlign: 'right',
-                            fontVariantNumeric: 'tabular-nums',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
-                          {s.days}
-                        </td>
-                        <td style={{ color: 'var(--text-muted)' }}>{s.last}</td>
-                        <td style={{ color: 'var(--text-body)' }}>{s.next}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <Pill color={status.color}>{status.label}</Pill>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <div className="dark-card" style={{ padding: 20 }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                gap: 10,
-              }}
-              className="fu-timeline-grid"
-            >
-              {TIMELINE_DAYS.map((d) => (
-                <div
-                  key={d.date}
-                  style={{
-                    padding: 12,
-                    borderRadius: 10,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface-2)',
-                    minHeight: 240,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      color: 'var(--text-muted)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {d.day}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: 'var(--text-bright)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {d.date}
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 6,
-                      marginTop: 4,
-                    }}
-                  >
-                    {d.touches.length === 0 ? (
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: 'var(--text-muted)',
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        Quiet day
-                      </div>
-                    ) : (
-                      d.touches.map((t, i) => {
-                        const c = TYPE_COLORS[t.type] || 'var(--text-muted)';
-                        return (
-                          <div
-                            key={i}
-                            style={{
-                              padding: '6px 8px',
-                              borderRadius: 6,
-                              border: `1px solid color-mix(in srgb, ${c} 30%, transparent)`,
-                              background: `color-mix(in srgb, ${c} 8%, transparent)`,
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: 10,
-                                color: c,
-                                fontWeight: 600,
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {t.time} · {t.channel}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: 'var(--text-bright)',
-                                marginTop: 2,
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {t.contact}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer CTA */}
+function EmptyBig({ icon, title, body }) {
+  return (
+    <div
+      style={{
+        padding: '48px 24px',
+        textAlign: 'center',
+        color: 'var(--text-muted)',
+      }}
+    >
+      <div style={{ color: 'var(--text-muted)', marginBottom: 12, display: 'inline-flex' }}>{icon}</div>
       <div
         style={{
-          marginTop: 28,
-          padding: 20,
-          borderRadius: 12,
-          border: '1px solid var(--border)',
-          background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), transparent)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          flexWrap: 'wrap',
+          fontSize: 14,
+          fontWeight: 600,
+          color: 'var(--text-bright)',
+          marginBottom: 4,
         }}
       >
-        <div
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}
-        >
-          <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-          <div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: 'var(--text-bright)',
-              }}
-            >
-              Dial up the pressure on ghosted bids?
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              Increase Ghosted Bid Follow-Up cadence from 7 days to 4.
-            </div>
-          </div>
-        </div>
-        <Link href="/dashboard/agents" className="btn-primary">
-          Tune cadence
-          <ArrowRight size={14} />
-        </Link>
+        {title}
       </div>
-
-      <style jsx>{`
-        @media (max-width: 1200px) {
-          :global(.fu-ready-grid),
-          :global(.fu-agent-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-          :global(.fu-timeline-grid) {
-            grid-template-columns: repeat(4, 1fr) !important;
-          }
-        }
-        @media (max-width: 900px) {
-          :global(.fu-stat-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-          :global(.fu-timeline-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-        }
-        @media (max-width: 640px) {
-          :global(.fu-stat-grid),
-          :global(.fu-agent-grid),
-          :global(.fu-ready-grid),
-          :global(.fu-timeline-grid) {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
+      <div style={{ fontSize: 13, maxWidth: 420, margin: '0 auto' }}>{body}</div>
     </div>
   );
 }
