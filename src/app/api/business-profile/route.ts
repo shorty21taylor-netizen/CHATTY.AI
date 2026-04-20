@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { withOrgContext } from "@/lib/db/drizzle";
 import { rateLimitRequest, rateLimitHeaders } from "@/lib/utils/rate-limit";
 import * as bpQueries from "@/lib/db/queries/business-profile";
+import { seedOrgDefaults } from "@/lib/onboarding/seed-org";
 
 export async function GET() {
   const { orgId } = await auth();
@@ -104,5 +105,12 @@ export async function PUT(req: Request) {
   }
 
   const saved = await withOrgContext(orgId, (tx) => bpQueries.upsert(tx, orgId, dbData));
+
+  // First-contact org seeding. Idempotent — ensures brief_preferences exists
+  // so brief-scheduler's 15-minute cron actually finds this org on its next
+  // tick. Without this, a brand-new signup who completes onboarding would
+  // silently miss their first 6am brief.
+  await seedOrgDefaults(orgId);
+
   return NextResponse.json({ profile: saved }, { headers: rateLimitHeaders(rl) });
 }

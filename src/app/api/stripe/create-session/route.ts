@@ -4,6 +4,7 @@ import { getStripe, STRIPE_PRICES } from "@/lib/stripe/client";
 import { db } from "@/lib/db/drizzle";
 import { stripeCustomers } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { seedOrgDefaults } from "@/lib/onboarding/seed-org";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -56,6 +57,12 @@ export async function POST(req: NextRequest) {
       currentPlan: plan,
     });
   }
+
+  // Second entry point for org seeding. If the operator skipped onboarding
+  // and went straight to /pricing → checkout, business-profile PUT never
+  // fires. Seeding here guarantees brief_preferences exists before their
+  // first successful payment kicks off the scheduler's eligibility window.
+  await seedOrgDefaults(orgId);
 
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
