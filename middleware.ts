@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-// Public routes — no auth required
 const isPublicRoute = createRouteMatcher([
   "/",
   "/pricing(.*)",
@@ -17,20 +17,20 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Allow public routes
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+
   if (isPublicRoute(req)) {
-    return;
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  // Protect all other routes — require sign-in
   await auth.protect();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
     "/((?!_next|[^?]*\\.(?:html|css|js|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
