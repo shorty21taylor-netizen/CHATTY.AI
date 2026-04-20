@@ -13,6 +13,9 @@ const isPublicRoute = createRouteMatcher([
   "/api/voice/(.*)",
   "/onboarding(.*)",
   "/checkout(.*)",
+  "/terms(.*)",
+  "/privacy(.*)",
+  "/dpa(.*)",
   "/landing-page-cinematic.html",
 ]);
 
