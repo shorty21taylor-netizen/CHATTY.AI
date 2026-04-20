@@ -1,7 +1,11 @@
 export const ADMIN_EMAILS = ['shorty21taylor@gmail.com'];
 export const ADMIN_BYPASS_PASSWORD =
   process.env.ADMIN_BYPASS_PASSWORD || 'Chatty2026!';
-export const DEV_BYPASS_ENABLED = true; // flip to false when going live
+// Dev-only shortcut: skip Stripe checkout and drop the user straight on the
+// dashboard as an admin session. MUST be false in production. Opt in locally
+// by setting NEXT_PUBLIC_DEV_BYPASS_ENABLED=1 in .env.local.
+export const DEV_BYPASS_ENABLED =
+  process.env.NEXT_PUBLIC_DEV_BYPASS_ENABLED === '1';
 
 export function isAdmin(email) {
   if (!email) return false;
