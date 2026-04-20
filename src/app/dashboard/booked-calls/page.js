@@ -1,101 +1,206 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Calendar,
   Plus,
   Clock,
-  MapPin,
   Edit2,
   RefreshCw,
   Sparkles,
   Phone,
-  Home,
-  FileSearch,
+  PhoneOff,
+  PhoneCall,
   CheckCircle2,
-  Users,
+  AlertCircle,
+  Mic,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Status + source config (theme-agnostic indicator colors via color-mix)
+// Status + goal config (theme-agnostic indicator colors via color-mix)
 // ---------------------------------------------------------------------------
 
 const STATUS_CONFIG = {
-  confirmed: { label: 'CONFIRMED', color: 'var(--primary)' },
-  pending: { label: 'PENDING', color: '#f59e0b' },
-  rescheduled: { label: 'RESCHEDULED', color: '#3b82f6' },
+  queued:       { label: 'QUEUED',       color: '#f59e0b' },
+  in_progress:  { label: 'ON CALL',      color: 'var(--primary)' },
+  completed:    { label: 'COMPLETED',    color: 'var(--primary)' },
+  voicemail:    { label: 'VOICEMAIL',    color: '#8b5cf6' },
+  no_answer:    { label: 'NO ANSWER',    color: 'var(--text-muted)' },
+  failed:       { label: 'FAILED',       color: '#ef4444' },
 };
 
-const SOURCE_CONFIG = {
-  ai: { label: 'AI AGENT', color: 'var(--primary)' },
-  manual: { label: 'MANUAL', color: 'var(--text-muted)' },
-  referral: { label: 'REFERRAL', color: '#8b5cf6' },
+const OUTCOME_CONFIG = {
+  booked:              { label: 'BOOKED',              color: 'var(--primary)' },
+  interested:          { label: 'INTERESTED',          color: '#3b82f6' },
+  callback_requested:  { label: 'CALLBACK',            color: '#f59e0b' },
+  not_interested:      { label: 'NOT INTERESTED',      color: 'var(--text-muted)' },
+  voicemail:           { label: 'LEFT VOICEMAIL',      color: '#8b5cf6' },
+  no_answer:           { label: 'NO ANSWER',           color: 'var(--text-muted)' },
+  error:               { label: 'ERROR',               color: '#ef4444' },
 };
 
-const SERVICE_ICONS = {
-  estimate: FileSearch,
-  site_visit: Home,
-  sales_call: Phone,
+const GOAL_CONFIG = {
+  reengage_lead:        { label: 'Re-engage Lead',      icon: Sparkles },
+  confirm_appointment:  { label: 'Confirm Appointment', icon: Calendar },
+  followup_quote:       { label: 'Follow-up on Quote',  icon: PhoneCall },
+  custom:               { label: 'Custom Call',         icon: Mic },
 };
 
 // ---------------------------------------------------------------------------
-// Mock appointments — 12 total across Today / Tomorrow / This Week
+// Helpers
 // ---------------------------------------------------------------------------
 
-const APPOINTMENTS = [
-  // Today (4)
-  { id: 1, group: 'today', time: '10:00 AM', name: 'Thompson Residence', service: 'Roof Inspection Estimate', serviceType: 'estimate', address: '1847 Oak Grove Dr', status: 'confirmed', source: 'ai' },
-  { id: 2, group: 'today', time: '11:30 AM', name: 'Patel Home', service: 'HVAC System Site Visit', serviceType: 'site_visit', address: '2412 Birchwood Ln', status: 'confirmed', source: 'ai' },
-  { id: 3, group: 'today', time: '2:30 PM', name: 'Williams Property', service: 'Solar Consultation', serviceType: 'sales_call', address: '8821 Sunset Blvd', status: 'pending', source: 'manual' },
-  { id: 4, group: 'today', time: '4:00 PM', name: 'Chen Residence', service: 'Kitchen Remodel Estimate', serviceType: 'estimate', address: '5523 Maple Ave', status: 'rescheduled', source: 'ai' },
-  // Tomorrow (4)
-  { id: 5, group: 'tomorrow', time: '9:00 AM', name: 'Rodriguez Home', service: 'Gutter Replacement Site Visit', serviceType: 'site_visit', address: '214 Cedar Park Rd', status: 'confirmed', source: 'ai' },
-  { id: 6, group: 'tomorrow', time: '10:30 AM', name: 'Davis Property', service: 'Full Exterior Estimate', serviceType: 'estimate', address: '8877 Pinecrest Way', status: 'confirmed', source: 'referral' },
-  { id: 7, group: 'tomorrow', time: '1:00 PM', name: 'Anderson Residence', service: 'HVAC Maintenance Call', serviceType: 'sales_call', address: '1204 Elm Street', status: 'confirmed', source: 'ai' },
-  { id: 8, group: 'tomorrow', time: '3:30 PM', name: 'Miller Home', service: 'Storm Damage Estimate', serviceType: 'estimate', address: '7660 Willow Creek', status: 'pending', source: 'manual' },
-  // This Week (4)
-  { id: 9, group: 'week', day: 'Thu', time: '9:30 AM', name: 'Martinez Property', service: 'Solar Panel Site Visit', serviceType: 'site_visit', address: '3301 Oakridge Dr', status: 'confirmed', source: 'ai' },
-  { id: 10, group: 'week', day: 'Thu', time: '2:00 PM', name: 'Brown Residence', service: 'Roof Replacement Sales Call', serviceType: 'sales_call', address: '5519 Meadow Ln', status: 'confirmed', source: 'ai' },
-  { id: 11, group: 'week', day: 'Fri', time: '11:00 AM', name: 'Lee Property', service: 'HVAC Install Estimate', serviceType: 'estimate', address: '2287 Highland Ct', status: 'confirmed', source: 'referral' },
-  { id: 12, group: 'week', day: 'Sat', time: '10:00 AM', name: 'Green Residence', service: 'Solar Consultation', serviceType: 'sales_call', address: '1104 Birchwood Pl', status: 'rescheduled', source: 'ai' },
-];
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
 
-const BOOKED_BY_AI = [
-  { agent: 'Appointment Setter', count: 14, icon: Calendar },
-  { agent: 'Instant Lead Response', count: 8, icon: Sparkles },
-  { agent: 'Social DM Agent', count: 4, icon: Users },
-];
+function sameDay(a, b) {
+  return startOfDay(a).getTime() === startOfDay(b).getTime();
+}
 
-const CALENDAR_DAYS = [
-  { label: 'Mon', count: 4, isToday: true },
-  { label: 'Tue', count: 4 },
-  { label: 'Wed', count: 3 },
-  { label: 'Thu', count: 2 },
-  { label: 'Fri', count: 1 },
-  { label: 'Sat', count: 1 },
-  { label: 'Sun', count: 0 },
-];
+function bucketFor(dateIso) {
+  if (!dateIso) return 'later';
+  const d = new Date(dateIso);
+  if (Number.isNaN(d.getTime())) return 'later';
+  const now = new Date();
+  const today = startOfDay(now);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+  if (sameDay(d, today)) return 'today';
+  if (sameDay(d, tomorrow)) return 'tomorrow';
+  if (d >= today && d < weekEnd) return 'week';
+  if (d < today) return 'past';
+  return 'later';
+}
+
+function fmtTime(dateIso) {
+  if (!dateIso) return '—';
+  const d = new Date(dateIso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function fmtDayShort(dateIso) {
+  if (!dateIso) return '';
+  const d = new Date(dateIso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { weekday: 'short' }).toUpperCase();
+}
+
+function fmtPhone(raw) {
+  if (!raw) return '';
+  const digits = String(raw).replace(/\D+/g, '');
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  }
+  return raw;
+}
+
+function normalize(row) {
+  const goal = GOAL_CONFIG[row.call_goal] || GOAL_CONFIG.custom;
+  const status = STATUS_CONFIG[row.status] || { label: String(row.status || 'UNKNOWN').toUpperCase(), color: 'var(--text-muted)' };
+  const outcome = row.outcome ? (OUTCOME_CONFIG[row.outcome] || null) : null;
+  return {
+    id: row.id,
+    name: row.contact_name || 'Unknown contact',
+    phone: fmtPhone(row.contact_phone),
+    goalKey: row.call_goal || 'custom',
+    goalLabel: goal.label,
+    GoalIcon: goal.icon,
+    time: fmtTime(row.scheduled_for),
+    day: fmtDayShort(row.scheduled_for),
+    status,
+    outcome,
+    bucket: bucketFor(row.scheduled_for),
+    outcomeNotes: row.outcome_notes || null,
+    scheduledFor: row.scheduled_for,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
-export default function AppointmentsPage() {
+export default function BookedCallsPage() {
   const [filter, setFilter] = useState('all');
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancel = false;
+    setLoading(true);
+    fetch('/api/calls', { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((json) => {
+        if (cancel) return;
+        const calls = Array.isArray(json?.calls) ? json.calls : [];
+        setRows(calls.map(normalize));
+      })
+      .catch((err) => {
+        if (cancel) return;
+        setError(err?.message || 'Failed to load calls');
+      })
+      .finally(() => {
+        if (cancel) return;
+        setLoading(false);
+      });
+    return () => { cancel = true; };
+  }, []);
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return APPOINTMENTS;
-    if (filter === 'today') return APPOINTMENTS.filter((a) => a.group === 'today');
-    if (filter === 'week') return APPOINTMENTS;
-    if (filter === 'estimates') return APPOINTMENTS.filter((a) => a.serviceType === 'estimate');
-    if (filter === 'site_visits') return APPOINTMENTS.filter((a) => a.serviceType === 'site_visit');
-    if (filter === 'sales_calls') return APPOINTMENTS.filter((a) => a.serviceType === 'sales_call');
-    return APPOINTMENTS;
-  }, [filter]);
+    if (filter === 'all') return rows;
+    if (filter === 'today') return rows.filter((r) => r.bucket === 'today');
+    if (filter === 'tomorrow') return rows.filter((r) => r.bucket === 'tomorrow');
+    if (filter === 'week') return rows.filter((r) => r.bucket === 'today' || r.bucket === 'tomorrow' || r.bucket === 'week');
+    if (filter === 'booked') return rows.filter((r) => r.outcome && r.outcome.label === 'BOOKED');
+    if (filter === 'queued') return rows.filter((r) => r.status.label === 'QUEUED');
+    return rows;
+  }, [filter, rows]);
 
-  const today = filtered.filter((a) => a.group === 'today');
-  const tomorrow = filtered.filter((a) => a.group === 'tomorrow');
-  const week = filtered.filter((a) => a.group === 'week');
+  const today = filtered.filter((a) => a.bucket === 'today');
+  const tomorrow = filtered.filter((a) => a.bucket === 'tomorrow');
+  const week = filtered.filter((a) => a.bucket === 'week');
+  const past = filtered.filter((a) => a.bucket === 'past');
+
+  // KPIs computed against the full (unfiltered) result set so they remain stable
+  const kpis = useMemo(() => {
+    const todayAll = rows.filter((r) => r.bucket === 'today').length;
+    const weekAll = rows.filter((r) => r.bucket === 'today' || r.bucket === 'tomorrow' || r.bucket === 'week').length;
+    const bookedAll = rows.filter((r) => r.outcome && r.outcome.label === 'BOOKED').length;
+    const completedAll = rows.filter((r) => r.status.label === 'COMPLETED' || r.status.label === 'VOICEMAIL' || r.status.label === 'NO ANSWER').length;
+    const connectRate = completedAll > 0
+      ? Math.round((rows.filter((r) => r.status.label === 'COMPLETED').length / completedAll) * 100)
+      : null;
+    return { todayAll, weekAll, bookedAll, connectRate };
+  }, [rows]);
+
+  // Weekly calendar widget (next 7 days)
+  const calendarDays = useMemo(() => {
+    const now = new Date();
+    const today0 = startOfDay(now);
+    const days = [];
+    for (let i = 0; i < 7; i += 1) {
+      const d = new Date(today0);
+      d.setDate(today0.getDate() + i);
+      const count = rows.filter((r) => {
+        if (!r.scheduledFor) return false;
+        return sameDay(new Date(r.scheduledFor), d);
+      }).length;
+      days.push({
+        label: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        count,
+        isToday: i === 0,
+      });
+    }
+    return days;
+  }, [rows]);
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
@@ -113,7 +218,7 @@ export default function AppointmentsPage() {
             className="t-eyebrow"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <Calendar size={12} style={{ color: 'var(--primary)' }} />
+            <Phone size={12} style={{ color: 'var(--primary)' }} />
             Deliverable
           </div>
           <h1
@@ -129,12 +234,12 @@ export default function AppointmentsPage() {
             className="t-body-sm"
             style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-body)' }}
           >
-            Your calendar fills itself. Here&apos;s what the AI booked.
+            Outbound calls your AI agent is making — and what they turned into.
           </p>
         </div>
         <button type="button" className="btn-primary">
           <Plus size={16} />
-          Book Appointment
+          Queue Call
         </button>
       </div>
 
@@ -148,18 +253,18 @@ export default function AppointmentsPage() {
         }}
         className="appts-stats-grid"
       >
-        <StatCard icon={<Clock size={13} />} label="Today" value="8" />
-        <StatCard icon={<Calendar size={13} />} label="This Week" value="34" />
+        <StatCard icon={<Clock size={13} />} label="Today" value={loading ? '—' : String(kpis.todayAll)} />
+        <StatCard icon={<Calendar size={13} />} label="This Week" value={loading ? '—' : String(kpis.weekAll)} />
         <StatCard
           icon={<Sparkles size={13} />}
           label="Booked by AI"
-          value="26"
+          value={loading ? '—' : String(kpis.bookedAll)}
           accent
         />
         <StatCard
           icon={<CheckCircle2 size={13} />}
-          label="Show Rate"
-          value="87%"
+          label="Connect Rate"
+          value={loading ? '—' : kpis.connectRate === null ? '—' : `${kpis.connectRate}%`}
         />
       </div>
 
@@ -176,10 +281,10 @@ export default function AppointmentsPage() {
         {[
           { k: 'all', l: 'All' },
           { k: 'today', l: 'Today' },
+          { k: 'tomorrow', l: 'Tomorrow' },
           { k: 'week', l: 'This Week' },
-          { k: 'estimates', l: 'Estimates' },
-          { k: 'site_visits', l: 'Site Visits' },
-          { k: 'sales_calls', l: 'Sales Calls' },
+          { k: 'queued', l: 'Queued' },
+          { k: 'booked', l: 'Booked' },
         ].map((f) => (
           <button
             key={f.k}
@@ -203,33 +308,36 @@ export default function AppointmentsPage() {
       >
         {/* LEFT: grouped list */}
         <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-          {today.length > 0 ? (
-            <AppointmentGroup label="Today" items={today} />
-          ) : null}
-          {tomorrow.length > 0 ? (
-            <AppointmentGroup label="Tomorrow" items={tomorrow} />
-          ) : null}
-          {week.length > 0 ? (
-            <AppointmentGroup label="This Week" items={week} last />
-          ) : null}
-          {filtered.length === 0 ? (
-            <div
-              style={{
-                padding: '40px 20px',
-                textAlign: 'center',
-                color: 'var(--text-muted)',
-                fontSize: 13,
-              }}
-            >
-              No appointments match your filter.
-            </div>
-          ) : null}
+          {loading ? (
+            <EmptyState icon={<RefreshCw size={24} />} title="Loading calls…" body="Pulling your AI agent's queue." />
+          ) : error ? (
+            <EmptyState icon={<AlertCircle size={24} />} title="Couldn't load calls" body={error} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={<PhoneOff size={24} />}
+              title="No calls yet"
+              body="Once you queue an outbound call, it'll show up here. Click 'Queue Call' to send your first one."
+            />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon={<PhoneOff size={24} />}
+              title="No calls match this filter"
+              body="Try 'All' to see everything the AI has on deck."
+            />
+          ) : (
+            <>
+              {today.length > 0 ? <CallGroup label="Today" items={today} /> : null}
+              {tomorrow.length > 0 ? <CallGroup label="Tomorrow" items={tomorrow} /> : null}
+              {week.length > 0 ? <CallGroup label="This Week" items={week} /> : null}
+              {past.length > 0 ? <CallGroup label="Past 30 Days" items={past} last /> : null}
+            </>
+          )}
         </div>
 
         {/* RIGHT: calendar + Booked by AI */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <CalendarWidget />
-          <BookedByAiCard />
+          <CalendarWidget days={calendarDays} />
+          <BookedByAiCard rows={rows} />
         </div>
       </div>
 
@@ -287,10 +395,10 @@ function StatCard({ icon, label, value, accent }) {
 }
 
 // ---------------------------------------------------------------------------
-// Appointment group + row
+// Call group + row
 // ---------------------------------------------------------------------------
 
-function AppointmentGroup({ label, items, last }) {
+function CallGroup({ label, items, last }) {
   return (
     <div style={{ borderBottom: last ? 'none' : '1px solid var(--border)' }}>
       <div
@@ -322,17 +430,14 @@ function AppointmentGroup({ label, items, last }) {
         </span>
       </div>
       {items.map((a, i) => (
-        <AppointmentRow key={a.id} a={a} last={i === items.length - 1} />
+        <CallRow key={a.id} a={a} last={i === items.length - 1} />
       ))}
     </div>
   );
 }
 
-function AppointmentRow({ a, last }) {
-  const ServiceIcon = SERVICE_ICONS[a.serviceType] || Calendar;
-  const status = STATUS_CONFIG[a.status];
-  const source = SOURCE_CONFIG[a.source];
-
+function CallRow({ a, last }) {
+  const GoalIcon = a.GoalIcon || Phone;
   return (
     <div
       style={{
@@ -383,7 +488,7 @@ function AppointmentRow({ a, last }) {
             marginBottom: 2,
           }}
         >
-          <ServiceIcon size={14} style={{ color: 'var(--text-muted)' }} />
+          <GoalIcon size={14} style={{ color: 'var(--text-muted)' }} />
           <span
             style={{
               fontSize: 14,
@@ -395,7 +500,7 @@ function AppointmentRow({ a, last }) {
           </span>
         </div>
         <div className="t-body-sm" style={{ marginBottom: 6 }}>
-          {a.service}
+          {a.goalLabel}
         </div>
         <div
           style={{
@@ -406,9 +511,22 @@ function AppointmentRow({ a, last }) {
             color: 'var(--text-muted)',
           }}
         >
-          <MapPin size={12} />
-          {a.address}
+          <Phone size={12} />
+          {a.phone || '—'}
         </div>
+        {a.outcomeNotes ? (
+          <div
+            style={{
+              marginTop: 6,
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              fontStyle: 'italic',
+              lineHeight: 1.4,
+            }}
+          >
+            “{a.outcomeNotes}”
+          </div>
+        ) : null}
       </div>
 
       {/* Badges + actions */}
@@ -420,15 +538,15 @@ function AppointmentRow({ a, last }) {
           gap: 8,
         }}
       >
-        <div style={{ display: 'inline-flex', gap: 6 }}>
-          <Pill color={status.color}>{status.label}</Pill>
-          <Pill color={source.color}>{source.label}</Pill>
+        <div style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Pill color={a.status.color}>{a.status.label}</Pill>
+          {a.outcome ? <Pill color={a.outcome.color}>{a.outcome.label}</Pill> : null}
         </div>
         <div style={{ display: 'inline-flex', gap: 6 }}>
           <IconButton title="Edit">
             <Edit2 size={13} />
           </IconButton>
-          <IconButton title="Reschedule">
+          <IconButton title="Re-queue">
             <RefreshCw size={13} />
           </IconButton>
         </div>
@@ -481,11 +599,40 @@ function IconButton({ children, title }) {
 }
 
 // ---------------------------------------------------------------------------
+// Empty / loading state
+// ---------------------------------------------------------------------------
+
+function EmptyState({ icon, title, body }) {
+  return (
+    <div
+      style={{
+        padding: '48px 24px',
+        textAlign: 'center',
+        color: 'var(--text-muted)',
+      }}
+    >
+      <div style={{ color: 'var(--text-muted)', marginBottom: 12, display: 'inline-flex' }}>{icon}</div>
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: 'var(--text-bright)',
+          marginBottom: 4,
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ fontSize: 13, maxWidth: 420, margin: '0 auto' }}>{body}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Calendar widget
 // ---------------------------------------------------------------------------
 
-function CalendarWidget() {
-  const max = Math.max(...CALENDAR_DAYS.map((d) => d.count), 1);
+function CalendarWidget({ days }) {
+  const max = Math.max(...days.map((d) => d.count), 1);
   return (
     <div className="dark-card" style={{ padding: 20 }}>
       <div
@@ -493,7 +640,7 @@ function CalendarWidget() {
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
       >
         <Calendar size={11} style={{ color: 'var(--primary)' }} />
-        This Week
+        Next 7 Days
       </div>
       <h3
         className="t-h3"
@@ -508,11 +655,11 @@ function CalendarWidget() {
           gap: 6,
         }}
       >
-        {CALENDAR_DAYS.map((d) => {
+        {days.map((d, idx) => {
           const isToday = d.isToday;
           return (
             <div
-              key={d.label}
+              key={`${d.label}-${idx}`}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -577,11 +724,45 @@ function CalendarWidget() {
 }
 
 // ---------------------------------------------------------------------------
-// Booked by AI summary
+// Booked by AI summary — breakdown of goals for outcome=booked
 // ---------------------------------------------------------------------------
 
-function BookedByAiCard() {
-  const total = BOOKED_BY_AI.reduce((s, a) => s + a.count, 0);
+function BookedByAiCard({ rows }) {
+  const booked = rows.filter((r) => r.outcome && r.outcome.label === 'BOOKED');
+  const total = booked.length;
+
+  if (total === 0) {
+    return (
+      <div className="dark-card" style={{ padding: 20 }}>
+        <div
+          className="t-eyebrow"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            color: 'var(--primary)',
+          }}
+        >
+          <Sparkles size={11} />
+          Booked by AI
+        </div>
+        <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-muted)' }}>
+          No bookings yet in the last 30 days. Bookings will appear here as your
+          outbound calls convert.
+        </div>
+      </div>
+    );
+  }
+
+  // Group by call goal
+  const groups = booked.reduce((acc, r) => {
+    const key = r.goalKey;
+    if (!acc[key]) acc[key] = { key, label: r.goalLabel, Icon: r.GoalIcon, count: 0 };
+    acc[key].count += 1;
+    return acc;
+  }, {});
+  const list = Object.values(groups).sort((a, b) => b.count - a.count);
+
   return (
     <div className="dark-card" style={{ padding: 20 }}>
       <div
@@ -615,7 +796,7 @@ function BookedByAiCard() {
         >
           {total}
         </span>
-        <span className="t-body-sm">appointments this week</span>
+        <span className="t-body-sm">bookings in the last 30 days</span>
       </div>
 
       <div
@@ -626,12 +807,12 @@ function BookedByAiCard() {
           gap: 10,
         }}
       >
-        {BOOKED_BY_AI.map((a) => {
-          const Icon = a.icon;
+        {list.map((a) => {
+          const Icon = a.Icon || Phone;
           const pct = Math.round((a.count / total) * 100);
           return (
             <div
-              key={a.agent}
+              key={a.key}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -666,7 +847,7 @@ function BookedByAiCard() {
                     color: 'var(--text-bright)',
                   }}
                 >
-                  {a.agent}
+                  {a.label}
                 </div>
                 <div
                   style={{
