@@ -423,7 +423,7 @@ export const agentInboundReply = inngest.createFunction(
       }
 
       try {
-        const results = await sendSms({ to: fromPhone, body: smsBody });
+        const results = await sendSms({ to: fromPhone, body: smsBody, orgId });
         return { status: "sent" as const, sid: results[0]?.sid ?? null };
       } catch (err: any) {
         return { status: "failed" as const, sid: null, error: err.message };

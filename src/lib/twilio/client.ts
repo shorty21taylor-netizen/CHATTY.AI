@@ -1,6 +1,34 @@
 // ─── Twilio Client — SMS for Chatty AI ──────────────────────────
 
+import { db } from "@/lib/db/drizzle";
+import { businessProfile } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
 const TWILIO_BASE_URL = "https://api.twilio.com/2010-04-01";
+
+// Per-org sending-number resolution cache. Tenants rarely change their number
+// day-to-day, but we still cap TTL low enough that a swap reflects in a brief
+// delivery cycle. 5 min matches brief-scheduler's eligibility window.
+const PHONE_CACHE_TTL_MS = 5 * 60 * 1000;
+const phoneCache = new Map<string, { value: string | null; expires: number }>();
+
+async function resolveOrgSendingNumber(orgId: string): Promise<string | null> {
+  const cached = phoneCache.get(orgId);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  try {
+    const [row] = await db
+      .select({ twilioPhoneNumber: businessProfile.twilioPhoneNumber })
+      .from(businessProfile)
+      .where(eq(businessProfile.orgId, orgId as unknown as never))
+      .limit(1);
+    const value = row?.twilioPhoneNumber || null;
+    phoneCache.set(orgId, { value, expires: Date.now() + PHONE_CACHE_TTL_MS });
+    return value;
+  } catch (err) {
+    console.error("[Twilio] resolveOrgSendingNumber failed", orgId, err);
+    return null;
+  }
+}
 
 function getAuth(): string {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -18,7 +46,19 @@ function getAccountSid(): string {
 export interface SendSmsOptions {
   to: string;
   body: string;
+  /**
+   * Explicit from-number. If omitted, resolution order is:
+   *   1. orgId → businessProfile.twilio_phone_number
+   *   2. env TWILIO_PHONE_NUMBER (shared fallback)
+   * Providing `from` always wins.
+   */
   from?: string;
+  /**
+   * Clerk org id for per-tenant sending-number lookup. Strongly recommended —
+   * without it, SMS goes from the shared pool number which conflates all
+   * tenants on a single long code (deliverability + branding risk).
+   */
+  orgId?: string;
   statusCallback?: string;
 }
 
@@ -35,7 +75,11 @@ export interface SmsResult {
  * Send an SMS via Twilio. Automatically chunks messages over 1600 chars.
  */
 export async function sendSms(options: SendSmsOptions): Promise<SmsResult[]> {
-  const from = options.from || process.env.TWILIO_PHONE_NUMBER;
+  let from = options.from;
+  if (!from && options.orgId) {
+    from = (await resolveOrgSendingNumber(options.orgId)) ?? undefined;
+  }
+  if (!from) from = process.env.TWILIO_PHONE_NUMBER;
   if (!from) throw new Error("TWILIO_PHONE_NUMBER is required");
 
   const chunks = chunkMessage(options.body, 1600);

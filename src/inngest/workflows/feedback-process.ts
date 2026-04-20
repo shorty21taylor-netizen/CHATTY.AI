@@ -114,7 +114,7 @@ async function promptForFeedback(
   if (!prefs || !prefs.smsEnabled || !prefs.phoneNumber) return "skipped";
 
   try {
-    await sendSms({ to: prefs.phoneNumber, body: buildPromptMessage() });
+    await sendSms({ to: prefs.phoneNumber, body: buildPromptMessage(), orgId: brief.org_id });
     await query(
       `UPDATE decision_briefs
           SET operator_feedback = COALESCE(operator_feedback, '{}'::jsonb)
@@ -245,7 +245,7 @@ export const feedbackProcess = inngest.createFunction(
           continue;
         }
         try {
-          await sendSms({ to: prefs.phoneNumber, body: buildPromptMessage() });
+          await sendSms({ to: prefs.phoneNumber, body: buildPromptMessage(), orgId: brief.org_id });
           sent += 1;
           await query(
             `UPDATE decision_briefs

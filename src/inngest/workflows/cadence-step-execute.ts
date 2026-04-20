@@ -348,6 +348,7 @@ export const cadenceStepExecuteWorkflow = inngest.createFunction(
         const results = await sendSms({
           to: (contact as any).phone,
           body: smsBody,
+          orgId,
         });
         return { status: "sent" as const, sid: results[0]?.sid ?? null };
       } catch (err: any) {

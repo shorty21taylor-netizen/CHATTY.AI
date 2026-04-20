@@ -323,7 +323,7 @@ export const agentRunWorkflow = inngest.createFunction(
       }
 
       try {
-        const results = await sendSms({ to: contact.phone, body: finalSmsBody });
+        const results = await sendSms({ to: contact.phone, body: finalSmsBody, orgId });
         return { status: "sent" as const, sid: results[0]?.sid ?? null };
       } catch (err: any) {
         return { status: "failed" as const, sid: null, error: err.message };

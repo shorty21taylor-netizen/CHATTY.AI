@@ -102,6 +102,7 @@ export const briefDeliver = inngest.createFunction(
           const results = await sendSms({
             to: prefs.phoneNumber!,
             body: smsMessage,
+            orgId,
           });
           return { sent: true, sid: results[0]?.sid };
         } catch (e) {
