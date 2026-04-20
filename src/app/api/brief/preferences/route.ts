@@ -20,7 +20,12 @@ export async function GET() {
       deliveryTime: "06:00",
       timezone: "America/New_York",
       smsEnabled: true,
-      voiceEnabled: true,
+      // voice_enabled is forced off until audio blob storage is wired
+      // (see src/inngest/workflows/brief-deliver.ts — the voice branch
+      // returns sent:false, reason:audio_storage_not_configured). Showing
+      // `true` in the GET default trained operators that voice delivery
+      // was on by default when in reality it drops every audio buffer.
+      voiceEnabled: false,
       emailEnabled: false,
       phoneNumber: null,
       emailAddress: null,
@@ -62,7 +67,12 @@ export async function POST(req: NextRequest) {
     deliveryTime: (body.delivery_time as string) || "06:00",
     timezone: (body.timezone as string) || "America/New_York",
     smsEnabled: body.sms_enabled !== false,
-    voiceEnabled: body.voice_enabled !== false,
+    // Force voice_enabled off at the API regardless of what the client
+    // sends. Until audio blob storage ships, honoring `true` just creates
+    // drift between the stored preference and what actually gets
+    // delivered (nothing). Re-enable once signed-URL audio delivery is
+    // wired — see brief-deliver.ts.
+    voiceEnabled: false,
     emailEnabled: body.email_enabled === true,
     phoneNumber: phoneNumber || null,
     emailAddress: emailAddress || null,

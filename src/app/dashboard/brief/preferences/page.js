@@ -37,7 +37,7 @@ export default function BriefPreferencesPage() {
     delivery_time: '06:00',
     timezone: 'America/New_York',
     sms_enabled: true,
-    voice_enabled: true,
+    voice_enabled: false, // force off — audio blob storage not wired yet (see PR AL)
     email_enabled: false,
     phone_number: '',
     email_address: '',
@@ -46,7 +46,6 @@ export default function BriefPreferencesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [voices, setVoices] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -60,7 +59,9 @@ export default function BriefPreferencesPage() {
             delivery_time: p.deliveryTime || p.delivery_time || '06:00',
             timezone: p.timezone || 'America/New_York',
             sms_enabled: p.smsEnabled ?? p.sms_enabled ?? true,
-            voice_enabled: p.voiceEnabled ?? p.voice_enabled ?? true,
+            // Force voice_enabled off regardless of DB state. Until audio
+            // blob storage ships, we don't honor it server-side anyway.
+            voice_enabled: false,
             email_enabled: p.emailEnabled ?? p.email_enabled ?? false,
             phone_number: p.phoneNumber || p.phone_number || '',
             email_address: p.emailAddress || p.email_address || '',
@@ -74,18 +75,10 @@ export default function BriefPreferencesPage() {
       }
     }
 
-    async function loadVoices() {
-      try {
-        const res = await fetch('/api/voice/voices');
-        if (res.ok) {
-          const data = await res.json();
-          setVoices(data.voices || []);
-        }
-      } catch {}
-    }
-
     load();
-    loadVoices();
+    // NOTE: previously also fetched /api/voice/voices for the voice
+    // picker. Dropped along with the Voice Summary toggle — will come
+    // back when audio blob storage ships.
   }, []);
 
   async function handleSave() {
@@ -96,7 +89,10 @@ export default function BriefPreferencesPage() {
       const res = await fetch('/api/brief/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(prefs),
+        // Force voice_enabled off at the wire until audio storage is wired.
+        // Same rationale as the disabled toggle UI above — the backend
+        // drops the audio anyway, persisting `true` just creates drift.
+        body: JSON.stringify({ ...prefs, voice_enabled: false }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -281,42 +277,80 @@ export default function BriefPreferencesPage() {
           </button>
         </div>
 
-        {/* Voice toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Voice summary — disabled until audio blob storage is wired.
+            Displaying a working toggle here when the backend silently
+            drops the audio (see brief-deliver.ts: sent:false,
+            reason:audio_storage_not_configured) trains operators to
+            distrust every other setting on this page. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            opacity: 0.6,
+          }}
+        >
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)' }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--text-bright)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
               Voice Summary
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  background:
+                    'color-mix(in srgb, var(--text-muted) 18%, transparent)',
+                  color: 'var(--text-muted)',
+                  border:
+                    '1px solid color-mix(in srgb, var(--text-muted) 30%, transparent)',
+                }}
+              >
+                COMING SOON
+              </span>
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              Generate an audio version of your brief via ElevenLabs.
+              ElevenLabs audio playback will return once signed-URL audio
+              storage is live.
             </div>
           </div>
-          <button
-            onClick={() => setPrefs({ ...prefs, voice_enabled: !prefs.voice_enabled })}
+          <div
+            aria-disabled="true"
+            title="Voice brief delivery is temporarily disabled"
             style={{
               width: 48,
               height: 26,
               borderRadius: 13,
-              border: 'none',
-              background: prefs.voice_enabled ? 'var(--emerald-bright)' : 'var(--dark-surface-2)',
+              border: '1px solid var(--dark-border)',
+              background: 'var(--dark-surface-2)',
               position: 'relative',
-              cursor: 'pointer',
-              transition: 'background .15s',
+              cursor: 'not-allowed',
             }}
           >
             <span
               style={{
                 position: 'absolute',
                 top: 3,
-                left: prefs.voice_enabled ? 25 : 3,
+                left: 3,
                 width: 20,
                 height: 20,
                 borderRadius: '50%',
-                background: '#fff',
-                transition: 'left .15s',
+                background: 'color-mix(in srgb, #fff 50%, transparent)',
               }}
             />
-          </button>
+          </div>
         </div>
 
         {/* Email toggle */}
@@ -373,24 +407,8 @@ export default function BriefPreferencesPage() {
           </div>
         )}
 
-        {/* Voice selection */}
-        {prefs.voice_enabled && voices.length > 0 && (
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
-              Voice
-            </label>
-            <select
-              value={prefs.voice_id}
-              onChange={(e) => setPrefs({ ...prefs, voice_id: e.target.value })}
-              style={inputStyle}
-            >
-              <option value="">Default</option>
-              {voices.map((v) => (
-                <option key={v.voice_id} value={v.voice_id}>{v.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        {/* Voice selection intentionally removed — see Voice Summary note
+            above. Will return once signed-URL audio storage ships. */}
 
         {error && (
           <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>
