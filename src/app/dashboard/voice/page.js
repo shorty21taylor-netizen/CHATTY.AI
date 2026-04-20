@@ -1,712 +1,174 @@
-'use client';
+import { auth } from '@clerk/nextjs/server';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { db } from '@/lib/db/drizzle';
+import { voiceCalls } from '@/db/schema';
+import VoiceClient from './voice-client';
 
-import { useState } from 'react';
-import {
-  Mic,
-  Phone,
-  PhoneIncoming,
-  PhoneOutgoing,
-  Clock,
-  Play,
-  Pause,
-  Sparkles,
-  CheckCircle2,
-} from 'lucide-react';
+// Force dynamic — this page depends on auth() and live DB reads.
+export const dynamic = 'force-dynamic';
 
-const STAT_CARDS = [
-  {
-    icon: Phone,
-    label: 'Calls This Week',
-    value: '289',
-    hint: '184 inbound · 105 outbound',
-    accent: true,
-  },
-  {
-    icon: Clock,
-    label: 'Avg Call Duration',
-    value: '2m 41s',
-    hint: 'Down from 3m 12s',
-  },
-  {
-    icon: CheckCircle2,
-    label: 'Qualification Rate',
-    value: '67%',
-    hint: '+4pts vs last week',
-  },
-  {
-    icon: Mic,
-    label: 'Active Voice Agents',
-    value: '3 / 3',
-    hint: 'All plan slots used',
-  },
-];
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-const ACTIVE_AGENTS = [
-  {
-    id: 1,
-    name: 'Instant Lead Response',
-    voice: 'Rachel',
-    voiceColor: '#ec4899',
-    status: 'active',
-    calls: 112,
-    avgDuration: '2m 18s',
-    lastCall: '3m ago',
-  },
-  {
-    id: 2,
-    name: 'Appointment Setter',
-    voice: 'Marcus',
-    voiceColor: '#3b82f6',
-    status: 'active',
-    calls: 84,
-    avgDuration: '3m 02s',
-    lastCall: '12m ago',
-  },
-  {
-    id: 3,
-    name: 'Objection Handler',
-    voice: 'Sarah',
-    voiceColor: '#8b5cf6',
-    status: 'active',
-    calls: 42,
-    avgDuration: '2m 44s',
-    lastCall: '1h ago',
-  },
-];
+const QUALIFIED_OUTCOMES = new Set([
+  'qualified',
+  'booked',
+  'won',
+  'appointment_set',
+]);
 
-const VOICE_LIBRARY = [
-  { name: 'Rachel', gender: 'Female', tone: 'Warm · Upbeat', color: '#ec4899' },
-  { name: 'Marcus', gender: 'Male', tone: 'Confident · Clear', color: '#3b82f6' },
-  { name: 'Sarah', gender: 'Female', tone: 'Calm · Reassuring', color: '#8b5cf6' },
-  { name: 'James', gender: 'Male', tone: 'Friendly · Casual', color: '#0F8A4F' },
-  { name: 'Emily', gender: 'Female', tone: 'Professional', color: '#f59e0b' },
-  {
-    name: 'Custom Clone',
-    gender: 'Your voice',
-    tone: 'ElevenLabs Voice Lab',
-    color: 'var(--primary)',
-    custom: true,
-  },
-];
+const OUTCOME_COLOR = {
+  booked: 'var(--primary)',
+  won: 'var(--primary)',
+  qualified: '#3b82f6',
+  appointment_set: '#3b82f6',
+  rescheduled: '#f59e0b',
+  voicemail: 'var(--text-muted)',
+  no_answer: 'var(--text-muted)',
+  missed: 'var(--text-muted)',
+  no_outcome: 'var(--text-muted)',
+};
 
-const RECENT_CALLS = [
-  {
-    id: 1,
-    contact: 'Patricia Williams',
-    direction: 'outbound',
-    agent: 'Instant Lead Response',
-    voice: 'Rachel',
-    duration: '4m 12s',
-    outcome: 'Booked',
-    when: '3m ago',
-    outcomeColor: 'var(--primary)',
-  },
-  {
-    id: 2,
-    contact: 'James Rodriguez',
-    direction: 'inbound',
-    agent: 'Appointment Setter',
-    voice: 'Marcus',
-    duration: '2m 38s',
-    outcome: 'Qualified',
-    when: '12m ago',
-    outcomeColor: '#3b82f6',
-  },
-  {
-    id: 3,
-    contact: 'Marcus Miller',
-    direction: 'outbound',
-    agent: 'Instant Lead Response',
-    voice: 'Rachel',
-    duration: '1m 44s',
-    outcome: 'Voicemail',
-    when: '27m ago',
-    outcomeColor: 'var(--text-muted)',
-  },
-  {
-    id: 4,
-    contact: 'Sarah Chen',
-    direction: 'inbound',
-    agent: 'Objection Handler',
-    voice: 'Sarah',
-    duration: '5m 21s',
-    outcome: 'Won',
-    when: '42m ago',
-    outcomeColor: 'var(--primary)',
-  },
-  {
-    id: 5,
-    contact: 'Robert Thompson',
-    direction: 'outbound',
-    agent: 'Appointment Setter',
-    voice: 'Marcus',
-    duration: '3m 08s',
-    outcome: 'Rescheduled',
-    when: '1h ago',
-    outcomeColor: '#f59e0b',
-  },
-  {
-    id: 6,
-    contact: 'Jennifer Davis',
-    direction: 'inbound',
-    agent: 'Instant Lead Response',
-    voice: 'Rachel',
-    duration: '2m 12s',
-    outcome: 'Qualified',
-    when: '1h ago',
-    outcomeColor: '#3b82f6',
-  },
-  {
-    id: 7,
-    contact: 'Kevin Park',
-    direction: 'outbound',
-    agent: 'Objection Handler',
-    voice: 'Sarah',
-    duration: '6m 02s',
-    outcome: 'Proposal Sent',
-    when: '2h ago',
-    outcomeColor: '#8b5cf6',
-  },
-  {
-    id: 8,
-    contact: 'Linda Martinez',
-    direction: 'inbound',
-    agent: 'Appointment Setter',
-    voice: 'Marcus',
-    duration: '2m 51s',
-    outcome: 'Booked',
-    when: '3h ago',
-    outcomeColor: 'var(--primary)',
-  },
-  {
-    id: 9,
-    contact: 'David Kim',
-    direction: 'outbound',
-    agent: 'Instant Lead Response',
-    voice: 'Rachel',
-    duration: '0m 48s',
-    outcome: 'No Answer',
-    when: '4h ago',
-    outcomeColor: 'var(--text-muted)',
-  },
-  {
-    id: 10,
-    contact: 'Amanda Foster',
-    direction: 'inbound',
-    agent: 'Appointment Setter',
-    voice: 'Marcus',
-    duration: '3m 34s',
-    outcome: 'Qualified',
-    when: '5h ago',
-    outcomeColor: '#3b82f6',
-  },
-];
-
-function Pill({ color, children }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        padding: '3px 9px',
-        fontSize: 10,
-        fontWeight: 600,
-        letterSpacing: '0.08em',
-        borderRadius: 999,
-        color,
-        background: `color-mix(in srgb, ${color} 14%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
-      }}
-    >
-      {children}
-    </span>
-  );
+function formatDuration(seconds) {
+  if (!seconds || seconds <= 0) return '0m 00s';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, '0');
+  return `${m}m ${s}s`;
 }
 
-function StatCard({ icon, label, value, hint, accent }) {
-  const Icon = icon;
-  return (
-    <div
-      className="dark-card"
-      style={{
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-        boxShadow: accent ? '0 0 24px rgba(16,185,129,0.12)' : 'none',
-        borderColor: accent
-          ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
-          : 'var(--border)',
-      }}
-    >
-      <div
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 8,
-          fontSize: 11,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          fontWeight: 600,
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 22,
-            height: 22,
-            borderRadius: 6,
-            background: accent
-              ? 'color-mix(in srgb, var(--primary) 14%, transparent)'
-              : 'color-mix(in srgb, var(--text-muted) 14%, transparent)',
-            color: accent ? 'var(--primary)' : 'var(--text-muted)',
-          }}
-        >
-          <Icon size={13} />
-        </span>
-        {label}
-      </div>
-      <div
-        style={{
-          fontSize: 30,
-          fontWeight: 700,
-          letterSpacing: '-0.02em',
-          color: accent ? 'var(--primary)' : 'var(--text-bright)',
-        }}
-      >
-        {value}
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>
-    </div>
-  );
+function formatRelative(date) {
+  if (!date) return '—';
+  const d = date instanceof Date ? date : new Date(date);
+  const diffMs = Date.now() - d.getTime();
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}d ago`;
 }
 
-export default function VoicePage() {
-  const [playing, setPlaying] = useState(null);
+function displayContact(call) {
+  // For inbound, the caller is the contact. For outbound, the called party.
+  return call.direction === 'inbound'
+    ? call.callerNumber || 'Unknown caller'
+    : call.calledNumber || 'Unknown number';
+}
 
-  return (
-    <div>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '4px 10px',
-              borderRadius: 999,
-              background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
-              color: 'var(--primary)',
-              border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)',
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              marginBottom: 10,
-            }}
-          >
-            <Sparkles size={12} />
-            Powered by ElevenLabs
-          </div>
-          <h1 className="t-h1" style={{ margin: '4px 0 6px' }}>
-            Voice agents
-          </h1>
-          <p className="t-body-sm" style={{ margin: 0 }}>
-            Live inbound and outbound calls handled by AI voice agents.
-          </p>
-        </div>
-        <button type="button" className="btn-primary">
-          <Mic size={14} />
-          New voice agent
-        </button>
-      </div>
+function displayOutcome(outcome) {
+  if (!outcome) return { label: 'NO OUTCOME', color: OUTCOME_COLOR.no_outcome };
+  const key = String(outcome).toLowerCase();
+  return {
+    label: key.replace(/_/g, ' ').toUpperCase(),
+    color: OUTCOME_COLOR[key] || 'var(--text-muted)',
+  };
+}
 
-      {/* Stats */}
-      <div
-        className="voice-stat-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
-          marginTop: 28,
-        }}
-      >
-        {STAT_CARDS.map((s) => (
-          <StatCard key={s.label} {...s} />
-        ))}
-      </div>
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
-      {/* Active voice agents */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 12,
-          }}
-        >
-          Active voice agents
-        </div>
-        <div
-          className="voice-agent-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 16,
-          }}
-        >
-          {ACTIVE_AGENTS.map((a) => (
-            <div
-              key={a.id}
-              className="dark-card"
-              style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: 10,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 10,
-                      background: `color-mix(in srgb, ${a.voiceColor} 18%, transparent)`,
-                      color: a.voiceColor,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Mic size={18} />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: 'var(--text-bright)',
-                      }}
-                    >
-                      {a.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: 'var(--text-muted)',
-                        marginTop: 2,
-                      }}
-                    >
-                      Voice · {a.voice}
-                    </div>
-                  </div>
-                </div>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    letterSpacing: '0.08em',
-                    color: 'var(--primary)',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: '50%',
-                      background: 'var(--primary)',
-                      boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent)',
-                    }}
-                  />
-                  LIVE
-                </span>
-              </div>
+export default async function VoicePage() {
+  const { orgId } = await auth();
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: 10,
-                  padding: '12px 0',
-                  borderTop: '1px solid var(--border)',
-                  borderBottom: '1px solid var(--border)',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em' }}>
-                    CALLS
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: 'var(--text-bright)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {a.calls}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em' }}>
-                    AVG DUR
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: 'var(--text-bright)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {a.avgDuration}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em' }}>
-                    LAST
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: 'var(--text-bright)',
-                      marginTop: 4,
-                    }}
-                  >
-                    {a.lastCall}
-                  </div>
-                </div>
-              </div>
+  const emptyStats = {
+    total: 0,
+    inbound: 0,
+    outbound: 0,
+    qualifiedCount: 0,
+    qualifiedPct: 0,
+    avgDurationSeconds: 0,
+    avgDurationLabel: '—',
+  };
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" className="filter-pill" style={{ flex: 1 }}>
-                  Preview voice
-                </button>
-                <button type="button" className="filter-pill" style={{ flex: 1 }}>
-                  Configure
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+  let stats = emptyStats;
+  let recentCalls = [];
 
-      {/* Voice library */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 4,
-          }}
-        >
-          Voice library
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-          Pick a voice or clone your own via ElevenLabs Voice Lab.
-        </div>
-        <div
-          className="voice-library-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 12,
-          }}
-        >
-          {VOICE_LIBRARY.map((v) => {
-            const active = playing === v.name;
-            return (
-              <div
-                key={v.name}
-                className="dark-card"
-                style={{
-                  padding: 16,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  borderColor: v.custom
-                    ? 'color-mix(in srgb, var(--primary) 40%, var(--border))'
-                    : 'var(--border)',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setPlaying(active ? null : v.name)}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    border: `1px solid color-mix(in srgb, ${v.color} 40%, transparent)`,
-                    background: `color-mix(in srgb, ${v.color} 18%, transparent)`,
-                    color: v.color,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
-                  title={active ? 'Pause preview' : 'Play preview'}
-                >
-                  {active ? <Pause size={16} /> : <Play size={16} />}
-                </button>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: 'var(--text-bright)',
-                    }}
-                  >
-                    {v.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--text-muted)',
-                      marginTop: 2,
-                    }}
-                  >
-                    {v.gender} · {v.tone}
-                  </div>
-                </div>
-                {v.custom ? (
-                  <Pill color="var(--primary)">NEW</Pill>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+  if (orgId) {
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-      {/* Recent calls */}
-      <div style={{ marginTop: 28 }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: 'var(--text-bright)',
-            marginBottom: 12,
-          }}
-        >
-          Recent calls
-        </div>
-        <div className="dark-card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 40 }}></th>
-                  <th>Contact</th>
-                  <th>Agent</th>
-                  <th>Voice</th>
-                  <th style={{ textAlign: 'right' }}>Duration</th>
-                  <th style={{ textAlign: 'center' }}>Outcome</th>
-                  <th style={{ textAlign: 'right' }}>When</th>
-                </tr>
-              </thead>
-              <tbody>
-                {RECENT_CALLS.map((c) => {
-                  const Icon = c.direction === 'inbound' ? PhoneIncoming : PhoneOutgoing;
-                  const iconColor =
-                    c.direction === 'inbound' ? '#3b82f6' : 'var(--primary)';
-                  return (
-                    <tr key={c.id}>
-                      <td>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 28,
-                            height: 28,
-                            borderRadius: 6,
-                            background: `color-mix(in srgb, ${iconColor} 14%, transparent)`,
-                            color: iconColor,
-                          }}
-                        >
-                          <Icon size={13} />
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          color: 'var(--text-bright)',
-                          fontWeight: 500,
-                        }}
-                      >
-                        {c.contact}
-                      </td>
-                      <td>{c.agent}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{c.voice}</td>
-                      <td
-                        style={{
-                          textAlign: 'right',
-                          fontVariantNumeric: 'tabular-nums',
-                          color: 'var(--text-muted)',
-                        }}
-                      >
-                        {c.duration}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <Pill color={c.outcomeColor}>{c.outcome.toUpperCase()}</Pill>
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'right',
-                          color: 'var(--text-muted)',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        {c.when}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      // Week-window aggregates. voice_calls.org_id is a plain text column
+      // (stores Clerk orgId as-is), not a uuid with RLS — so we can filter
+      // directly instead of going through withOrgContext.
+      const [agg] = await db
+        .select({
+          total: sql`COUNT(*)::int`.mapWith(Number),
+          inbound: sql`COUNT(*) FILTER (WHERE ${voiceCalls.direction} = 'inbound')::int`.mapWith(Number),
+          outbound: sql`COUNT(*) FILTER (WHERE ${voiceCalls.direction} = 'outbound')::int`.mapWith(Number),
+          qualified: sql`COUNT(*) FILTER (WHERE ${voiceCalls.outcome} IN ('qualified','booked','won','appointment_set'))::int`.mapWith(Number),
+          avgDuration: sql`COALESCE(AVG(${voiceCalls.durationSeconds}), 0)::int`.mapWith(Number),
+        })
+        .from(voiceCalls)
+        .where(
+          and(
+            eq(voiceCalls.orgId, orgId),
+            gte(voiceCalls.startedAt, sevenDaysAgo),
+          ),
+        );
 
-      <style jsx>{`
-        @media (max-width: 1100px) {
-          :global(.voice-stat-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-          :global(.voice-agent-grid),
-          :global(.voice-library-grid) {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-        }
-        @media (max-width: 640px) {
-          :global(.voice-stat-grid),
-          :global(.voice-agent-grid),
-          :global(.voice-library-grid) {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
+      const total = agg?.total ?? 0;
+      const qualified = agg?.qualified ?? 0;
+      const avgDur = agg?.avgDuration ?? 0;
+
+      stats = {
+        total,
+        inbound: agg?.inbound ?? 0,
+        outbound: agg?.outbound ?? 0,
+        qualifiedCount: qualified,
+        qualifiedPct: total > 0 ? Math.round((qualified * 100) / total) : 0,
+        avgDurationSeconds: avgDur,
+        avgDurationLabel: total > 0 ? formatDuration(avgDur) : '—',
+      };
+
+      // Recent calls — last 10 across all time for this org.
+      const rows = await db
+        .select({
+          id: voiceCalls.id,
+          direction: voiceCalls.direction,
+          status: voiceCalls.status,
+          callerNumber: voiceCalls.callerNumber,
+          calledNumber: voiceCalls.calledNumber,
+          durationSeconds: voiceCalls.durationSeconds,
+          startedAt: voiceCalls.startedAt,
+          outcome: voiceCalls.outcome,
+        })
+        .from(voiceCalls)
+        .where(eq(voiceCalls.orgId, orgId))
+        .orderBy(desc(voiceCalls.startedAt))
+        .limit(10);
+
+      recentCalls = rows.map((r) => {
+        const { label, color } = displayOutcome(r.outcome);
+        const isQualified = r.outcome && QUALIFIED_OUTCOMES.has(String(r.outcome).toLowerCase());
+        // `isQualified` is a read-through flag the UI doesn't currently use
+        // but exposing it keeps the door open for row highlighting later.
+        void isQualified;
+        return {
+          id: r.id,
+          direction: r.direction,
+          contact: displayContact(r),
+          status: r.status ? r.status.replace(/_/g, ' ') : 'unknown',
+          duration: formatDuration(r.durationSeconds ?? 0),
+          outcome: label,
+          outcomeColor: color,
+          when: formatRelative(r.startedAt),
+        };
+      });
+    } catch (err) {
+      // Fail-open on DB errors: render the empty state rather than a 500.
+      // This page is read-only telemetry; a blip in the DB shouldn't take
+      // the whole dashboard down.
+      console.error('[voice-dashboard] query failed', err);
+      stats = emptyStats;
+      recentCalls = [];
+    }
+  }
+
+  return <VoiceClient stats={stats} recentCalls={recentCalls} />;
 }
